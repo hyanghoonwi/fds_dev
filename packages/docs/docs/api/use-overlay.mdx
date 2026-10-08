@@ -3,7 +3,13 @@ sidebar_position: 1
 ---
 
 import { useState } from "react";
-import { Button, Modal, OverlayProvider, useOverlay } from "@fds/core";
+import {
+  Button,
+  Calendar,
+  Modal,
+  OverlayProvider,
+  useOverlay,
+} from "@fds/core";
 import Preview from "@site/src/components/Preview";
 
 # useOverlay
@@ -32,7 +38,7 @@ export function App() {
 }
 ```
 
-overlay는 Provider 위치의 DOM 안에 그려집니다(`document.body` 포털을 쓰지 않음). 다크 모드의 `data-theme` 같은 스코프가 DOM 위치에 걸려 있어도 토큰이 그대로 적용되도록 하기 위해서입니다. `Modal`이 `position: fixed`라 화면 전체를 덮는 데는 문제가 없습니다.
+overlay는 Provider 위치의 DOM 안에 그려집니다(`document.body` 포털을 쓰지 않음). 다크 모드의 `data-theme` 같은 스코프가 DOM 위치에 걸려 있어도 토큰이 그대로 적용되도록 하기 위해서입니다. `Modal`이 `position: fixed`라 화면 전체를 덮는 데는 문제가 없지만, 포털이 아니기 때문에 **`transform`이나 `overflow: hidden`을 가진 요소 안에 Provider를 두면 안 됩니다.** `fixed`가 그 요소 기준으로 잡혀 잘리거나 위치가 어긋납니다. Provider는 앱 최상단에 두세요.
 
 ## open
 
@@ -194,6 +200,171 @@ if (ok) {
 }
 ```
 
+## 같은 id로 다시 열기
+
+`options.overlayId`를 주면 그 id가 하나의 "자리"가 됩니다. 중복 열림을 막거나, 닫히는 중에 다시 여는 경우를 안전하게 처리합니다.
+
+- **이미 열려 있으면 새로 열지 않습니다.** `open`은 같은 id를 반환하고 화면은 그대로입니다. `openAsync`는 **진행 중인 같은 Promise**를 돌려주므로, 두 번 호출해도 모달은 하나만 뜨고 두 호출이 같은 값으로 끝납니다.
+- **닫히는 중에 다시 열면 이어서 열립니다.** `exitDelay`를 기다리는 동안 같은 id로 `open`을 부르면 예약된 제거가 취소됩니다. 새로 연 overlay가 이전 `close`의 제거 타이머에 지워지지 않습니다.
+
+```tsx
+// 버튼을 연타해도 모달은 하나
+overlay.openAsync(renderConfirm, { overlayId: "block-user" });
+overlay.openAsync(renderConfirm, { overlayId: "block-user" }); // 같은 Promise를 돌려줌
+```
+
+## 여러 개 쌓기
+
+overlay는 연 순서대로 쌓이고, 나중에 연 것이 위에 보입니다. `Esc`는 **맨 위 모달 하나**씩만 닫습니다([Modal 닫기](../components/common/modal#닫기) 참고). `overlay.closeAll()`은 열려 있는 것을 한 번에 모두 닫습니다.
+
+export function StackedDemo() {
+  const overlay = useOverlay();
+  const openLayer = (depth) => {
+    overlay.open(({ isOpen, close }) => (
+      <Modal
+        open={isOpen}
+        onClose={close}
+        header={depth + "번째 모달"}
+        style={{ width: 320 }}
+        actions={
+          <>
+            <Button variant="line" onClick={() => overlay.closeAll()}>
+              모두 닫기
+            </Button>
+            <Button variant="primary" onClick={() => openLayer(depth + 1)}>
+              하나 더
+            </Button>
+          </>
+        }
+      >
+        <p style={{ margin: 0, fontSize: 14 }}>
+          Esc는 맨 위 모달부터 하나씩 닫아요.
+        </p>
+      </Modal>
+    ));
+  };
+  return (
+    <Button variant="primary" onClick={() => openLayer(1)}>
+      모달 쌓기
+    </Button>
+  );
+}
+
+<Preview>
+  <OverlayProvider>
+    <StackedDemo />
+  </OverlayProvider>
+</Preview>
+
+```tsx
+const openLayer = (depth: number) => {
+  overlay.open(({ isOpen, close }) => (
+    <Modal
+      open={isOpen}
+      onClose={close}
+      header={`${depth}번째 모달`}
+      actions={
+        <>
+          <Button variant="line" onClick={() => overlay.closeAll()}>
+            모두 닫기
+          </Button>
+          <Button variant="primary" onClick={() => openLayer(depth + 1)}>
+            하나 더
+          </Button>
+        </>
+      }
+    >
+      ...
+    </Modal>
+  ));
+};
+```
+
+## Calendar를 모달에서 쓰기
+
+`Calendar`는 트리거 없이 패널만 있는 컴포넌트라서, `openAsync`로 연 `Modal` 안에 넣으면 "날짜를 고를 때까지 기다리는 함수"가 됩니다. 버튼이든 칩이든 어떤 요소에서든 부를 수 있습니다. 날짜를 누를 때마다 호출되는 `onSelect`를 쓰면 이미 선택된 날짜를 다시 눌러도 닫힙니다.
+
+export function CalendarDemo() {
+  const overlay = useOverlay();
+  const [picked, setPicked] = useState("선택 안 함");
+  const pick = async () => {
+    const date = await overlay.openAsync(({ isOpen, close }) => (
+      <Modal
+        open={isOpen}
+        onClose={() => close()}
+        header="날짜 선택"
+        style={{ width: 320 }}
+      >
+        <Calendar autoFocus onSelect={(value) => close(value)} />
+      </Modal>
+    ));
+    if (date) {
+      setPicked(date);
+    }
+  };
+  return (
+    <>
+      <Button variant="line" onClick={pick}>
+        날짜 고르기
+      </Button>
+      <span style={{ fontSize: 14, color: "var(--fds-text-secondary)" }}>
+        선택한 날짜: {picked}
+      </span>
+    </>
+  );
+}
+
+<Preview>
+  <OverlayProvider>
+    <CalendarDemo />
+  </OverlayProvider>
+</Preview>
+
+```tsx
+const pickDate = async () => {
+  const date = await overlay.openAsync<string>(({ isOpen, close }) => (
+    <Modal open={isOpen} onClose={() => close()} header="날짜 선택">
+      <Calendar autoFocus onSelect={(value) => close(value)} />
+    </Modal>
+  ));
+
+  if (date) {
+    setDate(date); // "2026-10-15"
+  }
+};
+```
+
+바깥 클릭이나 `Esc`로 닫으면 `close()`가 값 없이 불려서 `date`는 `undefined`입니다. 그래서 `if (date)`로 걸러 줍니다. 입력창과 연결한 팝오버 형태는 [`DatePicker`](../components/common/date-picker)를, 시간까지 함께 고르는 모달은 `Calendar`와 `TimePanel`을 같은 `Modal`에 넣으면 됩니다.
+
+## 동작 원리
+
+### 수명 주기
+
+```
+          open()                close(value)              exitDelay 경과
+(없음) ─────────▶ isOpen=true ─────────────▶ isOpen=false ─────────────▶ (제거)
+                    │                            │ (Promise 정산)             ▲
+                    │ exit() ────────────────────┴────────────────────────────┘
+                    └ 즉시 제거 (Promise는 undefined로 정산)
+```
+
+| 호출                       | `isOpen` | Promise                       | 트리에서            |
+| -------------------------- | -------- | ----------------------------- | ------------------- |
+| `open()`                   | `true`   | -                             | 추가                |
+| `close(value)` (render 안) | `false`  | `value`로 정산                | `exitDelay` 뒤 제거 |
+| `overlay.close(id)`        | `false`  | `undefined`로 정산            | `exitDelay` 뒤 제거 |
+| `closeAll()`               | `false`  | 각각 `undefined`              | `exitDelay` 뒤 제거 |
+| `exit(id)`                 | -        | 아직 안 끝났다면 `undefined`  | 즉시 제거           |
+| Provider 언마운트          | -        | 대기 중인 것 모두 `undefined` | 전체 사라짐         |
+
+- **Promise는 한 번만 정산됩니다.** `close(true)` 뒤에 `closeAll()`이 불려도 첫 값이 유지됩니다.
+- 이미 제거됐거나 열린 적 없는 id에 `close(id)`를 불러도 아무 일도 일어나지 않습니다.
+- `exitDelay`는 닫힘 애니메이션을 위한 장치입니다. 지금 `Modal`은 `open={false}`이면 바로 `null`을 렌더링하므로 기본값 `0`이면 됩니다.
+
+### 상태는 Provider가 들고 있습니다
+
+화면에 그릴 목록만 React state이고, Promise와 타이머는 ref에 있어서 정산이 리렌더를 일으키지 않습니다. `useOverlay()`가 돌려주는 객체는 렌더링 사이에 바뀌지 않으므로, `useOverlay()`를 쓰는 컴포넌트는 overlay가 열리고 닫혀도 **다시 렌더링되지 않습니다.**
+
 ## API
 
 `useOverlay()`는 아래 함수를 가진 객체를 반환합니다. 이 객체와 함수들은 렌더링 사이에 바뀌지 않으므로 `useEffect` 의존성에 넣어도 불필요한 재실행이 생기지 않습니다.
@@ -228,6 +399,24 @@ if (ok) {
 
 - `close`를 호출하면 `isOpen`이 `false`가 되고, `exitDelay`(기본 0ms) 뒤에 자동으로 트리에서 제거됩니다. 닫힘 애니메이션이 필요하면 `exitDelay`를 늘리거나, 직접 `exit`을 호출하세요.
 - overlay는 Provider 쪽에서 그려지므로, **열었던 컴포넌트가 사라져도 overlay는 남습니다.** 화면 이동 때 같이 닫으려면 `useEffect` 정리 함수에서 `closeAll()`이나 `close(id)`를 호출하세요.
-- `render` 함수는 열 때의 값을 캡처합니다. overlay 안에서 계속 바뀌는 상태(입력값 등)가 필요하면 render 안에서 상태를 가진 컴포넌트를 반환하세요. 그 컴포넌트가 직접 `close(value)`를 호출하면 됩니다.
-- 여러 overlay가 열리면 나중에 연 것이 위에 쌓입니다.
+- `render` 함수는 **열 때의 값을 캡처**합니다. 여는 쪽 컴포넌트의 state나 props를 이 함수 안에서 읽으면 열 때 값에 고정됩니다. 안에서 상태가 필요하면 render가 **상태를 가진 컴포넌트를 반환**하고, 그 컴포넌트가 직접 `close(value)`를 호출하게 하세요.
+- 여러 overlay가 열리면 나중에 연 것이 위에 쌓이고, `Esc`는 맨 위 모달 하나만 닫습니다.
 - `useOverlay`를 `OverlayProvider` 밖에서 호출하면 `useOverlay는 <OverlayProvider> 안에서만 사용할 수 있어요.` 에러가 납니다.
+
+```tsx
+// ✗ 열 때의 state 값(text)이 캡처된다 — 입력해도 overlay 안의 input은 갱신되지 않는다.
+//   overlay는 Provider가 그리고, 여는 쪽 컴포넌트의 state가 바뀌어도 Provider는 다시 렌더되지 않기 때문이다.
+const [text, setText] = useState("");
+overlay.open(({ isOpen, close }) => (
+  <Modal open={isOpen} onClose={close}>
+    <input value={text} onChange={(e) => setText(e.target.value)} />
+  </Modal>
+));
+
+// ✓ 상태를 가진 컴포넌트를 반환하고, 그 컴포넌트가 직접 close(value)를 호출한다
+overlay.open(({ isOpen, close }) => (
+  <Modal open={isOpen} onClose={close}>
+    <NameForm onSubmit={(name) => close(name)} />
+  </Modal>
+));
+```

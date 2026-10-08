@@ -21,6 +21,7 @@ export * from "./components/textarea/Textarea";
 export * from "./components/select/Select";
 export * from "./components/checkbox/Checkbox";
 export * from "./components/radio-group/RadioGroup";
+export * from "./components/form-field/FormField";
 export * from "./components/resize-handle/ResizeHandle";
 export * from "./components/scroll-to-bottom-button/ScrollToBottomButton";
 export * from "./components/spinner/Spinner";

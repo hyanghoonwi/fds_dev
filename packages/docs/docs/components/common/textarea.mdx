@@ -1,5 +1,5 @@
 ---
-sidebar_position: 4
+sidebar_position: 5
 ---
 
 import { useState } from "react";
@@ -8,7 +8,9 @@ import Preview from "@site/src/components/Preview";
 
 # Textarea
 
-내용에 맞춰 높이가 자동으로 늘어나는 입력 필드입니다. 채팅 입력창처럼 여러 줄이 될 수 있는 입력에 사용합니다.
+내용에 맞춰 높이가 자동으로 늘어나는 입력 필드입니다. 채팅 입력창이나 상세 설명처럼 여러 줄이 될 수 있는 입력에 사용합니다.
+
+[Input](./input)과 같은 필드 props(`label`, `orientation`, `labelWidth`, `required`, `description`, `error`)를 내장하고 있어서 폼에 그대로 놓을 수 있습니다. 규칙은 [Input의 공통 필드 props](./input#폼-컨트롤-공통-필드-props)와 [FormField](./form-field)를 보세요.
 
 ## Usage
 
@@ -38,9 +40,83 @@ const [value, setValue] = useState("");
 <Textarea value={value} onChange={setValue} placeholder="메시지를 입력하세요" />
 ```
 
-`onChange`는 이벤트가 아니라 **문자열 값**을 받습니다. 여러 줄을 입력해 보면 높이가 늘어나다가 `maxHeight`에서 멈추고 스크롤됩니다.
+`onChange`는 이벤트가 아니라 **문자열 값**을 받습니다(Input은 이벤트를 받습니다). 여러 줄을 입력해 보면 높이가 늘어나다가 `maxHeight`에서 멈추고 스크롤됩니다.
+
+## Label, Orientation, Required
+
+`label`을 넘기면 입력창 위에 라벨이 붙고, 라벨을 눌러도 입력창에 포커스가 갑니다. `orientation="horizontal"`이면 라벨이 왼쪽에 놓이고 `labelWidth`(기본 80px)로 라벨 영역의 너비를 정합니다. `required`는 라벨 뒤에 빨간 `*`를 붙이고 `<textarea>`에도 `required`를 적용합니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 440 }}
+>
+  <Textarea
+    label="상세 설명"
+    value=""
+    onChange={() => {}}
+    placeholder="내용을 입력하세요"
+  />
+  <Textarea
+    label="상세 설명"
+    required
+    orientation="horizontal"
+    value=""
+    onChange={() => {}}
+    placeholder="내용을 입력하세요"
+  />
+</Preview>
+
+```tsx
+<Textarea label="상세 설명" value={value} onChange={setValue} />
+<Textarea
+  label="상세 설명"
+  required
+  orientation="horizontal"
+  value={value}
+  onChange={setValue}
+/>
+```
+
+## Description, Error
+
+`description`은 입력창 아래에 도움말을 보여 줍니다. `error`가 있으면 에러 스타일(빨간 링)과 메시지가 켜지고 설명은 에러가 대신합니다. 둘 다 `aria-describedby`로 입력창에 연결되고, 에러는 `role="alert"`입니다.
+
+export function MessageDemo() {
+  const [value, setValue] = useState("");
+  return (
+    <div style={{ width: 360 }}>
+      <Textarea
+        label="상세 설명"
+        required
+        description="이벤트 상세 화면에 그대로 노출돼요."
+        error={value.trim() === "" ? "상세 설명을 입력해 주세요." : undefined}
+        value={value}
+        onChange={setValue}
+        placeholder="내용을 입력하세요"
+      />
+    </div>
+  );
+}
+
+<Preview>
+  <MessageDemo />
+</Preview>
+
+```tsx
+<Textarea
+  label="상세 설명"
+  required
+  description="이벤트 상세 화면에 그대로 노출돼요."
+  error={value.trim() === "" ? "상세 설명을 입력해 주세요." : undefined}
+  value={value}
+  onChange={setValue}
+/>
+```
+
+입력 중에 에러가 나타나거나 사라져도 입력창은 다시 만들어지지 않아서 포커스와 입력 위치를 잃지 않습니다.
 
 ## Max height
+
+`maxHeight`는 배경과 패딩을 가진 **필드 박스 전체**의 높이(px)입니다. 이 높이에 닿으면 입력창 안에서 스크롤됩니다. 설명, 에러, 글자수는 박스 바깥이라 높이에 포함되지 않습니다.
 
 <Preview>
   <div style={{ width: 280 }}>
@@ -58,7 +134,9 @@ const [value, setValue] = useState("");
 
 ## Character count
 
-`showCount`를 켜면 입력창 아래 왼쪽에 글자수가 `현재/최대`로 표시됩니다. 최대값은 별도 prop이 아니라 `<textarea>`의 `maxLength`를 그대로 씁니다. 그래서 입력 제한과 표시가 항상 같은 값을 가리킵니다.
+`showCount`를 켜면 글자수가 `현재/최대`로 표시됩니다. 최대값은 별도 prop이 아니라 `<textarea>`의 `maxLength`를 그대로 씁니다. 그래서 입력 제한과 표시가 항상 같은 값을 가리킵니다.
+
+위치는 입력창 박스 **바깥, 아래 왼쪽**입니다. 설명이나 에러가 함께 있으면 설명/에러가 먼저, 글자수가 그 아래에 놓입니다.
 
 export function CountDemo() {
   const [value, setValue] = useState("");
@@ -86,6 +164,40 @@ export function CountDemo() {
   placeholder="최대 100자까지 입력할 수 있어요"
   showCount
   maxLength={100}
+/>
+```
+
+설명과 함께 쓰면 이렇게 쌓입니다.
+
+export function CountWithDescriptionDemo() {
+  const [value, setValue] = useState("");
+  return (
+    <div style={{ width: 360 }}>
+      <Textarea
+        label="상세 설명"
+        description="이벤트 상세 화면에 그대로 노출돼요."
+        showCount
+        maxLength={200}
+        value={value}
+        onChange={setValue}
+        placeholder="내용을 입력하세요"
+      />
+    </div>
+  );
+}
+
+<Preview>
+  <CountWithDescriptionDemo />
+</Preview>
+
+```tsx
+<Textarea
+  label="상세 설명"
+  description="이벤트 상세 화면에 그대로 노출돼요."
+  showCount
+  maxLength={200}
+  value={value}
+  onChange={setValue}
 />
 ```
 
@@ -127,21 +239,29 @@ export function CountDemo() {
 
 ## Props
 
-| Prop                 | 타입                       | 기본값  | 설명                                                                                |
-| -------------------- | -------------------------- | ------- | ----------------------------------------------------------------------------------- |
-| `value`              | `string`                   | -       | 입력값 (필수, controlled)                                                           |
-| `onChange`           | `(value: string) => void`  | -       | 값 변경 콜백. 이벤트가 아닌 문자열을 전달 (필수)                                    |
-| `maxHeight`          | `number`                   | `86`    | 자동 확장 최대 높이(px). 필드 박스 기준(글자수는 박스 바깥이라 제외). 넘으면 스크롤 |
-| `showCount`          | `boolean`                  | `false` | 입력창 아래 왼쪽에 글자수 표시. 최대값은 `maxLength`                                |
-| `maxLength`          | `number`                   | -       | 최대 글자수. 입력을 제한하고 `showCount`의 최대값으로 쓰임                          |
-| `containerClassName` | `string`                   | -       | 필드 박스와 글자수를 감싸는 바깥 컨테이너의 클래스                                  |
-| `className`          | `string`                   | -       | `<textarea>`의 클래스. 배경·라운드는 바깥 필드 박스에 있음                          |
-| `ref`                | `Ref<HTMLTextAreaElement>` | -       | React 19 `ref` prop. 내부 높이 계산용 ref와 함께 병합됨                             |
+| Prop                 | 타입                         | 기본값       | 설명                                                                                          |
+| -------------------- | ---------------------------- | ------------ | --------------------------------------------------------------------------------------------- |
+| `value`              | `string`                     | -            | 입력값 (필수, controlled)                                                                     |
+| `onChange`           | `(value: string) => void`    | -            | 값 변경 콜백. 이벤트가 아닌 문자열을 전달 (필수)                                              |
+| `label`              | `ReactNode`                  | -            | 라벨. 생략하면 라벨 영역이 렌더링되지 않음. 라벨을 누르면 입력창에 포커스가 감                |
+| `orientation`        | `"vertical" \| "horizontal"` | `"vertical"` | 라벨 배치. `vertical`은 위, `horizontal`은 왼쪽                                               |
+| `labelWidth`         | `number`                     | `80`         | 가로 배치일 때 라벨 영역 너비(px)                                                             |
+| `required`           | `boolean`                    | -            | 라벨 뒤에 `*`를 붙이고 `<textarea>`에 `required` 적용                                         |
+| `description`        | `ReactNode`                  | -            | 입력창 아래 설명(도움말). `error`가 있으면 에러가 대신 표시됨                                 |
+| `error`              | `ReactNode`                  | -            | 에러 메시지. 에러 스타일과 함께 입력창 아래에 표시됨(`role="alert"`)                          |
+| `maxHeight`          | `number`                     | `86`         | 자동 확장 최대 높이(px). 필드 박스 기준(설명·에러·글자수는 박스 바깥이라 제외). 넘으면 스크롤 |
+| `showCount`          | `boolean`                    | `false`      | 입력창 아래 왼쪽에 글자수 표시. 최대값은 `maxLength`                                          |
+| `maxLength`          | `number`                     | -            | 최대 글자수. 입력을 제한하고 `showCount`의 최대값으로 쓰임                                    |
+| `containerClassName` | `string`                     | -            | 라벨·필드 박스·설명·글자수를 모두 감싸는 바깥 컨테이너의 클래스                               |
+| `className`          | `string`                     | -            | `<textarea>`의 클래스. 배경·라운드는 바깥 필드 박스에 있음                                    |
+| `id`                 | `string`                     | 자동 생성    | 입력창 id. 라벨과 설명·에러 연결에 쓰임                                                       |
+| `aria-describedby`   | `string`                     | -            | 직접 준 값은 설명/에러/글자수 id와 합쳐서 연결됨                                              |
+| `ref`                | `Ref<HTMLTextAreaElement>`   | -            | React 19 `ref` prop. 내부 높이 계산용 ref와 함께 병합됨                                       |
 
 나머지 `<textarea>` 속성(`placeholder`, `disabled` 등)은 그대로 전달됩니다. 단 `value`와 `onChange`는 위 시그니처로 대체됩니다.
 
 ## 참고
 
 - 항상 `rows={1}`에서 시작해 내용만큼 늘어납니다.
-- 기본 `maxHeight`(86px)는 Figma 채팅 입력창 기준이며, 배경·패딩을 가진 필드 박스의 총 높이입니다. 글자수 표시는 박스 바깥이라 이 높이에 포함되지 않습니다.
-- 배경·라운드·포커스 링은 바깥 필드 박스가 가지고 있습니다(Input과 동일). 포커스되면 `brand-primary` 1px 링이 표시되고, 박스 안쪽 여백을 눌러도 입력창에 포커스가 갑니다.
+- 기본 `maxHeight`(86px)는 Figma 채팅 입력창 기준입니다.
+- 배경·라운드·포커스 링은 바깥 필드 박스가 가지고 있습니다([Input](./input)과 동일). 포커스되면 `brand-primary` 1px 링이 표시되고, 박스 안쪽 여백을 눌러도 입력창에 포커스가 갑니다.

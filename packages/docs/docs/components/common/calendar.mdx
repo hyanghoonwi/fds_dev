@@ -1,0 +1,183 @@
+---
+sidebar_position: 18
+---
+
+import { useState } from "react";
+import { Calendar } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Calendar
+
+날짜 하나를 고르는 **달력 패널**입니다. 테두리, 그림자, 열고 닫는 동작이 없어서 화면에 바로 놓거나, [Popover](./popover)나 Modal 안에 넣어 쓸 수 있습니다. 입력창과 함께 쓰는 폼용 컴포넌트는 [DatePicker](./date-picker)입니다.
+
+## Usage
+
+값은 `"YYYY-MM-DD"` 문자열이고, 날짜를 고르면 `onChange`가 같은 형식으로 호출됩니다.
+
+export function BasicDemo() {
+  const [date, setDate] = useState(null);
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+      <div
+        style={{
+          padding: 12,
+          border: "1px solid var(--fds-border-line)",
+          borderRadius: 12,
+        }}
+      >
+        <Calendar value={date} onChange={setDate} />
+      </div>
+      <div style={{ fontSize: 14, lineHeight: "20px" }}>
+        선택한 값: <code>{date ?? "없음"}</code>
+      </div>
+    </div>
+  );
+}
+
+<Preview style={{ alignItems: "flex-start" }}>
+  <BasicDemo />
+</Preview>
+
+```tsx
+const [date, setDate] = useState<string | null>(null);
+
+<Calendar value={date} onChange={setDate} />
+```
+
+`value`를 주지 않고 `defaultValue`만 주면 비제어로 동작합니다.
+
+```tsx
+<Calendar defaultValue="2026-10-08" onChange={(value) => console.log(value)} />
+```
+
+## 선택 가능한 범위
+
+`min`, `max`(둘 다 `"YYYY-MM-DD"`, 포함)로 범위를 제한하고, `isDateDisabled`로 날짜별로 막습니다. 막힌 날짜는 누를 수 없고, 범위를 벗어나는 방향의 달 이동 버튼은 비활성화됩니다. `initialMonth`는 선택된 값이 없을 때 처음 보여줄 달입니다.
+
+export function RangeDemo() {
+  const [value, setValue] = useState(null);
+  return (
+    <div
+      style={{
+        padding: 12,
+        border: "1px solid var(--fds-border-line)",
+        borderRadius: 12,
+      }}
+    >
+      <Calendar
+        value={value}
+        onChange={setValue}
+        min="2026-10-10"
+        max="2026-10-25"
+        initialMonth="2026-10"
+      />
+    </div>
+  );
+}
+
+export function WeekendDemo() {
+  const [value, setValue] = useState(null);
+  return (
+    <div
+      style={{
+        padding: 12,
+        border: "1px solid var(--fds-border-line)",
+        borderRadius: 12,
+      }}
+    >
+      <Calendar
+        value={value}
+        onChange={setValue}
+        initialMonth="2026-10"
+        isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
+      />
+    </div>
+  );
+}
+
+<Preview style={{ alignItems: "flex-start", gap: 24 }}>
+  <RangeDemo />
+  <WeekendDemo />
+</Preview>
+
+```tsx
+// 10월 10일 ~ 25일만 선택 가능
+<Calendar min="2026-10-10" max="2026-10-25" initialMonth="2026-10" />
+// 주말은 선택 불가
+<Calendar
+  isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
+/>
+```
+
+- `isDateDisabled`는 **로컬 자정의 `Date`**를 받습니다. 요일(`getDay()`)이나 공휴일 목록과 비교하는 용도입니다.
+- 형식이 잘못된 `min`/`max`(예: `"2026-13-01"`)는 무시됩니다.
+
+## onChange와 onSelect
+
+| Prop       | 호출 시점                                                                                                   |
+| ---------- | ----------------------------------------------------------------------------------------------------------- |
+| `onChange` | 선택된 날짜가 **바뀔 때만** 호출됩니다. 이미 선택된 날짜를 다시 눌러도 호출되지 않습니다.                   |
+| `onSelect` | 날짜 칸을 누르거나 `Enter`/`Space`로 고를 **때마다** 호출됩니다. 이미 선택된 날짜를 다시 골라도 호출됩니다. |
+
+값을 저장하려면 `onChange`, **선택하면 팝업을 닫으려면 `onSelect`**를 씁니다. 같은 날짜를 다시 눌러도 팝업이 닫혀야 하기 때문입니다.
+
+## 날짜 값과 Date 변환
+
+값은 `Date`가 아니라 **로컬 달력 기준의 `"YYYY-MM-DD"` 문자열**입니다. 폼, JSON, 서버에 그대로 보낼 수 있고 시간대 때문에 날짜가 밀리지 않습니다.
+
+`Date` 객체가 필요하면 두 헬퍼를 씁니다.
+
+```tsx
+import { formatDateValue, parseDateValue } from "@fds/core";
+
+parseDateValue("2026-10-15"); // 로컬 자정의 Date
+parseDateValue("2026-02-30"); // null (달력에 없는 날짜)
+formatDateValue(new Date()); // "2026-10-08" (로컬 기준)
+```
+
+:::warning toISOString()을 쓰지 마세요
+`date.toISOString()`은 UTC로 바꾸기 때문에, UTC보다 앞선 지역(한국 UTC+9 등)에서 로컬 자정이 **전날**로 밀립니다.
+
+```ts
+new Date(2026, 9, 8).toISOString(); // "2026-10-07T15:00:00.000Z"  ← 하루 전
+```
+
+날짜를 문자열로 만들 때는 `formatDateValue`를 쓰세요. 반대로 `new Date("2026-10-15")`처럼 날짜만 있는 문자열은 JS가 **UTC 자정**으로 해석하므로, 문자열을 `Date`로 바꿀 때는 `parseDateValue`를 쓰세요.
+:::
+
+## 키보드
+
+날짜 칸 중 하나만 `Tab`으로 들어갈 수 있고(roving tabindex), 격자 안에서는 아래 키로 이동합니다. 방향키는 페이지를 스크롤하지 않습니다.
+
+| 키                  | 동작                    |
+| ------------------- | ----------------------- |
+| `←` `→`             | 하루 전 / 하루 뒤       |
+| `↑` `↓`             | 일주일 전 / 일주일 뒤   |
+| `Home` `End`        | 그 주의 일요일 / 토요일 |
+| `PageUp` `PageDown` | 이전 달 / 다음 달       |
+| `Enter` `Space`     | 포커스된 날짜 선택      |
+
+`min`/`max`로 막힌 날짜로는 이동하지 않습니다. 달력을 닫는 키(`Esc`)는 `Calendar`가 아니라 [Popover](./popover)가 처리합니다.
+
+## Props
+
+| Prop             | 타입                      | 기본값  | 설명                                                                                              |
+| ---------------- | ------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `value`          | `string \| null`          | -       | 선택된 날짜 `"YYYY-MM-DD"`(제어). `null`은 선택 안 함. 형식이 잘못된 문자열도 선택 안 함으로 취급 |
+| `defaultValue`   | `string \| null`          | `null`  | 초기 날짜(비제어)                                                                                 |
+| `onChange`       | `(value: string) => void` | -       | 선택된 날짜가 바뀔 때만 호출                                                                      |
+| `onSelect`       | `(value: string) => void` | -       | 날짜를 고를 때마다 호출. 이미 선택된 날짜를 다시 골라도 호출됨                                    |
+| `min`            | `string`                  | -       | 선택 가능한 가장 이른 날짜 `"YYYY-MM-DD"`(포함)                                                   |
+| `max`            | `string`                  | -       | 선택 가능한 가장 늦은 날짜 `"YYYY-MM-DD"`(포함)                                                   |
+| `isDateDisabled` | `(date: Date) => boolean` | -       | `true`를 반환한 날짜는 선택 불가. 로컬 자정의 `Date`를 받음                                       |
+| `initialMonth`   | `string`                  | 이번 달 | 선택된 값이 없을 때 처음 보여줄 달 `"YYYY-MM"`                                                    |
+| `autoFocus`      | `boolean`                 | `false` | 마운트될 때 날짜 칸에 포커스. 선택된 날짜, 없으면 오늘, 막혀 있으면 처음 선택 가능한 날짜         |
+| `className`      | `string`                  | -       | 추가 클래스                                                                                       |
+| `ref`            | `Ref<HTMLDivElement>`     | -       | React 19 `ref` prop (패널 최상위 요소)                                                            |
+
+## 참고
+
+- 달력 폭은 `w-64`(256px)로 고정입니다. 테두리와 그림자가 없으므로 필요하면 감싸는 쪽에서 입히세요.
+- 현재 달이 아닌 날짜(앞뒤 회색 날짜)도 선택할 수 있고, 선택하면 그 달로 이동합니다.
+- 달력은 한국어로 고정입니다(일 월 화 수 목 금 토, `2026년 10월`). 오늘 날짜는 파란 테두리로 표시됩니다.
+- 달 이동 버튼의 접근성 이름은 "이전 달" / "다음 달", 각 날짜 칸은 "2026년 10월 6일 화요일" 형식이고, 선택된 날짜는 `aria-selected`, 오늘은 `aria-current="date"`입니다.

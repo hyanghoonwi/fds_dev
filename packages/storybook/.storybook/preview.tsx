@@ -22,6 +22,7 @@ const preview: Preview = {
               "Textarea",
               "Checkbox",
               "RadioGroup",
+              "FormField",
               "Switch",
               "SegmentedControl",
               "Modal",

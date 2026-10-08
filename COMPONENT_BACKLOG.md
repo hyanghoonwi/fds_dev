@@ -20,7 +20,7 @@
 ## 권장 구현 순서
 
 1. ~~Select, Checkbox, Radio~~ — 완료
-2. FormField — 위 컨트롤을 감싸는 접근성 연결
+2. ~~FormField~~ — 완료 (공개 `FormField`, 모든 컨트롤 공통 `FieldLayout`)
 3. Pagination, DateRangePicker — 목록과 검색의 공통 기능
 4. SideNav 접기/펼치기, FileUpload
 5. Combobox, MultiSelect/TagInput, `confirm` 프리셋
@@ -70,7 +70,7 @@
 - [ ] **ImageCropper** — 1~2곳
   - 크롭 영역 이동, 확대/축소, 초기화 (마커 썸네일 "대표 이미지에서 크롭")
   - 노드: `1045-181356` `1045-180644`
-- [ ] **Combobox** (검색 후 선택) — 약 12곳
+- [x] **Combobox** (검색 후 선택) — 약 12곳 (완료: `Select searchable`로 대체)
   - asset, 가게, 회원, 장소를 검색해서 고르기(서버 조회), "유효한 ID만" 같은 검증과 연결
   - 노드: `1045-181870` `1045-179276` `1355-777` `1045-169734` `1356-137` `1507-66`
 - [ ] **MultiSelect / TagInput** — 약 7곳
@@ -90,11 +90,11 @@
 
 ## B. 있는데 기능 보완이 필요한 것
 
-- [ ] **FormField** — 약 30곳
+- [x] **FormField** — 약 30곳 (완료: label/orientation/required/description/error 연결. "첫 오류 필드로 포커스 이동"은 앱 폼 로직으로 남김)
   - 지금은 Input에만 라벨/필수/에러/설명 연결이 있음 → **Select·Radio·Textarea 등 어떤 컨트롤에도** `htmlFor`·`aria-describedby` 연결
   - 기획서 명시: 저장 시 오류 필드 하단 사유 표시 + **"첫 오류 필드로 포커스 이동"**
   - 노드: `1045-175376` `1045-175019` `1045-171613` `1045-175743` `1045-174393` `1356-137`
-- [ ] **Textarea** — 3곳 — 라벨·에러·설명 연결(Input과 같은 접근성 규칙) (`1045-170751` `1045-171444` `1045-182774`)
+- [x] **Textarea** — 3곳 (완료) — 라벨·에러·설명 연결(Input과 같은 접근성 규칙) (`1045-170751` `1045-171444` `1045-182774`)
 - [ ] **`confirm` 프리셋** (`useOverlay`) — 약 5곳
   - 지금도 `Modal` + `openAsync`로 만들 수 있지만 `confirm({ title, danger })` 한 줄 호출이 없음
   - 노드: `1045-175525` `1045-172751` `1045-178155` `1045-174189`
@@ -124,7 +124,9 @@ Badge 의미색(tone), Button 텍스트형·작은 크기, 컨트롤 compact 밀
 
 ## D. 열린 결정
 
-- [ ] 어디부터 만들지 (제안: A-1 Select·Radio·Checkbox)
+- [x] **검색 가능한 Select**: `Select`의 `searchable` prop(+ `onSearch`, `loading`)으로 결정·구현 완료 → 별도 `Combobox`는 만들지 않음
+- [ ] **여러 개 선택**(`MultiSelect/TagInput`): 별도 컴포넌트로 둘지, `Select`의 `multiple`로 넣을지
+
 - [ ] `DateTimePicker` 스토리 `WithOverlayModal`의 스토리 전용 헬퍼 `PickerModalBody` — 이름만 `…StoryWrapper`로 바꿀지, 공개 `DateTimePanel`을 만들지
 - [ ] Textarea `description`을 넣을지 (글자수와 같은 줄에 둘 때의 배치)
 - [ ] `NewMessagePreview`, `Thumbnail`을 VodList처럼 도메인 컴포넌트로 보고 정리할지

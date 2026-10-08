@@ -1,0 +1,552 @@
+---
+sidebar_position: 6
+---
+
+import { useState } from "react";
+import { Button, Checkbox, CheckboxGroup } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Checkbox
+
+여러 개 중 원하는 만큼 고르거나, 하나를 켜고 끄는 입력입니다. 단일 `Checkbox`와, 같은 주제의 체크박스 묶음인 `CheckboxGroup`이 있습니다. 하나만 골라야 하면 [RadioGroup](./radio-group)을 쓰세요.
+
+네이티브 `<input type="checkbox">`를 기반으로 해서 폼 제출, 포커스, Space 키, 라벨 클릭이 모두 브라우저 기본 동작 그대로입니다.
+
+`CheckboxGroup`은 [Input](./input)과 같은 필드 props(`label`, `orientation`, `labelWidth`, `required`, `description`, `error`)를 내장합니다. 규칙은 [Input의 공통 필드 props](./input#폼-컨트롤-공통-필드-props)와 [FormField](./form-field)를 보세요. 단일 `Checkbox`는 자체 라벨이 있어서 `error`만 추가로 받습니다.
+
+## Usage
+
+값은 이벤트가 아니라 **boolean**으로 받습니다.
+
+export function Demo() {
+  const [featured, setFeatured] = useState(false);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <Checkbox label="대표 콘텐츠" checked={featured} onChange={setFeatured} />
+      <span style={{ fontSize: 13, color: "var(--fds-text-secondary)" }}>
+        현재 값: {String(featured)}
+      </span>
+    </div>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { Checkbox } from "@fds/core";
+
+const [featured, setFeatured] = useState(false);
+
+<Checkbox label="대표 콘텐츠" checked={featured} onChange={setFeatured} />
+```
+
+`checked` 대신 `defaultChecked`를 주면 상태를 컴포넌트가 가집니다(비제어).
+
+## States
+
+<Preview style={{ flexDirection: "column", alignItems: "flex-start" }}>
+  <Checkbox label="기본" />
+  <Checkbox label="체크됨" defaultChecked />
+  <Checkbox label="부분 선택" indeterminate />
+  <Checkbox label="비활성" disabled />
+  <Checkbox label="비활성 + 체크됨" disabled defaultChecked />
+  <Checkbox label="에러 (필수 항목)" invalid />
+</Preview>
+
+```tsx
+<Checkbox label="기본" />
+<Checkbox label="체크됨" defaultChecked />
+<Checkbox label="부분 선택" indeterminate />
+<Checkbox label="비활성" disabled />
+<Checkbox label="비활성 + 체크됨" disabled defaultChecked />
+<Checkbox label="에러 (필수 항목)" invalid />
+```
+
+## Description, Error
+
+`description`은 라벨 아래에 작게 붙는 설명입니다. `error`를 주면 에러 상태(빨간 테두리)와 메시지가 켜지고, 메시지는 라벨 글자의 왼쪽 선에 맞춰 아래에 표시되며 `description`은 가려집니다. 약관 동의처럼 반드시 체크해야 하는 항목에 씁니다.
+
+export function SingleErrorDemo() {
+  const [agreed, setAgreed] = useState(false);
+  return (
+    <Checkbox
+      label="이용 약관에 동의합니다"
+      description="서비스 이용을 위해 필요해요."
+      checked={agreed}
+      onChange={setAgreed}
+      error={agreed ? undefined : "약관에 동의해 주세요."}
+    />
+  );
+}
+
+<Preview>
+  <SingleErrorDemo />
+</Preview>
+
+```tsx
+<Checkbox
+  label="이용 약관에 동의합니다"
+  description="서비스 이용을 위해 필요해요."
+  checked={agreed}
+  onChange={setAgreed}
+  error={agreed ? undefined : "약관에 동의해 주세요."}
+/>
+```
+
+## CheckboxGroup
+
+`options`로 선택지를 주면 같은 주제의 체크박스를 묶어서 보여 줍니다. 값은 **`string[]`**이고, 클릭한 순서가 아니라 **`options` 순서**로 정렬되어 돌아옵니다. `options`에 없는 값은 포함되지 않습니다.
+
+export function GroupDemo() {
+  const [value, setValue] = useState(["partner"]);
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <CheckboxGroup
+        label="채널 속성"
+        options={[
+          { value: "partner", label: "파트너" },
+          { value: "trader", label: "트레이더" },
+          { value: "media", label: "미디어", description: "뉴스·영상 채널" },
+          { value: "closed", label: "운영 종료", disabled: true },
+        ]}
+        value={value}
+        onChange={setValue}
+      />
+      <span style={{ fontSize: 13, color: "var(--fds-text-secondary)" }}>
+        선택: {JSON.stringify(value)}
+      </span>
+    </div>
+  );
+}
+
+<Preview>
+  <GroupDemo />
+</Preview>
+
+```tsx
+const [value, setValue] = useState<string[]>(["partner"]);
+
+<CheckboxGroup
+  label="채널 속성"
+  options={[
+    { value: "partner", label: "파트너" },
+    { value: "trader", label: "트레이더" },
+    { value: "media", label: "미디어", description: "뉴스·영상 채널" },
+    { value: "closed", label: "운영 종료", disabled: true },
+  ]}
+  value={value}
+  onChange={setValue}
+/>
+```
+
+### direction과 orientation
+
+두 prop은 서로 다른 것을 정합니다.
+
+- **`direction`**: 옵션들을 어떻게 늘어놓을지. `"vertical"`(기본, 세로)과 `"horizontal"`(한 줄, 넘치면 줄바꿈).
+- **`orientation`**: 제목(라벨)을 어디에 둘지. `"vertical"`(기본, 제목이 위)과 `"horizontal"`(제목이 왼쪽, 첫 옵션 줄과 맞춤). [Input](./input)과 같은 의미입니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 480 }}
+>
+  <CheckboxGroup
+    label="채널 속성"
+    direction="horizontal"
+    defaultValue={["partner"]}
+    options={[
+      { value: "partner", label: "파트너" },
+      { value: "trader", label: "트레이더" },
+      { value: "media", label: "미디어" },
+    ]}
+  />
+  <CheckboxGroup
+    label="채널 속성"
+    orientation="horizontal"
+    direction="horizontal"
+    defaultValue={["partner"]}
+    options={[
+      { value: "partner", label: "파트너" },
+      { value: "trader", label: "트레이더" },
+      { value: "media", label: "미디어" },
+    ]}
+  />
+</Preview>
+
+```tsx
+// 옵션을 한 줄로
+<CheckboxGroup label="채널 속성" direction="horizontal" options={options} />
+// 제목도 왼쪽으로 (제목은 첫 옵션 줄과 맞춰짐)
+<CheckboxGroup
+  label="채널 속성"
+  orientation="horizontal"
+  direction="horizontal"
+  options={options}
+/>
+```
+
+### Required, Description, Error
+
+`required`는 제목 뒤에 `*`만 붙입니다(체크박스 묶음에는 네이티브 `required`가 없어서 검증은 앱이 합니다). `error`가 있으면 모든 체크박스가 에러 상태가 되고, 메시지는 옵션들 아래에 표시되며 `description`을 대신합니다.
+
+export function GroupErrorDemo() {
+  const [value, setValue] = useState([]);
+  return (
+    <CheckboxGroup
+      label="노출 위치"
+      required
+      description="홈과 상세 중 하나 이상 선택하세요."
+      error={
+        value.length === 0 ? "노출 위치를 하나 이상 선택해 주세요." : undefined
+      }
+      value={value}
+      onChange={setValue}
+      options={[
+        { value: "home", label: "홈" },
+        { value: "detail", label: "상세" },
+      ]}
+    />
+  );
+}
+
+<Preview>
+  <GroupErrorDemo />
+</Preview>
+
+```tsx
+<CheckboxGroup
+  label="노출 위치"
+  required
+  description="홈과 상세 중 하나 이상 선택하세요."
+  error={
+    value.length === 0 ? "노출 위치를 하나 이상 선택해 주세요." : undefined
+  }
+  value={value}
+  onChange={setValue}
+  options={options}
+/>
+```
+
+## 전체 선택 (indeterminate)
+
+`CheckboxGroup`에는 "전체 선택"이 들어 있지 않습니다. 앱이 부모 `Checkbox`를 하나 두고 `indeterminate`를 계산해서 넘기면 됩니다. 일부만 선택되면 `-`로 표시되고, 누르면 항상 `onChange(true)`로 호출되어 **전체 선택**으로 동작합니다. 모두 선택된 상태에서 누르면 `false`입니다.
+
+export function SelectAllDemo() {
+  const menus = ["회원 관리", "콘텐츠", "신고", "설정"];
+  const [checked, setChecked] = useState(["콘텐츠"]);
+  const all = checked.length === menus.length;
+  const some = checked.length > 0 && !all;
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 10,
+        minWidth: 220,
+      }}
+    >
+      <Checkbox
+        label="전체 선택"
+        checked={all}
+        indeterminate={some}
+        onChange={(next) => setChecked(next ? menus : [])}
+      />
+      <div
+        style={{
+          borderTop: "1px solid var(--fds-border-light)",
+          paddingTop: 10,
+          paddingLeft: 28,
+        }}
+      >
+        <CheckboxGroup
+          aria-label="메뉴"
+          options={menus.map((menu) => ({ value: menu, label: menu }))}
+          value={checked}
+          onChange={setChecked}
+        />
+      </div>
+      <span style={{ fontSize: 13, color: "var(--fds-text-secondary)" }}>
+        {all
+          ? "전체 선택"
+          : some
+            ? checked.length + "개 선택 (부분 선택)"
+            : "선택 없음"}
+      </span>
+    </div>
+  );
+}
+
+<Preview>
+  <SelectAllDemo />
+</Preview>
+
+```tsx
+const menus = ["회원 관리", "콘텐츠", "신고", "설정"];
+const [checked, setChecked] = useState<string[]>(["콘텐츠"]);
+const all = checked.length === menus.length;
+const some = checked.length > 0 && !all;
+
+<Checkbox
+  label="전체 선택"
+  checked={all}
+  indeterminate={some}
+  onChange={(next) => setChecked(next ? menus : [])}
+/>
+<CheckboxGroup
+  aria-label="메뉴"
+  options={menus.map((menu) => ({ value: menu, label: menu }))}
+  value={checked}
+  onChange={setChecked}
+/>
+```
+
+`indeterminate`는 HTML 속성이 아니라 DOM 프로퍼티라서 컴포넌트가 매 렌더마다 맞춰 줍니다. 브라우저는 클릭하면 이 값을 스스로 지우므로, 앱이 계산해서 다시 넘기는 값이 항상 기준입니다.
+
+## 권한 격자 (PermissionMatrix)
+
+어드민의 권한 설정 화면 패턴입니다. 메뉴(행) × 권한(열)을 체크박스로 만들고, "조회 권한이 없으면 하위 권한은 선택할 수 없다"는 규칙을 적용합니다. 이 규칙은 **앱 로직**이고, `Checkbox`는 controlled, `disabled`, `indeterminate`만 지원하면 됩니다.
+
+- 조회를 끄면 같은 행의 나머지 권한을 해제하고 비활성으로 만듭니다.
+- 열 머리의 체크박스는 대상 행만 계산해서 전체/부분 선택을 표시합니다. 조회 열은 모든 행이 대상이고, 나머지 열은 조회가 켜진 행만 대상입니다.
+
+export function PermissionMatrixDemo() {
+  const menus = ["회원 관리", "콘텐츠", "신고", "설정"];
+  const perms = ["조회", "등록", "수정", "삭제", "승인"];
+  const [matrix, setMatrix] = useState(() =>
+    Object.fromEntries(
+      menus.map((m) => [
+        m,
+        Object.fromEntries(perms.map((p) => [p, m === "콘텐츠" && p === "조회"])),
+      ]),
+    ),
+  );
+
+const setCell = (menu, perm, next) =>
+setMatrix((prev) => {
+const row = { ...prev[menu], [perm]: next };
+if (perm === "조회" && !next) {
+for (const p of perms) row[p] = false;
+}
+return { ...prev, [menu]: row };
+});
+
+const eligible = (perm) => menus.filter((m) => perm === "조회" || matrix[m]["조회"]);
+const setColumn = (perm, next) =>
+setMatrix((prev) => {
+const result = {};
+for (const m of menus) {
+const row = { ...prev[m] };
+if (perm === "조회" || prev[m]["조회"]) row[perm] = next;
+if (perm === "조회" && !next) for (const p of perms) row[p] = false;
+result[m] = row;
+}
+return result;
+});
+
+const granted = Object.fromEntries(
+menus
+.map((m) => [m, perms.filter((p) => matrix[m][p])])
+.filter(([, list]) => list.length > 0),
+);
+
+return (
+<div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+<div
+style={{
+          display: "grid",
+          gridTemplateColumns: "110px repeat(" + perms.length + ", 84px)",
+          alignItems: "center",
+          rowGap: 10,
+          fontSize: 13,
+          overflowX: "auto",
+        }} >
+<span style={{ fontWeight: 600 }}>메뉴</span>
+{perms.map((perm) => {
+const rows = eligible(perm);
+const on = rows.filter((m) => matrix[m][perm]).length;
+return (
+<Checkbox
+key={perm}
+label={perm}
+disabled={rows.length === 0}
+checked={rows.length > 0 && on === rows.length}
+indeterminate={on > 0 && on < rows.length}
+onChange={(next) => setColumn(perm, next)}
+/>
+);
+})}
+{menus.map((menu) => (
+<div key={menu} style={{ display: "contents" }}>
+<span>{menu}</span>
+{perms.map((perm) => (
+<Checkbox
+key={perm}
+aria-label={menu + " " + perm}
+checked={matrix[menu][perm]}
+disabled={perm !== "조회" && !matrix[menu]["조회"]}
+onChange={(next) => setCell(menu, perm, next)}
+/>
+))}
+</div>
+))}
+</div>
+<pre
+style={{
+          margin: 0,
+          fontSize: 12,
+          background: "var(--fds-bg-page)",
+          color: "var(--fds-text-primary)",
+          padding: 10,
+          borderRadius: 8,
+        }} >
+{JSON.stringify(granted, null, 2)}
+</pre>
+</div>
+);
+}
+
+<Preview>
+  <PermissionMatrixDemo />
+</Preview>
+
+```tsx
+const setCell = (menu: string, perm: string, next: boolean) =>
+  setMatrix((prev) => {
+    const row = { ...prev[menu], [perm]: next };
+    // 조회를 끄면 같은 행의 나머지 권한을 모두 해제한다
+    if (perm === "조회" && !next) {
+      for (const p of perms) row[p] = false;
+    }
+    return { ...prev, [menu]: row };
+  });
+
+<Checkbox
+  aria-label={`${menu} ${perm}`}
+  checked={matrix[menu][perm]}
+  disabled={perm !== "조회" && !matrix[menu]["조회"]}
+  onChange={(next) => setCell(menu, perm, next)}
+/>
+```
+
+라벨이 눈에 보이지 않는 체크박스(표의 셀)에는 `aria-label`을 줘서 스크린 리더가 어떤 칸인지 읽게 합니다.
+
+## 폼 제출
+
+`name`을 주면 네이티브 폼 제출로 값이 전달됩니다. `CheckboxGroup`의 `name`은 모든 체크박스에 붙고, 체크된 값마다 같은 이름으로 제출됩니다. 단일 `Checkbox`는 `value`(기본 `"on"`)가 제출됩니다.
+
+export function FormDemo() {
+  const [entries, setEntries] = useState(null);
+  return (
+    <form
+      style={{ display: "flex", flexDirection: "column", gap: 14, width: 280 }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        setEntries(
+          [...new FormData(event.currentTarget).entries()].map(([k, v]) => [
+            k,
+            String(v),
+          ]),
+        );
+      }}
+    >
+      <Checkbox name="featured" value="yes" label="대표 콘텐츠" />
+      <CheckboxGroup
+        aria-label="채널 속성"
+        name="attr"
+        defaultValue={["partner"]}
+        options={[
+          { value: "partner", label: "파트너" },
+          { value: "trader", label: "트레이더" },
+          { value: "media", label: "미디어" },
+        ]}
+      />
+      <Button type="submit" variant="primary">
+        제출
+      </Button>
+      {entries && (
+        <pre
+          style={{
+            margin: 0,
+            fontSize: 12,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+            padding: 10,
+            borderRadius: 8,
+          }}
+        >
+          {entries.length
+            ? entries.map(([k, v]) => k + "=" + v).join("\n")
+            : "(전송된 값 없음)"}
+        </pre>
+      )}
+    </form>
+  );
+}
+
+<Preview>
+  <FormDemo />
+</Preview>
+
+```tsx
+<form onSubmit={handleSubmit}>
+  <Checkbox name="featured" value="yes" label="대표 콘텐츠" />
+  <CheckboxGroup name="attr" defaultValue={["partner"]} options={options} />
+</form>
+; // 체크된 항목이 partner, trader면 FormData: featured=yes, attr=partner, attr
+= trader;
+```
+
+## Props
+
+### Checkbox
+
+`<input>`의 속성(`name`, `value`, `required`, `id` 등)을 그대로 받습니다. 단 `type`, `className`, `children`은 제외되고 `onChange`는 아래 시그니처로 대체됩니다.
+
+| Prop             | 타입                         | 기본값  | 설명                                                                                   |
+| ---------------- | ---------------------------- | ------- | -------------------------------------------------------------------------------------- |
+| `checked`        | `boolean`                    | -       | 체크 여부 (제어 모드)                                                                  |
+| `defaultChecked` | `boolean`                    | -       | 초기 체크 여부 (비제어 모드)                                                           |
+| `onChange`       | `(checked: boolean) => void` | -       | 상태가 바뀔 때 호출. 이벤트가 아닌 boolean. `indeterminate`에서 누르면 항상 `true`     |
+| `indeterminate`  | `boolean`                    | `false` | 일부만 선택된 상태. 표시는 `-`이고 `aria-checked="mixed"`로 노출됨. 앱이 계산해서 넘김 |
+| `label`          | `ReactNode`                  | -       | 체크박스 옆 텍스트. 라벨 줄 전체가 클릭 영역. 생략하면 `aria-label` 필요               |
+| `description`    | `ReactNode`                  | -       | 라벨 아래 보조 설명. `aria-describedby`로 연결됨                                       |
+| `error`          | `ReactNode`                  | -       | 에러 메시지. 있으면 에러 상태가 켜지고 메시지가 아래에 표시됨. `description`은 가려짐  |
+| `invalid`        | `boolean`                    | `false` | 에러 상태만 켬 (빨간 테두리 + `aria-invalid`). 문구는 표시하지 않음                    |
+| `disabled`       | `boolean`                    | -       | 비활성                                                                                 |
+| `name`           | `string`                     | -       | 폼 제출 이름                                                                           |
+| `value`          | `string`                     | `"on"`  | 폼 제출 값                                                                             |
+| `className`      | `string`                     | -       | 체크박스와 에러 메시지를 감싸는 바깥 요소의 클래스                                     |
+| `ref`            | `Ref<HTMLInputElement>`      | -       | React 19 `ref` prop. 네이티브 `<input type="checkbox">`에 연결                         |
+
+### CheckboxGroup
+
+| Prop                 | 타입                                                                                 | 기본값       | 설명                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------ | ------------ | --------------------------------------------------------------------------- |
+| `options`            | `{ value: string; label: ReactNode; description?: ReactNode; disabled?: boolean }[]` | -            | 선택지 목록 (필수)                                                          |
+| `value`              | `string[]`                                                                           | -            | 선택된 값들 (제어 모드)                                                     |
+| `defaultValue`       | `string[]`                                                                           | `[]`         | 초기 선택 값들 (비제어 모드)                                                |
+| `onChange`           | `(value: string[]) => void`                                                          | -            | 선택이 바뀔 때 호출. 값은 `options` 순서로 정렬됨                           |
+| `direction`          | `"vertical" \| "horizontal"`                                                         | `"vertical"` | 옵션들의 배치. `horizontal`은 한 줄(넘치면 줄바꿈)                          |
+| `label`              | `ReactNode`                                                                          | -            | 묶음의 제목. 묶음에 `aria-labelledby`로 연결됨                              |
+| `orientation`        | `"vertical" \| "horizontal"`                                                         | `"vertical"` | 제목 배치. `vertical`은 위, `horizontal`은 왼쪽(첫 옵션 줄과 맞춤)          |
+| `labelWidth`         | `number`                                                                             | `80`         | 가로 배치일 때 제목 영역 너비(px)                                           |
+| `required`           | `boolean`                                                                            | -            | 제목 뒤에 `*`. 표시만 하고 네이티브 검증은 없음                             |
+| `description`        | `ReactNode`                                                                          | -            | 옵션들 아래 설명. `error`가 있으면 에러가 대신 표시됨                       |
+| `error`              | `ReactNode`                                                                          | -            | 에러 메시지. 모든 체크박스가 에러 상태가 되고 메시지가 옵션들 아래에 표시됨 |
+| `invalid`            | `boolean`                                                                            | -            | 에러 상태만 켬. 모든 체크박스에 전달됨                                      |
+| `disabled`           | `boolean`                                                                            | -            | 모든 체크박스 비활성                                                        |
+| `name`               | `string`                                                                             | -            | 모든 체크박스에 붙는 이름. 체크된 값마다 같은 이름으로 제출됨               |
+| `containerClassName` | `string`                                                                             | -            | 제목·옵션·보조 문구를 모두 감싸는 컨테이너의 클래스                         |
+| `className`          | `string`                                                                             | -            | 옵션들을 감싸는 그룹 요소의 클래스                                          |
+| `aria-label`         | `string`                                                                             | -            | 제목(`label`)이 없을 때 묶음의 이름                                         |
+| `ref`                | `Ref<HTMLDivElement>`                                                                | -            | React 19 `ref` prop. 그룹 요소에 연결                                       |
+
+## 참고
+
+- **키보드**: `Tab`으로 이동하고 `Space`로 토글합니다. 포커스 링은 키보드로 이동했을 때만 보이고, 마우스로 눌렀을 때는 나타나지 않습니다.
+- **접근성**: 네이티브 `<input type="checkbox">`가 시각적으로만 숨겨져 있어서 스크린 리더가 그대로 읽습니다. 부분 선택은 `aria-checked="mixed"`로, 에러는 `aria-invalid`와 `role="alert"` 메시지로 전달됩니다. `CheckboxGroup`은 `role="group"`이고 제목은 `aria-labelledby`로 연결됩니다.
+- 라벨이 없으면 `aria-label`이나 `aria-labelledby`를 직접 주세요.
+- 비활성 항목은 포커스되지 않고, `Tab` 순서에서도 건너뜁니다.
+- `error`가 나타나거나 사라져도 `<input>`은 다시 만들어지지 않아서 포커스를 잃지 않습니다.

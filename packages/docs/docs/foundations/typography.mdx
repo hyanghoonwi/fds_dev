@@ -4,7 +4,11 @@ sidebar_position: 2
 
 # Typography
 
-Pretendard 기반 Text Style입니다. `text-title-1`, `text-body-1`처럼 Tailwind 유틸리티로 사용합니다.
+Pretendard 기반 Text Style입니다. `text-title-1`, `text-body-1`처럼 Tailwind 유틸리티로 사용합니다. 글자 크기, 굵기, 행간, 자간이 한 클래스에 함께 들어 있습니다.
+
+:::note[`cn()`과 함께 쓸 때]
+core의 `cn()`(`clsx` + `tailwind-merge`)은 이 `text-*` 토큰 이름을 **글자 크기**로 등록해 두었습니다. 그래서 `cn("text-caption-2", "text-text-caption")`처럼 글자 색 클래스와 함께 써도 글자 크기가 지워지지 않습니다. 토큰을 새로 추가하면 `packages/core/src/utils/cn.ts`의 목록에도 추가해야 합니다.
+:::
 
 export const styles = [
   ["display-1", "56 / Bold"],
@@ -13,14 +17,24 @@ export const styles = [
   ["title-1", "32 / Bold"],
   ["title-2", "28 / Bold"],
   ["title-3", "24 / Bold"],
+  ["title-bold-14", "14 / Bold"],
   ["heading-1", "22 / SemiBold"],
   ["heading-2", "20 / SemiBold"],
   ["headline-1", "18 / SemiBold"],
   ["headline-2", "17 / SemiBold"],
   ["body-1", "16 / Regular"],
   ["body-2", "16 / Medium"],
+  ["body-1-normal", "14 / Regular"],
+  ["body-medium-15", "15 / Medium"],
+  ["body-medium-14", "14 / Medium"],
+  ["body-medium-11", "11 / Medium"],
   ["label-1-normal", "14 / SemiBold"],
+  ["label-1-reading", "14 / SemiBold (행간 넓음)"],
   ["label-2", "13 / Regular"],
+  ["label-semibold-14", "14 / SemiBold"],
+  ["label-semibold-13", "13 / SemiBold"],
+  ["label-semibold-12", "12 / SemiBold"],
+  ["label-semibold-11", "11 / SemiBold"],
   ["caption-1", "12 / Regular"],
   ["caption-2", "11 / Regular"],
 ];

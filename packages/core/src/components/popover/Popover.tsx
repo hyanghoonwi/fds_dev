@@ -42,6 +42,8 @@ export interface PopoverProps {
    * 포커스를 팝업 안으로 옮기지 않는 combobox 패턴에서는 `listbox`를 쓴다.
    */
   role?: "dialog" | "listbox" | "menu";
+  /** 팝업 내용을 불러오는 중인지. 켜면 팝업에 `aria-busy`가 붙는다. */
+  busy?: boolean;
   /** 기준 요소에 대한 팝업 위치. 기본은 아래쪽 왼쪽 정렬 */
   placement?: PopoverPlacement;
   /** 기준 요소와 팝업 사이 간격(px). 기본 6 */
@@ -67,6 +69,7 @@ export function Popover({
   onOpenChange,
   label,
   role = "dialog",
+  busy,
   placement = "bottom-start",
   offset = 6,
   className,
@@ -210,6 +213,7 @@ export function Popover({
           id={popupId}
           role={role}
           aria-label={label}
+          aria-busy={busy || undefined}
           style={position}
           className={cn(
             "absolute z-50 rounded-12 border border-border-line bg-bg-surface p-3 font-fds shadow-[0_4px_12px_rgba(0,0,0,0.08)]",

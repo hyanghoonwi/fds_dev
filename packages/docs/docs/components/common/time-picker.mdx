@@ -1,5 +1,5 @@
 ---
-sidebar_position: 14
+sidebar_position: 21
 ---
 
 import { useState } from "react";
@@ -9,6 +9,8 @@ import Preview from "@site/src/components/Preview";
 # TimePicker
 
 시간을 고르는 입력 컴포넌트입니다. 입력창이나 오른쪽 시계 아이콘을 누르면 아래에 "시" / "분" 두 개의 스크롤 목록이 열리고, 항목을 골라 **확인**을 누르면 값이 확정됩니다. 방송 시작 시간, 예약 시간처럼 정해진 간격의 시각을 고를 때 사용합니다.
+
+`TimePicker`는 **[Input](./input) + [Popover](./popover) + [TimePanel](./time-panel)을 조합하고, 고르는 중인 값(draft)과 "확인" 버튼을 얹은 편의 컴포넌트**입니다. 그래서 `label`, `orientation`, `required`, `error`, `description`, `labelWidth`, `disabled`, `name` 같은 Input의 props를 그대로 받습니다. 날짜까지 한 번에 고를 때는 [DateTimePicker](./date-time-picker)를 쓰세요.
 
 ## Usage
 
@@ -50,6 +52,18 @@ const [time, setTime] = useState<string | null>("14:30");
 ```tsx
 <TimePicker defaultValue="09:00" onChange={(time) => console.log(time)} />
 ```
+
+## 값을 읽는 방법
+
+시간 선택은 **"확인"으로 확정**되므로, 값은 확정된 뒤에만 바깥으로 나옵니다. 고르는 도중의 값은 `TimePicker` 안에서만 보입니다.
+
+| 방식                  | 사용법                                                                          |
+| --------------------- | ------------------------------------------------------------------------------- |
+| **제어** (권장)       | `value`/`onChange`로 부모 state가 값을 들고 있음. 제출할 때 state를 그대로 읽음 |
+| **비제어 + FormData** | `defaultValue`와 `name`을 주면 폼 제출 시 `name=HH:mm`으로 들어감               |
+| **비제어 + ref**      | `ref`는 안쪽 `<input>`에 연결되므로 `ref.current.value`가 `"09:30"` 문자열      |
+
+날짜와 함께 폼에서 쓰는 예는 [DatePicker의 폼에서 쓰기](./date-picker#폼에서-쓰기)를 참고하세요. 값이 모두 문자열이라 서버에 보내는 payload가 그대로 `{ "date": "2026-10-15", "time": "09:30" }`가 됩니다.
 
 ## 선택 동작
 
@@ -135,20 +149,21 @@ const [time, setTime] = useState<string | null>("14:30");
 
 `TimePicker`는 [Input](./input)의 `label`, `orientation`, `labelWidth`, `required`, `error`, `containerClassName`, `className`, `placeholder`, `disabled`, `id`, `name`, `ref` 등을 그대로 받습니다(입력창은 읽기 전용이라 `value`, `onChange`, `readOnly`, `leftAddon`, `rightAddon`은 제외).
 
-| Prop           | 타입                             | 기본값        | 설명                                                                                                |
-| -------------- | -------------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
-| `value`        | `string \| null`                 | -             | 확정된 시간(`"HH:mm"`, 24시간제). 넘기면 제어 컴포넌트로 동작하고, 비우려면 `null`                  |
-| `defaultValue` | `string \| null`                 | `null`        | 비제어 모드의 초기값                                                                                |
-| `onChange`     | `(time: string \| null) => void` | -             | 팝오버에서 **확인**을 눌렀을 때 `"HH:mm"` 문자열로 호출됨. `Esc`/바깥 클릭으로 닫으면 호출되지 않음 |
-| `minuteStep`   | `number`                         | `1`           | 분 목록의 간격. 60의 약수(1, 5, 10, 15, 30) 권장                                                    |
-| `placeholder`  | `string`                         | `"시간 선택"` | 값이 없을 때 표시할 문구                                                                            |
-| `label`        | `ReactNode`                      | -             | 라벨                                                                                                |
-| `orientation`  | `"vertical" \| "horizontal"`     | `"vertical"`  | 라벨 배치                                                                                           |
-| `required`     | `boolean`                        | -             | 라벨 뒤에 `*` 표시 + `required` 적용                                                                |
-| `error`        | `ReactNode`                      | -             | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시                                                  |
-| `disabled`     | `boolean`                        | -             | 비활성화 (팝오버가 열리지 않음)                                                                     |
-| `name`         | `string`                         | -             | 폼 제출 시 이름. 값은 확정된 `"HH:mm"` 문자열로 전송됨                                              |
-| `ref`          | `Ref<HTMLInputElement>`          | -             | React 19 `ref` prop (입력창에 연결)                                                                 |
+| Prop           | 타입                         | 기본값        | 설명                                                                                                |
+| -------------- | ---------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| `value`        | `string \| null`             | -             | 확정된 시간(`"HH:mm"`, 24시간제). 넘기면 제어 컴포넌트로 동작하고, 비우려면 `null`                  |
+| `defaultValue` | `string \| null`             | `null`        | 비제어 모드의 초기값                                                                                |
+| `onChange`     | `(time: string) => void`     | -             | 팝오버에서 **확인**을 눌렀을 때 `"HH:mm"` 문자열로 호출됨. `Esc`/바깥 클릭으로 닫으면 호출되지 않음 |
+| `minuteStep`   | `number`                     | `1`           | 분 목록의 간격. 60의 약수(1, 5, 10, 15, 30) 권장                                                    |
+| `placeholder`  | `string`                     | `"시간 선택"` | 값이 없을 때 표시할 문구                                                                            |
+| `label`        | `ReactNode`                  | -             | 라벨                                                                                                |
+| `description`  | `ReactNode`                  | -             | 입력창 아래 설명. `error`가 있으면 에러가 대신 표시됨                                               |
+| `orientation`  | `"vertical" \| "horizontal"` | `"vertical"`  | 라벨 배치                                                                                           |
+| `required`     | `boolean`                    | -             | 라벨 뒤에 `*` 표시 + `required` 적용                                                                |
+| `error`        | `ReactNode`                  | -             | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시                                                  |
+| `disabled`     | `boolean`                    | -             | 비활성화 (팝오버가 열리지 않음)                                                                     |
+| `name`         | `string`                     | -             | 폼 제출 시 이름. 값은 확정된 `"HH:mm"` 문자열로 전송됨                                              |
+| `ref`          | `Ref<HTMLInputElement>`      | -             | React 19 `ref` prop (입력창에 연결)                                                                 |
 
 ## 키보드
 

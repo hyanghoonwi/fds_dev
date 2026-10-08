@@ -1,0 +1,328 @@
+---
+sidebar_position: 22
+---
+
+import { useState } from "react";
+import { Button, DateTimePicker, Input } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# DateTimePicker
+
+날짜와 시간을 **한 번에** 고르는 입력 필드입니다. 입력창이나 달력 아이콘을 누르면 한 팝오버 안에 달력과 "시" / "분" 목록이 나란히 열리고, 날짜와 시간을 모두 고른 뒤 **확인**을 누르면 값이 확정됩니다. 공지 예약 발행, 방송 예약처럼 "언제"를 정확히 받아야 하는 곳에 사용합니다.
+
+`DateTimePicker`는 **[Input](./input) + [Popover](./popover) + [Calendar](./calendar) + [TimePanel](./time-panel)을 조합하고, 고르는 중인 값(draft)과 "확인" 버튼을 얹은 편의 컴포넌트**입니다. 그래서 `label`, `orientation`, `required`, `error`, `description`, `labelWidth`, `disabled` 같은 Input의 props를 그대로 받습니다.
+
+## Usage
+
+값은 `"YYYY-MM-DDTHH:mm"` 문자열입니다(로컬 시간, 시간대 정보 없음). **확인을 눌러야** `onChange`가 호출되므로 `value`와 `onChange`로 제어하세요.
+
+export function UsageDemo() {
+  const [value, setValue] = useState(null);
+  return (
+    <div style={{ width: 320 }}>
+      <DateTimePicker label="발행 일시" value={value} onChange={setValue} />
+      <p
+        style={{
+          margin: "8px 0 0",
+          fontSize: 12,
+          color: "var(--fds-text-caption)",
+        }}
+      >
+        선택한 값: {value ?? "없음"}
+      </p>
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 520, alignItems: "flex-start" }}>
+  <UsageDemo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { DateTimePicker } from "@fds/core";
+
+const [value, setValue] = useState<string | null>(null);
+
+<DateTimePicker label="발행 일시" value={value} onChange={setValue} />
+```
+
+값을 직접 관리할 필요가 없으면 `defaultValue`만 넘기는 비제어 방식도 됩니다.
+
+```tsx
+<DateTimePicker
+  defaultValue="2026-10-15T09:30"
+  onChange={(value) => console.log(value)}
+/>
+```
+
+## 선택 동작
+
+팝오버 안에서 고르는 값은 임시 값(draft)입니다. 입력창에는 **확정된 값만** `2026-10-15 09:30` 형태로 보이고, 고르는 도중의 값은 달력과 목록의 선택 표시로만 보입니다.
+
+- 날짜를 누르면 날짜가 선택되고, 시/분을 누르면 시간이 선택됩니다. 팝오버는 열린 채로 유지됩니다.
+- 시를 먼저 고르고 분을 고르지 않아도 분은 `00`으로 채워집니다.
+- **날짜와 시간을 모두 고르면** "확인" 버튼이 활성화됩니다. 하나라도 비어 있으면 비활성입니다.
+
+| 동작                                      | 결과                                                                                                                             |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **확인** 버튼                             | draft를 확정합니다. `onChange("YYYY-MM-DDTHH:mm")`가 호출되고 입력창에 반영된 뒤 팝오버가 닫히며 포커스가 입력창으로 돌아갑니다. |
+| `Esc`, 바깥 클릭, 입력창/아이콘 다시 클릭 | draft를 버리고 닫습니다. `onChange`는 호출되지 않습니다. 다시 열면 현재 확정된 값에서 시작합니다.                                |
+
+## 폼에서 쓰기
+
+공지를 예약 발행하는 폼입니다. 값 상태는 부모가 들고 있고, 비어 있으면 `error`로 알립니다. 제출하면 서버에 보내는 payload가 그대로 **`T` 형식 문자열**입니다.
+
+export function PublishFormDemo() {
+  const [title, setTitle] = useState("");
+  const [publishAt, setPublishAt] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [payload, setPayload] = useState(null);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const next = {
+      title: title.trim() ? undefined : "공지 제목을 입력해 주세요.",
+      publishAt: publishAt ? undefined : "발행 일시를 선택해 주세요.",
+    };
+    setErrors(next);
+    setPayload(
+      next.title || next.publishAt
+        ? null
+        : JSON.stringify({ title, publishAt }, null, 2),
+    );
+  };
+  return (
+    <form
+      noValidate
+      onSubmit={handleSubmit}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        width: 360,
+      }}
+    >
+      <Input
+        label="공지 제목"
+        required
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder="공지 제목을 입력하세요"
+        error={errors.title}
+      />
+      <DateTimePicker
+        label="발행 일시"
+        required
+        value={publishAt}
+        onChange={(next) => {
+          setPublishAt(next);
+          setErrors((prev) => ({ ...prev, publishAt: undefined }));
+        }}
+        minuteStep={5}
+        description="발행 일시 이후에는 수정할 수 없어요."
+        error={errors.publishAt}
+      />
+      <Button type="submit" variant="primary">
+        예약하기
+      </Button>
+      {payload && (
+        <pre
+          style={{
+            margin: 0,
+            padding: 12,
+            fontSize: 12,
+            borderRadius: 8,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+          }}
+        >
+          {payload}
+        </pre>
+      )}
+    </form>
+  );
+}
+
+<Preview style={{ minHeight: 680, alignItems: "flex-start" }}>
+  <PublishFormDemo />
+</Preview>
+
+```tsx
+const [publishAt, setPublishAt] = useState<string | null>(null);
+
+<DateTimePicker
+  label="발행 일시"
+  required
+  value={publishAt}
+  onChange={setPublishAt}
+  minuteStep={5}
+  description="발행 일시 이후에는 수정할 수 없어요."
+  error={errors.publishAt}
+/>;
+
+// 제출 payload: { "title": "...", "publishAt": "2026-10-20T09:30" }
+```
+
+## FormData로 제출하기
+
+`name`을 주면 폼에 값이 담깁니다. 입력창에는 사람이 읽기 좋게 `2026-10-15 09:30`(공백)이 보이지만, **`name`은 보이는 입력창이 아니라 숨은 input에 붙어서** 폼에는 `T` 형식(`2026-10-15T09:30`)이 제출됩니다. 서버에 보내는 값과 입력창 표시를 따로 신경 쓰지 않아도 됩니다.
+
+export function FormDataDemo() {
+  const [entries, setEntries] = useState(null);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setEntries(
+      Object.fromEntries([...data.entries()].map(([k, v]) => [k, String(v)])),
+    );
+  };
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        width: 320,
+      }}
+    >
+      <DateTimePicker
+        label="시작 일시"
+        name="startAt"
+        defaultValue="2026-10-15T09:30"
+      />
+      <Button type="submit" variant="primary">
+        제출
+      </Button>
+      {entries && (
+        <pre
+          style={{
+            margin: 0,
+            padding: 12,
+            fontSize: 12,
+            borderRadius: 8,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+          }}
+        >
+          {JSON.stringify(entries, null, 2)}
+        </pre>
+      )}
+    </form>
+  );
+}
+
+<Preview style={{ minHeight: 280, alignItems: "flex-start" }}>
+  <FormDataDemo />
+</Preview>
+
+```tsx
+<form onSubmit={handleSubmit}>
+  <DateTimePicker
+    label="시작 일시"
+    name="startAt"
+    defaultValue="2026-10-15T09:30"
+  />
+  <Button type="submit">제출</Button>
+</form>
+
+// new FormData(event.currentTarget) → { startAt: "2026-10-15T09:30" }
+```
+
+## 선택 가능한 날짜
+
+`min`, `max`(`"YYYY-MM-DD"`, 포함)와 `isDateDisabled`로 선택할 수 있는 **날짜**를 제한합니다. 막힌 날짜는 눌러도 선택되지 않습니다.
+
+export function LimitDemo() {
+  return (
+    <div style={{ width: 320 }}>
+      <DateTimePicker
+        label="10월 10일 ~ 25일만"
+        min="2026-10-10"
+        max="2026-10-25"
+        defaultValue="2026-10-12T14:00"
+        minuteStep={10}
+      />
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 520, alignItems: "flex-start" }}>
+  <LimitDemo />
+</Preview>
+
+```tsx
+<DateTimePicker min="2026-10-10" max="2026-10-25" minuteStep={10} />
+<DateTimePicker
+  isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
+/>
+```
+
+:::caution 시각(시·분) 제한은 지원하지 않습니다
+`min`/`max`는 **날짜만** 받습니다. "오늘 오후 3시 이후만"처럼 시각 단위로 막을 수는 없으니, 필요하면 `onChange`에서 값을 검증해서 `error`로 알려 주세요.
+:::
+
+## 시간대와 서버 전송
+
+값은 **로컬 시간**이고 시간대 정보가 없습니다(`<input type="datetime-local">`과 같은 형태). 서버가 UTC나 오프셋이 붙은 ISO 문자열을 요구하면 **값을 보내는 쪽에서 변환**합니다. 컴포넌트 값에는 시간대를 섞지 않습니다.
+
+```ts
+const value = "2026-10-15T09:30"; // 컴포넌트 값 (로컬 시간)
+
+// 오프셋이 없는 날짜·시간 문자열은 JS가 로컬 시간으로 해석하므로 그대로 변환하면 됩니다.
+new Date(value).toISOString(); // 한국(UTC+9)에서 "2026-10-15T00:30:00.000Z"
+```
+
+반대로 **날짜만 있는** 문자열(`new Date("2026-10-15")`)은 JS가 UTC 자정으로 해석하므로 `parseDateValue`를 쓰세요. 자세한 내용은 [Calendar](./calendar#날짜-값과-date-변환)를 참고하세요.
+
+## 값 나누고 합치기
+
+`"YYYY-MM-DDTHH:mm"`을 날짜와 시간으로 나누거나 합치는 헬퍼가 있습니다.
+
+```tsx
+import { formatDateTimeValue, parseDateTimeValue } from "@fds/core";
+
+parseDateTimeValue("2026-10-15T09:30"); // { date: "2026-10-15", time: "09:30" }
+parseDateTimeValue("2026-02-30T09:30"); // null (달력에 없는 날짜)
+parseDateTimeValue("2026-10-15T25:00"); // null (시/분 범위 밖)
+formatDateTimeValue("2026-10-15", "09:30"); // "2026-10-15T09:30"
+```
+
+## Props
+
+`DateTimePicker`는 [Input](./input)의 `label`, `orientation`, `labelWidth`, `required`, `description`, `error`, `disabled`, `id`, `placeholder`, `className`, `containerClassName`, `ref` 등을 그대로 받습니다(입력창은 읽기 전용이라 `value`, `onChange`, `readOnly`, `leftAddon`, `rightAddon`, `fieldRef`는 제외). 아래는 DateTimePicker에서 추가되거나 의미가 달라지는 props입니다.
+
+| Prop             | 타입                      | 기본값             | 설명                                                                                         |
+| ---------------- | ------------------------- | ------------------ | -------------------------------------------------------------------------------------------- |
+| `value`          | `string \| null`          | -                  | 확정된 날짜·시간 `"YYYY-MM-DDTHH:mm"`(로컬 시간, 제어). 비우려면 `null`                      |
+| `defaultValue`   | `string \| null`          | `null`             | 초기 날짜·시간(비제어)                                                                       |
+| `onChange`       | `(value: string) => void` | -                  | **확인**을 눌렀을 때 `"YYYY-MM-DDTHH:mm"`으로 호출. `Esc`/바깥 클릭으로 닫으면 호출되지 않음 |
+| `min`            | `string`                  | -                  | 선택 가능한 가장 이른 **날짜** `"YYYY-MM-DD"`(포함). 시각 제한은 없음                        |
+| `max`            | `string`                  | -                  | 선택 가능한 가장 늦은 **날짜** `"YYYY-MM-DD"`(포함). 시각 제한은 없음                        |
+| `isDateDisabled` | `(date: Date) => boolean` | -                  | `true`를 반환한 날짜는 선택 불가. 로컬 자정의 `Date`를 받음                                  |
+| `minuteStep`     | `number`                  | `1`                | 분 목록의 간격. 60의 약수(1, 5, 10, 15, 30) 권장                                             |
+| `placeholder`    | `string`                  | `"날짜·시간 선택"` | 값이 없을 때 표시할 문구                                                                     |
+| `name`           | `string`                  | -                  | 폼 제출 시 이름. **숨은 input**에 붙고 값은 `T` 형식으로 전송됨                              |
+| `ref`            | `Ref<HTMLInputElement>`   | -                  | React 19 `ref` prop (보이는 입력창에 연결. 값은 `2026-10-15 09:30` 형태)                     |
+
+## 키보드
+
+팝오버가 열리면 달력의 선택된 날짜(없으면 오늘)에 포커스가 갑니다. 달력과 시간 목록의 키는 각 패널과 같습니다.
+
+| 키                                      | 동작                                                                               |
+| --------------------------------------- | ---------------------------------------------------------------------------------- |
+| `←` `→` `↑` `↓` (달력)                  | 하루 / 일주일 단위로 날짜 이동                                                     |
+| `Home` `End` `PageUp` `PageDown` (달력) | 주의 일요일·토요일 / 이전·다음 달                                                  |
+| `↑` `↓` `←` `→` (시간 목록)             | 같은 목록에서 이동 / 시 ↔ 분 전환                                                  |
+| `Enter` `Space`                         | 포커스된 날짜 또는 시/분을 선택 (draft에 반영, 팝오버는 유지)                      |
+| `Tab`                                   | 달력 → 시간 목록 → **확인** 버튼 순서로 이동 (확인은 날짜·시간을 모두 골라야 활성) |
+| `Esc`                                   | draft를 버리고 닫은 뒤 입력창으로 포커스 이동                                      |
+
+## 참고
+
+- 값이 `"YYYY-MM-DDTHH:mm"`이 아니면(예: `"2026-10-15 09:30"`, `"2026-02-30T09:30"`) 선택 안 함으로 취급하고 에러를 내지 않습니다. 공백으로 이어진 형식은 값이 아니라 **표시용**입니다.
+- 24시간제만 지원하고 초 단위는 지원하지 않습니다.
+- 입력창은 읽기 전용이라 직접 타이핑할 수 없습니다. 항상 팝오버에서 고릅니다.
+- 날짜만 날짜+시간이 아닌 곳에서는 [DatePicker](./date-picker)와 [TimePicker](./time-picker)를 따로 쓰는 것이 더 단순합니다.
+- 팝오버는 입력창 바로 아래에 `position: absolute`로 열립니다. `overflow: hidden`인 부모 안에서는 잘릴 수 있고, 좁은 화면(약 560px 미만)에서는 달력과 시간 목록이 위아래로 쌓입니다.
+- 달력과 시간 목록을 모달 안에 직접 넣어서 쓰는 방법은 [Popover](./popover)와 [useOverlay](../../api/use-overlay)를 참고하세요.

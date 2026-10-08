@@ -1,0 +1,423 @@
+---
+sidebar_position: 8
+---
+
+import { useRef, useState } from "react";
+import {
+  Button,
+  CheckboxGroup,
+  FormField,
+  Input,
+  RadioGroup,
+  Textarea,
+} from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# FormField
+
+FDS에 없는 컨트롤(파일 선택, 색상 선택, 서드파티 위젯 등)에 [Input](./input)과 같은 **라벨 · 필수 표시 · 설명 · 에러** 레이아웃을 입히는 래퍼입니다.
+
+[Input](./input), [Select](./select), [Textarea](./textarea), [CheckboxGroup](./checkbox), [RadioGroup](./radio-group)은 이 규칙을 이미 props로 내장하고 있어서 **감쌀 필요가 없습니다.** `FormField`는 그 밖의 컨트롤에만 씁니다.
+
+## 모든 폼 컨트롤이 따르는 규칙
+
+위 컨트롤과 `FormField`가 같은 props를 같은 방식으로 씁니다. 이 페이지가 그 규칙의 기준입니다.
+
+| Prop          | 설명                                                                                                  |
+| ------------- | ----------------------------------------------------------------------------------------------------- |
+| `label`       | 라벨. 컨트롤과 `<label htmlFor>`로 연결됨(묶음 컨트롤은 `aria-labelledby`). 생략하면 라벨 영역이 없음 |
+| `orientation` | 라벨 배치. `"vertical"`은 라벨이 위, `"horizontal"`은 왼쪽. 기본 `"vertical"`                         |
+| `labelWidth`  | 가로 배치일 때 라벨 영역 너비(px, 기본 `80`). 폼 안에서 같은 값을 주면 왼쪽 선이 맞음                 |
+| `required`    | 라벨 뒤 빨간 `*` (`aria-hidden`). 필수 여부 자체는 컨트롤의 `required` 속성으로 전달                  |
+| `description` | 컨트롤 아래 설명(도움말). `error`가 있으면 에러가 대신 표시됨                                         |
+| `error`       | 에러 메시지. 에러 스타일, `role="alert"`, `aria-describedby`, `aria-invalid`가 함께 연결됨            |
+
+- 에러가 나타나거나 사라져도 컨트롤은 다시 만들어지지 않아서 입력 중에도 포커스를 잃지 않습니다. 컨트롤이 다시 만들어지는 것은 `orientation`을 바꿀 때뿐입니다.
+- 단일 [Checkbox](./checkbox)는 자체 라벨과 `description`을 가지고 있어서 `error`만 추가로 받습니다.
+- 보조 문구(설명, 에러)는 11px(`text-caption-2`)로 통일되어 있습니다.
+
+## Usage
+
+`children`을 **함수**로 주면 컨트롤에 붙일 접근성 속성을 받습니다. 받은 값을 컨트롤 요소에 그대로 펼쳐서(`{...control}`) 붙이면 라벨 클릭 포커스, `aria-describedby`, `aria-invalid`가 연결됩니다.
+
+export function FileDemo() {
+  const [fileName, setFileName] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+
+return (
+<form
+style={{ width: 360, display: "flex", flexDirection: "column", gap: 12 }}
+onSubmit={(event) => {
+event.preventDefault();
+setSubmitted(true);
+}} >
+<FormField
+label="대표 이미지"
+required
+description="JPG, PNG, WebP · 최대 10MB"
+error={submitted && !fileName ? "이미지를 선택해 주세요." : undefined} >
+{(control) => (
+<input
+type="file"
+accept="image/jpeg,image/png,image/webp"
+{...control}
+onChange={(event) =>
+setFileName(event.target.files?.[0]?.name ?? null)
+}
+/>
+)}
+</FormField>
+<div>
+<Button type="submit" variant="primary">
+저장
+</Button>
+</div>
+<span style={{ fontSize: 13, color: "var(--fds-text-secondary)" }}>
+선택한 파일: {fileName ?? "없음"}
+</span>
+</form>
+);
+}
+
+<Preview>
+  <FileDemo />
+</Preview>
+
+```tsx
+import { FormField } from "@fds/core";
+
+<FormField
+  label="대표 이미지"
+  required
+  description="JPG, PNG, WebP · 최대 10MB"
+  error={submitted && !fileName ? "이미지를 선택해 주세요." : undefined}
+>
+  {(control) => (
+    <input
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      {...control}
+      onChange={(event) => setFileName(event.target.files?.[0]?.name ?? null)}
+    />
+  )}
+</FormField>
+```
+
+`control`에는 `id`, `aria-describedby`, `aria-invalid`(에러가 있을 때만), `aria-labelledby`(`labelMode="group"`일 때만)가 들어 있습니다. 컨트롤이 이 속성을 받을 수 있는 요소여야 합니다.
+
+## 컨트롤이 이미 id를 가진 경우
+
+`children`을 함수가 아닌 요소로 주고 `htmlFor`로 컨트롤의 id를 알려 주면 라벨이 그 id를 가리킵니다. 이 경우 `aria-describedby` 같은 연결은 직접 해야 합니다.
+
+export function ColorDemo() {
+  const [color, setColor] = useState("#3182f6");
+  return (
+    <div style={{ width: 360 }}>
+      <FormField
+        label="대표 색상"
+        orientation="horizontal"
+        htmlFor="docs-brand-color"
+      >
+        <input
+          id="docs-brand-color"
+          type="color"
+          value={color}
+          onChange={(event) => setColor(event.target.value)}
+        />
+      </FormField>
+    </div>
+  );
+}
+
+<Preview>
+  <ColorDemo />
+</Preview>
+
+```tsx
+<FormField label="대표 색상" orientation="horizontal" htmlFor="brand-color">
+  <input
+    id="brand-color"
+    type="color"
+    value={color}
+    onChange={(event) => setColor(event.target.value)}
+  />
+</FormField>
+```
+
+## 묶음 컨트롤 (labelMode="group")
+
+컨트롤이 요소 하나가 아니라 **묶음**(버튼 여러 개, 직접 만든 선택 위젯 등)이라면 `labelMode="group"`을 줍니다. 라벨이 `<label>`이 아니라 `<span>`으로 그려지고, 묶음 요소에 `aria-labelledby`를 걸 수 있게 `control["aria-labelledby"]`가 채워집니다. 가로 배치에서 라벨은 첫 줄에 맞추려면 `labelAlign="first-row"`를 함께 씁니다.
+
+export function GroupModeDemo() {
+  const [size, setSize] = useState("M");
+  return (
+    <div style={{ width: 360 }}>
+      <FormField
+        label="크기"
+        labelMode="group"
+        description="버튼 묶음에 라벨이 연결돼요."
+      >
+        {(control) => (
+          <div
+            role="group"
+            id={control.id}
+            aria-labelledby={control["aria-labelledby"]}
+            aria-describedby={control["aria-describedby"]}
+            style={{ display: "flex", gap: 8 }}
+          >
+            {["S", "M", "L"].map((option) => (
+              <Button
+                key={option}
+                variant={size === option ? "primary" : "line"}
+                aria-pressed={size === option}
+                onClick={() => setSize(option)}
+              >
+                {option}
+              </Button>
+            ))}
+          </div>
+        )}
+      </FormField>
+    </div>
+  );
+}
+
+<Preview>
+  <GroupModeDemo />
+</Preview>
+
+```tsx
+<FormField
+  label="크기"
+  labelMode="group"
+  description="버튼 묶음에 라벨이 연결돼요."
+>
+  {(control) => (
+    <div
+      role="group"
+      id={control.id}
+      aria-labelledby={control["aria-labelledby"]}
+      aria-describedby={control["aria-describedby"]}
+    >
+      {/* 버튼들 */}
+    </div>
+  )}
+</FormField>
+```
+
+## 어드민 폼 한 장
+
+모든 컨트롤에 같은 `orientation="horizontal"`과 `labelWidth`를 주면 라벨과 필드의 왼쪽 선이 모두 맞습니다. 빈 채로 저장하면 필드마다 `error`가 켜지고, **첫 번째 오류 컨트롤로 포커스가 이동**합니다. 입력, 라디오, 텍스트에어리어, 체크박스 묶음이 모두 같은 규칙을 따른다는 것을 보여 주는 예시입니다.
+
+export function AdminFormDemo() {
+  const labelWidth = 96;
+  const [title, setTitle] = useState("");
+  const [method, setMethod] = useState(null);
+  const [detail, setDetail] = useState("");
+  const [channels, setChannels] = useState([]);
+  const [errors, setErrors] = useState({});
+  const [payload, setPayload] = useState(null);
+
+const titleRef = useRef(null);
+const methodRef = useRef(null);
+const detailRef = useRef(null);
+const channelsRef = useRef(null);
+
+const handleSubmit = (event) => {
+event.preventDefault();
+const next = {};
+if (title.trim() === "") next.title = "이벤트명을 입력해 주세요.";
+if (method === null) next.method = "신청 방식을 선택해 주세요.";
+if (detail.trim() === "") next.detail = "상세 설명을 입력해 주세요.";
+if (channels.length === 0) next.channels = "채널을 하나 이상 선택해 주세요.";
+setErrors(next);
+
+    if (Object.keys(next).length > 0) {
+      setPayload(null);
+      // 첫 번째 오류 컨트롤로 포커스를 옮긴다 (화면 순서대로)
+      if (next.title) titleRef.current?.focus();
+      else if (next.method) methodRef.current?.querySelector("input")?.focus();
+      else if (next.detail) detailRef.current?.focus();
+      else channelsRef.current?.querySelector("input")?.focus();
+      return;
+    }
+    setPayload(JSON.stringify({ title, method, detail, channels }, null, 2));
+
+};
+
+return (
+<form
+noValidate
+onSubmit={handleSubmit}
+style={{ width: "100%", maxWidth: 560, display: "flex", flexDirection: "column", gap: 20 }} >
+<Input
+ref={titleRef}
+label="이벤트명"
+required
+orientation="horizontal"
+labelWidth={labelWidth}
+placeholder="이벤트명을 입력하세요"
+value={title}
+onChange={(event) => setTitle(event.target.value)}
+error={errors.title}
+/>
+<RadioGroup
+ref={methodRef}
+label="신청 방식"
+required
+orientation="horizontal"
+labelWidth={labelWidth}
+direction="horizontal"
+options={[
+{ value: "internal", label: "내부 신청" },
+{ value: "external", label: "외부 링크" },
+{ value: "google", label: "Google Form" },
+]}
+value={method}
+onChange={setMethod}
+error={errors.method}
+/>
+<Textarea
+        ref={detailRef}
+        label="상세 설명"
+        required
+        orientation="horizontal"
+        labelWidth={labelWidth}
+        description="이벤트 상세 화면에 그대로 노출돼요."
+        showCount
+        maxLength={200}
+        placeholder="내용을 입력하세요"
+        value={detail}
+        onChange={setDetail}
+        error={errors.detail}
+      />
+<CheckboxGroup
+ref={channelsRef}
+label="채널 속성"
+required
+orientation="horizontal"
+labelWidth={labelWidth}
+direction="horizontal"
+options={[
+{ value: "partner", label: "파트너" },
+{ value: "trader", label: "트레이더" },
+{ value: "media", label: "미디어" },
+]}
+value={channels}
+onChange={setChannels}
+error={errors.channels}
+/>
+<div style={{ paddingLeft: labelWidth + 12 }}>
+<Button type="submit" variant="primary">
+저장
+</Button>
+</div>
+{payload && (
+<pre
+style={{
+            margin: 0,
+            padding: 12,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+            borderRadius: 8,
+            fontSize: 12,
+          }} >
+{payload}
+</pre>
+)}
+</form>
+);
+}
+
+<Preview>
+  <AdminFormDemo />
+</Preview>
+
+```tsx
+const labelWidth = 96;
+
+<form noValidate onSubmit={handleSubmit}>
+  <Input
+    ref={titleRef}
+    label="이벤트명"
+    required
+    orientation="horizontal"
+    labelWidth={labelWidth}
+    value={title}
+    onChange={(event) => setTitle(event.target.value)}
+    error={errors.title}
+  />
+  <RadioGroup
+    ref={methodRef}
+    label="신청 방식"
+    required
+    orientation="horizontal"
+    labelWidth={labelWidth}
+    direction="horizontal"
+    options={methodOptions}
+    value={method}
+    onChange={setMethod}
+    error={errors.method}
+  />
+  <Textarea
+    ref={detailRef}
+    label="상세 설명"
+    required
+    orientation="horizontal"
+    labelWidth={labelWidth}
+    showCount
+    maxLength={200}
+    value={detail}
+    onChange={setDetail}
+    error={errors.detail}
+  />
+  <CheckboxGroup
+    ref={channelsRef}
+    label="채널 속성"
+    required
+    orientation="horizontal"
+    labelWidth={labelWidth}
+    direction="horizontal"
+    options={channelOptions}
+    value={channels}
+    onChange={setChannels}
+    error={errors.channels}
+  />
+</form>
+```
+
+- `ref`는 컨트롤마다 연결되는 요소가 다릅니다. `Input`과 `Textarea`는 입력 요소에, `RadioGroup`과 `CheckboxGroup`은 그룹 `div`에 연결되므로 그룹은 `querySelector("input")`으로 첫 입력을 찾아 포커스합니다.
+- `noValidate`로 브라우저 기본 검증 팝업을 끄고, 검증 문구는 `error`로 일관되게 보여 줍니다.
+
+## Props
+
+| Prop                 | 타입                                                         | 기본값       | 설명                                                                                                    |
+| -------------------- | ------------------------------------------------------------ | ------------ | ------------------------------------------------------------------------------------------------------- |
+| `children`           | `ReactNode \| (control: FormFieldControlProps) => ReactNode` | -            | 컨트롤 (필수). 접근성 속성이 필요하면 함수로 받음                                                       |
+| `label`              | `ReactNode`                                                  | -            | 라벨. 생략하면 라벨 영역이 렌더링되지 않음                                                              |
+| `orientation`        | `"vertical" \| "horizontal"`                                 | `"vertical"` | 라벨 배치. `vertical`은 위, `horizontal`은 왼쪽                                                         |
+| `labelWidth`         | `number`                                                     | `80`         | 가로 배치일 때 라벨 영역 너비(px)                                                                       |
+| `required`           | `boolean`                                                    | -            | 라벨 뒤 `*`. 라벨이 있을 때만 보임                                                                      |
+| `description`        | `ReactNode`                                                  | -            | 컨트롤 아래 설명. `error`가 있으면 에러가 대신 표시됨                                                   |
+| `error`              | `ReactNode`                                                  | -            | 에러 메시지 (`role="alert"`)                                                                            |
+| `htmlFor`            | `string`                                                     | 자동 생성    | 컨트롤이 이미 가진 id. 주면 라벨의 `htmlFor`가 이 id를 가리킴                                           |
+| `labelMode`          | `"for" \| "group"`                                           | `"for"`      | `for`는 `<label htmlFor>`로 요소 하나에 연결, `group`은 `<span>` 라벨을 `aria-labelledby`로 묶음에 연결 |
+| `labelAlign`         | `"field" \| "first-row"`                                     | `"field"`    | 가로 배치에서 라벨의 세로 위치. `field`는 42px 입력 박스 첫 줄, `first-row`는 묶음의 첫 옵션 줄         |
+| `containerClassName` | `string`                                                     | -            | 라벨·컨트롤·보조 문구를 모두 감싸는 컨테이너의 클래스                                                   |
+
+### FormFieldControlProps
+
+`children`을 함수로 줄 때 받는 값입니다.
+
+| 키                 | 타입     | 설명                                                                              |
+| ------------------ | -------- | --------------------------------------------------------------------------------- |
+| `id`               | `string` | 컨트롤의 id. `<label htmlFor>`가 가리킴. 컨트롤 요소에 그대로 붙임                |
+| `aria-describedby` | `string` | 설명/에러 요소 id. 설명도 에러도 없으면 값이 없음                                 |
+| `aria-invalid`     | `true`   | 에러가 있을 때만 값이 있음                                                        |
+| `aria-labelledby`  | `string` | `labelMode="group"`이고 라벨이 있을 때만 값이 있음. 묶음 요소의 `aria-labelledby` |
+
+## 참고
+
+- 레이아웃은 [Input](./input)과 같습니다. 세로는 라벨 → 컨트롤 → 설명/에러 순서이고, 가로는 라벨(고정 너비) 옆에 컨트롤과 설명/에러가 세로로 쌓입니다. 설명과 에러는 컨트롤의 왼쪽 선에 맞춰 표시됩니다.
+- `FormField`는 컨트롤을 렌더링하지 않고 감싸기만 합니다. 컨트롤의 스타일(배경, 라운드, 포커스 링)은 직접 정해야 합니다.
+- 입력 자체의 검증은 하지 않습니다. 검증 결과를 `error`로 넘기면 표시만 합니다.

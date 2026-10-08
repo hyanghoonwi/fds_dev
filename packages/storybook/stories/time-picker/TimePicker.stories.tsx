@@ -8,8 +8,8 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    // 팝오버가 Docs 페이지에서 잘리지 않도록 iframe 안에서 렌더링
-    docs: { story: { inline: false, iframeHeight: 420 } },
+    // iframe(inline: false)은 아래 Props 표의 컨트롤 변경이 반영되지 않아, 인라인으로 렌더링하고 팝업이 들어갈 높이를 확보한다.
+    docs: { story: { height: "360px" } },
   },
   argTypes: {
     value: { control: "text" },

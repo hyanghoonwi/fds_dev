@@ -1,20 +1,29 @@
 ---
-sidebar_position: 13
+sidebar_position: 20
 ---
 
 import { useState } from "react";
-import { DatePicker } from "@fds/core";
+import {
+  Button,
+  DatePicker,
+  Input,
+  TimePicker,
+  formatDateValue,
+  parseDateValue,
+} from "@fds/core";
 import Preview from "@site/src/components/Preview";
 
 # DatePicker
 
-날짜 하나를 고르는 입력 필드입니다. 입력창이나 달력 아이콘을 누르면 아래에 달력이 열리고, 날짜를 고르면 `YYYY-MM-DD`로 표시되며 달력이 닫힙니다. 시간까지 고를 때는 [TimePicker](./time-picker)를 함께 사용하세요.
+날짜 하나를 고르는 입력 필드입니다. 입력창이나 달력 아이콘을 누르면 아래에 달력이 열리고, 날짜를 고르면 `YYYY-MM-DD`로 입력창에 들어가며 달력이 닫힙니다.
+
+`DatePicker`는 새로운 로직이 아니라 **[Input](./input) + [Popover](./popover) + [Calendar](./calendar)를 미리 조합해 둔 편의 컴포넌트**입니다. 그래서 `label`, `orientation`, `required`, `error`, `description`, `labelWidth`, `disabled`, `name` 같은 Input의 props를 모두 그대로 받습니다. 시간까지 고를 때는 [TimePicker](./time-picker)나 [DateTimePicker](./date-time-picker)를 쓰세요.
 
 ## Usage
 
-`value`와 `onChange`로 제어하는 방식이 기본입니다. 달력은 입력창 아래로 열리므로, 아래 예제처럼 열릴 공간이 필요합니다.
+값은 `"YYYY-MM-DD"` 문자열입니다. `value`와 `onChange`로 제어하는 방식이 기본입니다. 달력은 입력창 아래로 열리므로 열릴 공간이 필요합니다.
 
-export function Demo() {
+export function UsageDemo() {
   const [date, setDate] = useState(null);
   return (
     <div style={{ width: 280 }}>
@@ -26,142 +35,402 @@ export function Demo() {
           color: "var(--fds-text-caption)",
         }}
       >
-        선택한 날짜: {date ? date.toLocaleDateString("ko-KR") : "없음"}
+        선택한 값: {date ?? "없음"}
       </p>
     </div>
   );
 }
 
-<Preview style={{ minHeight: 400, alignItems: "flex-start" }}>
-  <Demo />
+<Preview style={{ minHeight: 420, alignItems: "flex-start" }}>
+  <UsageDemo />
 </Preview>
 
 ```tsx
 import { useState } from "react";
 import { DatePicker } from "@fds/core";
 
-const [date, setDate] = useState<Date | null>(null);
+const [date, setDate] = useState<string | null>(null);
 
 <DatePicker label="시작일" value={date} onChange={setDate} />
 ```
 
-초기값만 주고 상태를 직접 들고 있지 않으려면 `defaultValue`를 쓰세요(비제어).
+## 값이 입력창에 들어가는 과정
+
+입력창에 값을 직접 쓰는 코드는 없습니다. 값은 한 방향으로만 흐릅니다.
+
+1. 날짜 칸을 누르면 `Calendar`가 `onChange("2026-10-15")`를 호출합니다.
+2. `DatePicker`가 그 값을 받아서, **제어 모드**(`value`를 넘긴 경우)면 부모의 `onChange`로 넘기고, **비제어 모드**면 내부 state에 저장합니다.
+3. 입력창은 읽기 전용이고, 현재 값을 그대로 보여 주기만 합니다. 부모가 값을 바꾸면 입력창도 따라 바뀝니다.
+4. 같은 클릭에서 달력이 닫히고 포커스가 입력창으로 돌아옵니다.
+
+그래서 입력창에 보이는 값과 실제 값이 어긋날 수 없습니다.
+
+## 값을 읽는 방법
+
+| 방식                  | 사용법                                                                          |
+| --------------------- | ------------------------------------------------------------------------------- |
+| **제어** (권장)       | `value`/`onChange`로 부모 state가 값을 들고 있음. 제출할 때 state를 그대로 읽음 |
+| **비제어 + FormData** | `defaultValue`와 `name`을 주면 폼 제출 시 `name=YYYY-MM-DD`로 들어감            |
+| **비제어 + ref**      | `ref`는 안쪽 `<input>`에 연결되므로 `ref.current.value`가 `"2026-10-15"` 문자열 |
+
+export function FormDataDemo() {
+  const [entries, setEntries] = useState(null);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    setEntries(
+      Object.fromEntries([...data.entries()].map(([k, v]) => [k, String(v)])),
+    );
+  };
+  return (
+    <form
+      onSubmit={handleSubmit}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        width: 320,
+      }}
+    >
+      <DatePicker label="시작일" name="startDate" defaultValue="2026-10-08" />
+      <TimePicker label="시작 시간" name="startTime" defaultValue="09:00" />
+      <Button type="submit" variant="primary">
+        제출
+      </Button>
+      {entries && (
+        <pre
+          style={{
+            margin: 0,
+            padding: 12,
+            fontSize: 12,
+            borderRadius: 8,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+          }}
+        >
+          {JSON.stringify(entries, null, 2)}
+        </pre>
+      )}
+    </form>
+  );
+}
+
+<Preview style={{ minHeight: 560, alignItems: "flex-start" }}>
+  <FormDataDemo />
+</Preview>
 
 ```tsx
-<DatePicker defaultValue={new Date(2026, 9, 6)} />
+<form onSubmit={handleSubmit}>
+  <DatePicker label="시작일" name="startDate" defaultValue="2026-10-08" />
+  <TimePicker label="시작 시간" name="startTime" defaultValue="09:00" />
+  <Button type="submit">제출</Button>
+</form>
+
+// new FormData(event.currentTarget) → { startDate: "2026-10-08", startTime: "09:00" }
 ```
 
 ## 선택 가능한 범위
 
-`min`, `max`로 범위를 제한하면 범위 밖의 날짜는 선택할 수 없고, 범위 밖으로 넘어가는 달 이동 버튼은 비활성화됩니다. 두 값 모두 포함(inclusive)입니다.
+`min`, `max`(`"YYYY-MM-DD"`, 포함)와 `isDateDisabled`로 선택할 수 있는 날짜를 제한합니다. 막힌 날짜는 누를 수 없고, 키보드로도 이동하지 않습니다.
 
-<Preview style={{ minHeight: 400, alignItems: "flex-start" }}>
-  <div style={{ width: 280 }}>
-    <DatePicker
-      label="예약일"
-      defaultValue={new Date(2026, 9, 15)}
-      min={new Date(2026, 9, 10)}
-      max={new Date(2026, 9, 25)}
-    />
-  </div>
+export function LimitDemo() {
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: 16, width: 280 }}
+    >
+      <DatePicker
+        label="10월 10일 ~ 25일만"
+        defaultValue="2026-10-12"
+        min="2026-10-10"
+        max="2026-10-25"
+      />
+      <DatePicker
+        label="주말 제외"
+        defaultValue="2026-10-08"
+        isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
+      />
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 520, alignItems: "flex-start" }}>
+  <LimitDemo />
 </Preview>
 
 ```tsx
+<DatePicker min="2026-10-10" max="2026-10-25" />
 <DatePicker
-  label="예약일"
-  defaultValue={new Date(2026, 9, 15)}
-  min={new Date(2026, 9, 10)}
-  max={new Date(2026, 9, 25)}
-/>
-```
-
-`isDateDisabled`는 날짜마다 호출되어 `true`를 반환하면 그 날짜를 막습니다. 주말이나 휴무일처럼 규칙으로 막을 때 사용합니다.
-
-<Preview style={{ minHeight: 400, alignItems: "flex-start" }}>
-  <div style={{ width: 280 }}>
-    <DatePicker
-      label="영업일"
-      isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
-    />
-  </div>
-</Preview>
-
-```tsx
-<DatePicker
-  label="영업일"
   isDateDisabled={(date) => date.getDay() === 0 || date.getDay() === 6}
 />
 ```
 
-## 라벨, 필수, 에러
+## 폼에서 쓰기
 
-[Input](./input)과 같은 `label`, `orientation`, `required`, `error`, `labelWidth`를 그대로 받습니다.
+방송 예약처럼 제목, 날짜, 시간을 함께 받는 폼입니다. 값 상태는 부모가 들고 있고, 비어 있으면 필드의 `error`로 알립니다. 제출하면 서버에 보내는 payload가 그대로 **문자열**입니다.
 
-<Preview
-  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 420 }}
->
-  <DatePicker label="시작일" required error="시작일을 선택해 주세요." />
-  <DatePicker
-    label="종료일"
-    orientation="horizontal"
-    defaultValue={new Date(2026, 9, 6)}
-  />
+export function BookingFormDemo() {
+  const today = formatDateValue(new Date());
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState(null);
+  const [time, setTime] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [payload, setPayload] = useState(null);
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    const next = {
+      title: title.trim() ? undefined : "방송 제목을 입력해 주세요.",
+      date: date ? undefined : "방송 날짜를 선택해 주세요.",
+      time: time ? undefined : "시작 시간을 선택해 주세요.",
+    };
+    setErrors(next);
+    setPayload(
+      next.title || next.date || next.time
+        ? null
+        : JSON.stringify({ title, date, time }, null, 2),
+    );
+  };
+  return (
+    <form
+      noValidate
+      onSubmit={handleSubmit}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 16,
+        width: 360,
+      }}
+    >
+      <Input
+        label="방송 제목"
+        required
+        value={title}
+        onChange={(event) => setTitle(event.target.value)}
+        placeholder="방송 제목을 입력하세요"
+        error={errors.title}
+      />
+      <DatePicker
+        label="방송 날짜"
+        required
+        value={date}
+        onChange={(next) => {
+          setDate(next);
+          setErrors((prev) => ({ ...prev, date: undefined }));
+        }}
+        min={today}
+        description="오늘 이후 날짜만 선택할 수 있어요."
+        error={errors.date}
+      />
+      <TimePicker
+        label="시작 시간"
+        required
+        value={time}
+        onChange={(next) => {
+          setTime(next);
+          setErrors((prev) => ({ ...prev, time: undefined }));
+        }}
+        error={errors.time}
+      />
+      <Button type="submit" variant="primary">
+        예약하기
+      </Button>
+      {payload && (
+        <pre
+          style={{
+            margin: 0,
+            padding: 12,
+            fontSize: 12,
+            borderRadius: 8,
+            background: "var(--fds-bg-page)",
+            color: "var(--fds-text-primary)",
+          }}
+        >
+          {payload}
+        </pre>
+      )}
+    </form>
+  );
+}
+
+<Preview style={{ minHeight: 640, alignItems: "flex-start" }}>
+  <BookingFormDemo />
 </Preview>
 
 ```tsx
-<DatePicker label="시작일" required error="시작일을 선택해 주세요." />
+const today = formatDateValue(new Date());
+const [date, setDate] = useState<string | null>(null);
+const [time, setTime] = useState<string | null>(null);
+
+<DatePicker
+  label="방송 날짜"
+  required
+  value={date}
+  onChange={setDate}
+  min={today}
+  description="오늘 이후 날짜만 선택할 수 있어요."
+  error={errors.date}
+/>
+<TimePicker label="시작 시간" required value={time} onChange={setTime} error={errors.time} />
+
+// 제출 payload: { "title": "...", "date": "2026-10-15", "time": "09:30" }
+```
+
+## 시작일/종료일 연동
+
+종료일은 시작일 이후만, 시작일은 종료일 이전만 고를 수 있게 서로의 `min`/`max`로 묶습니다. 두 값 사이의 일수를 구할 때는 `parseDateValue`로 `Date`로 바꿔서 계산합니다.
+
+export function DateRangeDemo() {
+  const [start, setStart] = useState("2026-10-06");
+  const [end, setEnd] = useState(null);
+  const handleStart = (next) => {
+    setStart(next);
+    if (end && end < next) {
+      setEnd(null);
+    }
+  };
+  const startDate = start ? parseDateValue(start) : null;
+  const endDate = end ? parseDateValue(end) : null;
+  const nights =
+    startDate && endDate
+      ? Math.round(
+          (endDate.getTime() - startDate.getTime()) / (24 * 60 * 60 * 1000),
+        )
+      : null;
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: 16, width: 320 }}
+    >
+      <DatePicker
+        label="시작일"
+        value={start}
+        onChange={handleStart}
+        max={end ?? undefined}
+      />
+      <DatePicker
+        label="종료일"
+        value={end}
+        onChange={setEnd}
+        min={start ?? undefined}
+        placeholder="종료일 선택"
+      />
+      <div style={{ fontSize: 13 }}>
+        {nights === null ? (
+          "시작일과 종료일을 모두 선택해 주세요."
+        ) : (
+          <>
+            {start} ~ {end} ·{" "}
+            <strong>
+              {nights}박 {nights + 1}일
+            </strong>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 560, alignItems: "flex-start" }}>
+  <DateRangeDemo />
+</Preview>
+
+```tsx
+<DatePicker
+  label="시작일"
+  value={start}
+  onChange={handleStart}
+  max={end ?? undefined}
+/>
 <DatePicker
   label="종료일"
-  orientation="horizontal"
-  defaultValue={new Date(2026, 9, 6)}
+  value={end}
+  onChange={setEnd}
+  min={start ?? undefined}
 />
 ```
 
-## 비활성
+시작일을 종료일보다 뒤로 바꾸면 종료일을 비우도록 `onChange`에서 정리해 두면, 값이 어긋난 상태로 제출되는 것을 막을 수 있습니다.
 
-<Preview>
-  <div style={{ width: 280 }}>
-    <DatePicker label="시작일" disabled defaultValue={new Date(2026, 9, 6)} />
-  </div>
+## 라벨 · 설명 · 에러
+
+Input과 같은 필드 props를 그대로 씁니다. `orientation="horizontal"`이면 라벨이 왼쪽에 놓이고, 팝업은 가로/세로/에러 배치 모두 **입력 박스 바로 아래**에 붙습니다.
+
+export function FieldDemo() {
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: 16, width: 420 }}
+    >
+      <DatePicker
+        label="시작일"
+        orientation="horizontal"
+        required
+        description="방송이 시작되는 날짜예요."
+      />
+      <DatePicker
+        label="종료일"
+        orientation="horizontal"
+        required
+        error="종료일을 선택해 주세요."
+      />
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 520, alignItems: "flex-start" }}>
+  <FieldDemo />
 </Preview>
 
 ```tsx
-<DatePicker label="시작일" disabled defaultValue={new Date(2026, 9, 6)} />
+<DatePicker
+  label="시작일"
+  orientation="horizontal"
+  required
+  description="방송이 시작되는 날짜예요."
+/>
+<DatePicker
+  label="종료일"
+  orientation="horizontal"
+  required
+  error="종료일을 선택해 주세요."
+/>
 ```
+
+## 직접 조합하기
+
+`DatePicker`가 하는 일은 [Popover](./popover)에 `Input`과 `Calendar`를 꽂는 것뿐입니다. 입력창 대신 버튼을 트리거로 쓰거나, 달력을 모달 안에 넣어야 하면 같은 요소를 직접 조합하세요. 자세한 방법은 Popover 문서의 "Input에 꽂아 쓰기"를 참고하세요.
 
 ## 키보드
 
 달력이 열리면 선택된 날짜(없으면 오늘)에 포커스가 가고, 아래 키로 이동합니다.
 
-| 키                  | 동작                               |
-| ------------------- | ---------------------------------- |
-| `←` `→`             | 하루 전 / 하루 뒤                  |
-| `↑` `↓`             | 일주일 전 / 일주일 뒤              |
-| `Home` `End`        | 그 주의 일요일 / 토요일            |
-| `PageUp` `PageDown` | 이전 달 / 다음 달                  |
-| `Enter` `Space`     | 날짜 선택                          |
-| `Esc`               | 달력 닫기 (입력창으로 포커스 복귀) |
+| 키                  | 동작                                             |
+| ------------------- | ------------------------------------------------ |
+| `←` `→`             | 하루 전 / 하루 뒤                                |
+| `↑` `↓`             | 일주일 전 / 일주일 뒤                            |
+| `Home` `End`        | 그 주의 일요일 / 토요일                          |
+| `PageUp` `PageDown` | 이전 달 / 다음 달                                |
+| `Enter` `Space`     | 날짜 선택 (달력이 닫히고 입력창으로 포커스 복귀) |
+| `Esc`               | 달력 닫기 (입력창으로 포커스 복귀)               |
 
 ## Props
 
-`DatePicker`는 [Input](./input)의 props(`label`, `orientation`, `required`, `error`, `labelWidth`, `disabled`, `id`, `name`, `placeholder`, `className`, `containerClassName` 등)를 그대로 받습니다. 아래는 DatePicker에서 추가되거나 의미가 달라지는 props입니다.
+`DatePicker`는 [Input](./input)의 `label`, `orientation`, `labelWidth`, `required`, `description`, `error`, `disabled`, `id`, `name`, `placeholder`, `className`, `containerClassName`, `ref` 등을 그대로 받습니다(입력창은 읽기 전용이라 `value`, `onChange`, `readOnly`, `leftAddon`, `rightAddon`, `fieldRef`는 제외). 아래는 DatePicker에서 추가되거나 의미가 달라지는 props입니다.
 
-| Prop             | 타입                           | 기본값        | 설명                                                        |
-| ---------------- | ------------------------------ | ------------- | ----------------------------------------------------------- |
-| `value`          | `Date \| null`                 | -             | 선택된 날짜(제어). `null`이면 선택 안 함                    |
-| `defaultValue`   | `Date \| null`                 | `null`        | 초기 날짜(비제어)                                           |
-| `onChange`       | `(date: Date \| null) => void` | -             | 날짜를 선택했을 때 호출. 로컬 시간 자정으로 정규화된 `Date` |
-| `min`            | `Date`                         | -             | 선택 가능한 가장 이른 날짜(포함)                            |
-| `max`            | `Date`                         | -             | 선택 가능한 가장 늦은 날짜(포함)                            |
-| `isDateDisabled` | `(date: Date) => boolean`      | -             | `true`를 반환한 날짜는 선택 불가                            |
-| `placeholder`    | `string`                       | `"날짜 선택"` | 값이 없을 때 표시할 문구                                    |
-| `ref`            | `Ref<HTMLInputElement>`        | -             | React 19 `ref` prop (입력창에 연결)                         |
+| Prop             | 타입                      | 기본값        | 설명                                                                                 |
+| ---------------- | ------------------------- | ------------- | ------------------------------------------------------------------------------------ |
+| `value`          | `string \| null`          | -             | 선택된 날짜 `"YYYY-MM-DD"`(제어). `null`은 선택 안 함                                |
+| `defaultValue`   | `string \| null`          | `null`        | 초기 날짜(비제어)                                                                    |
+| `onChange`       | `(value: string) => void` | -             | 날짜를 바꿨을 때 `"YYYY-MM-DD"`로 호출. 이미 선택된 날짜를 다시 누르면 호출되지 않음 |
+| `min`            | `string`                  | -             | 선택 가능한 가장 이른 날짜 `"YYYY-MM-DD"`(포함)                                      |
+| `max`            | `string`                  | -             | 선택 가능한 가장 늦은 날짜 `"YYYY-MM-DD"`(포함)                                      |
+| `isDateDisabled` | `(date: Date) => boolean` | -             | `true`를 반환한 날짜는 선택 불가. 로컬 자정의 `Date`를 받음                          |
+| `placeholder`    | `string`                  | `"날짜 선택"` | 값이 없을 때 표시할 문구                                                             |
+| `name`           | `string`                  | -             | 폼 제출 시 이름. 값은 `"YYYY-MM-DD"` 문자열로 전송됨                                 |
+| `ref`            | `Ref<HTMLInputElement>`   | -             | React 19 `ref` prop (입력창에 연결)                                                  |
 
 ## 참고
 
-- 표시 형식은 `YYYY-MM-DD`로 고정입니다. `name`을 주면 폼 전송 시 이 문자열이 전송됩니다.
-- 입력창은 읽기 전용입니다. 날짜를 직접 타이핑하는 대신 달력에서 고릅니다.
-- 날짜는 모두 로컬 시간 기준입니다. 이미 선택된 날짜를 다시 누르면 선택이 유지되고 `onChange`는 호출되지 않습니다.
+- **값이 `Date`가 아니라 `"YYYY-MM-DD"` 문자열입니다.** 시간대 때문에 날짜가 하루 밀리는 일이 없고, 폼·JSON·서버에 그대로 보낼 수 있습니다. 이전 버전처럼 `Date`를 넘기면 날짜로 인식되지 않으니, `Date`가 있다면 `formatDateValue(date)`로 바꿔서 넘기세요.
+- `Date`가 필요하면 `parseDateValue("2026-10-15")`(로컬 자정의 `Date`, 잘못된 값은 `null`)를 씁니다. 날짜를 문자열로 만들 때 `toISOString()`을 쓰면 한국에서 하루가 밀립니다. 자세한 내용은 [Calendar](./calendar#날짜-값과-date-변환)를 참고하세요.
+- 표시 형식은 `YYYY-MM-DD`로 고정입니다. 입력창은 읽기 전용이라 직접 타이핑할 수 없고, 달력에서 고릅니다.
+- 형식이 잘못된 `value`(예: `"2026-02-30"`)는 선택 안 함으로 취급하고 에러를 내지 않습니다.
 - 현재 달이 아닌 날짜(앞뒤 회색 날짜)도 선택할 수 있고, 선택하면 그 달로 이동합니다.
 - 달력은 입력창 바로 아래에 `position: absolute`로 열립니다. 부모에 `overflow: hidden`이 있으면 잘릴 수 있습니다.
-- 달력은 한국어로 고정입니다(일 월 화 수 목 금 토, `2026년 10월`).

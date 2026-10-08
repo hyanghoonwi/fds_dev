@@ -1,5 +1,5 @@
 ---
-sidebar_position: 7
+sidebar_position: 11
 ---
 
 import { useState } from "react";
@@ -8,7 +8,7 @@ import Preview from "@site/src/components/Preview";
 
 # Modal
 
-확인창, 알림창, 설정 메뉴처럼 화면 위에 띄우는 패널입니다. 열림 상태는 트리거 버튼이 들고 있다가 `open`으로 제어합니다.
+확인창, 알림창, 설정 메뉴처럼 화면 위에 띄우는 패널입니다. 열림 상태는 트리거 버튼이 들고 있다가 `open`으로 제어하거나, 함수 안에서 열고 결과를 `await`로 받고 싶다면 [`useOverlay`](../../api/use-overlay)와 함께 씁니다.
 
 :::info
 Modal은 `position: fixed`로 뷰포트 전체를 덮습니다. 아래 데모를 열면 문서 화면이 딤 처리되며, `Esc` 또는 배경 클릭으로 닫을 수 있습니다.
@@ -93,6 +93,8 @@ const close = () => setOpen(false);
 </Modal>
 ```
 
+`open`이 `false`이면 아무것도 렌더링하지 않습니다. 기본값이 `true`라서 `open`을 넘기지 않고 조건부로 렌더링해도(`{show && <Modal ... />}`) 같은 결과가 됩니다.
+
 ## Variants
 
 ### Confirm
@@ -159,12 +161,84 @@ const close = () => setOpen(false);
 </Modal>
 ```
 
+## 닫기
+
+`onClose`는 아래 두 경우에 호출됩니다. 모달을 실제로 닫는 일(`open`을 `false`로 바꾸기)은 항상 직접 해야 합니다.
+
+- **배경 클릭**: 패널 바깥의 딤 영역을 눌렀을 때(`mousedown`). 패널 안쪽을 눌러도 호출되지 않습니다.
+- **`Esc` 키**: 열려 있는 모달 중 **가장 위에 있는(가장 나중에 연) 모달 하나**에만 전달됩니다.
+
+### 여러 모달이 쌓였을 때
+
+`Esc`를 한 번 누를 때마다 맨 위 모달 하나씩만 닫힙니다. 아래 데모에서 두 번째 모달을 연 뒤 `Esc`를 눌러 보세요. 두 번째 모달이 먼저 닫히고, 한 번 더 누르면 첫 번째가 닫힙니다.
+
+export function StackedDemo() {
+  const [first, setFirst] = useState(false);
+  const [second, setSecond] = useState(false);
+  return (
+    <>
+      <Button variant="primary" onClick={() => setFirst(true)}>
+        모달 쌓기
+      </Button>
+      <Modal
+        open={first}
+        onClose={() => setFirst(false)}
+        header="첫 번째 모달"
+        style={{ width: 320 }}
+        actions={
+          <Button variant="primary" onClick={() => setSecond(true)}>
+            하나 더 열기
+          </Button>
+        }
+      >
+        <p style={{ margin: 0, fontSize: 14 }}>
+          Esc를 누르면 맨 위 모달만 닫혀요.
+        </p>
+      </Modal>
+      <Modal
+        open={second}
+        onClose={() => setSecond(false)}
+        header="두 번째 모달"
+        style={{ width: 280 }}
+        actions={
+          <Button variant="line" onClick={() => setSecond(false)}>
+            닫기
+          </Button>
+        }
+      >
+        <p style={{ margin: 0, fontSize: 14 }}>이 모달이 먼저 닫혀요.</p>
+      </Modal>
+    </>
+  );
+}
+
+<Preview>
+  <StackedDemo />
+</Preview>
+
+```tsx
+<Modal open={first} onClose={() => setFirst(false)} header="첫 번째 모달" ... />
+<Modal open={second} onClose={() => setSecond(false)} header="두 번째 모달" ... />
+```
+
+## useOverlay와 함께 쓰기
+
+확인창처럼 "열고, 사용자의 선택을 받아서, 이어서 처리"하는 흐름은 `open` 상태를 직접 들고 있는 것보다 `useOverlay`가 간단합니다. `render` 함수가 `isOpen`과 `close`를 넘겨 주므로 그대로 `Modal`에 연결하면 됩니다.
+
+```tsx
+const ok = await overlay.openAsync<boolean>(({ isOpen, close }) => (
+  <Modal open={isOpen} onClose={() => close(false)} header="채팅 차단" ... />
+));
+```
+
+자세한 사용법은 [`useOverlay`](../../api/use-overlay) 문서를 보세요.
+
 ## Props
 
 | Prop       | 타입                  | 기본값 | 설명                                                                                                  |
 | ---------- | --------------------- | ------ | ----------------------------------------------------------------------------------------------------- |
 | `open`     | `boolean`             | `true` | 열림 여부. `false`면 아무것도 렌더링하지 않습니다.                                                    |
-| `onClose`  | `() => void`          | -      | **필수.** `Esc` 키 또는 배경 클릭 시 호출됩니다.                                                      |
+| `onClose`  | `() => void`          | -      | **필수.** 배경 클릭 또는 `Esc`(맨 위 모달일 때만) 시 호출됩니다.                                      |
 | `children` | `ReactNode`           | -      | **필수.** 본문. 세로 gap이 적용된 body 영역으로 감싸집니다.                                           |
 | `header`   | `ReactNode`           | -      | 제목 영역. 생략하면 헤더 자체가 렌더링되지 않습니다.                                                  |
 | `actions`  | `ReactNode`           | -      | 하단 버튼 줄. 1개는 전체 폭, 2개는 균등 분할됩니다. 생략하면 렌더링되지 않습니다.                     |
@@ -176,5 +250,7 @@ const close = () => setOpen(false);
 
 ## 참고
 
-- `createPortal`을 쓰지 않습니다. 다크 모드 `data-theme` 범위가 컴포넌트의 실제 DOM 위치에만 걸려 있을 수 있어, `document.body`로 빼면 테마 토큰이 내려오지 않기 때문입니다.
-- 패널은 `role="dialog"`, `aria-modal="true"`를 가집니다.
+- `createPortal`을 쓰지 않습니다. 다크 모드 `data-theme` 범위가 컴포넌트의 실제 DOM 위치에만 걸려 있을 수 있어, `document.body`로 빼면 테마 토큰이 내려오지 않기 때문입니다. 이 점은 `Popover`와 `OverlayProvider`도 같습니다.
+- 대신 `position: fixed`를 쓰므로 DOM 안에 있어도 뷰포트 전체를 덮습니다. 다만 조상 요소에 `transform`이 있으면 그 요소가 `fixed`의 기준이 되니, 모달을 열 컴포넌트나 `OverlayProvider`는 `transform`/`overflow: hidden` 조상 안에 두지 않는 게 안전합니다.
+- 패널은 `role="dialog"`, `aria-modal="true"`를 가집니다. 포커스 가두기와 배경 스크롤 잠금은 하지 않습니다.
+- 모달 안에서 `Popover`나 `Select`의 메뉴를 열고 `Esc`를 누르면 메뉴가 먼저 닫히고, 한 번 더 누르면 모달이 닫힙니다.

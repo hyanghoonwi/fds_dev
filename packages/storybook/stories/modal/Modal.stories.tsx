@@ -24,10 +24,35 @@ const meta = {
   component: Modal,
   tags: ["autodocs"],
   parameters: {
-    layout: "centered",
-    // position: fixed 오버레이가 문서 페이지 전체를 덮지 않도록 iframe 안에서 렌더링
-    docs: { story: { inline: false, iframeHeight: 360 } },
+    layout: "padded",
+    docs: { story: { height: "360px" } },
   },
+  // Modal은 position: fixed라 Docs에 인라인으로 두면 문서 전체를 덮는다.
+  // 조상에 transform이 있으면 fixed가 그 조상 기준이 되므로, Docs 보기에서만 미리보기 상자 안에 가둔다.
+  // (iframe(inline: false)은 아래 Props 표의 컨트롤 변경이 반영되지 않는다)
+  decorators: [
+    (Story, context) =>
+      context.viewMode === "docs" ? (
+        <div
+          style={{
+            transform: "translateZ(0)",
+            position: "relative",
+            width: "100%",
+            height: 360,
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Story />
+        </div>
+      ) : (
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 80 }}>
+          <Story />
+        </div>
+      ),
+  ],
   argTypes: {
     open: { control: "boolean" },
     header: { control: "text" },

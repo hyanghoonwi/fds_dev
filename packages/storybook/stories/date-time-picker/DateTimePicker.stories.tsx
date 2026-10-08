@@ -60,8 +60,8 @@ const meta = {
   tags: ["autodocs"],
   parameters: {
     layout: "centered",
-    // 팝업이 열리는 컴포넌트라 Docs에서는 iframe 안에서 렌더링한다
-    docs: { story: { inline: false, iframeHeight: 560 } },
+    // iframe(inline: false)은 아래 Props 표의 컨트롤 변경이 반영되지 않아, 인라인으로 렌더링하고 팝업이 들어갈 높이를 확보한다.
+    docs: { story: { height: "480px" } },
   },
   argTypes: {
     label: { control: "text" },

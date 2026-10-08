@@ -10,6 +10,21 @@ import Preview from "@site/src/components/Preview";
 
 한 줄 텍스트 입력 필드입니다. 검색창처럼 높이가 고정된 입력에 사용하고, 내용에 따라 늘어나야 하면 [Textarea](./textarea)를 사용하세요.
 
+라벨, 필수 표시, 설명, 에러 메시지를 props로 이미 가지고 있어서 따로 감쌀 필요가 없습니다. 같은 규칙을 [Select](./select), [Textarea](./textarea), [CheckboxGroup](./checkbox), [RadioGroup](./radio-group)도 따르고, FDS에 없는 컨트롤에는 [FormField](./form-field)로 같은 레이아웃을 입힙니다.
+
+## 폼 컨트롤 공통 필드 props
+
+모든 폼 컨트롤은 같은 필드 props를 내장합니다. 이 페이지의 `Label`, `Orientation`, `Required`, `Description`, `Error` 섹션이 그대로 다른 컨트롤에도 적용됩니다.
+
+| Prop          | 설명                                                                                |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `label`       | 라벨. 컨트롤과 `htmlFor`(묶음은 `aria-labelledby`)로 연결됨                         |
+| `orientation` | 라벨 배치. `vertical`은 라벨이 위, `horizontal`은 왼쪽                              |
+| `labelWidth`  | 가로 배치일 때 라벨 영역 너비(px, 기본 80). 폼 안에서 같은 값을 주면 왼쪽 선이 맞음 |
+| `required`    | 라벨 뒤 빨간 `*`                                                                    |
+| `description` | 컨트롤 아래 설명(도움말). `error`가 있으면 에러가 대신 표시됨                       |
+| `error`       | 에러 메시지. 에러 스타일, `role="alert"`, `aria-describedby`가 함께 연결됨          |
+
 ## Usage
 
 export function Demo() {
@@ -272,6 +287,37 @@ const [value, setValue] = useState("");
 />
 ```
 
+## fieldRef — Popover 기준 요소
+
+`ref`는 `<input>`에 연결됩니다. 입력창 **바로 아래**에 팝업을 붙이고 싶다면, 라벨·에러 문구까지 포함한 전체가 아니라 "입력 박스"가 기준이 되어야 하는데, 이 박스(배경·라운드를 가지고 addon과 `<input>`을 감싸는 영역)의 ref가 `fieldRef`입니다. [Popover](./popover)의 `anchorRef`를 넘기면 됩니다.
+
+```tsx
+<Popover
+  label="날짜 선택"
+  trigger={({ toggle, anchorRef }) => (
+    <Input
+      readOnly
+      fieldRef={anchorRef}
+      onClick={toggle}
+      value={date ?? ""}
+      rightAddon={<CalendarIcon />}
+    />
+  )}
+>
+  {({ close }) => (
+    <Calendar
+      value={date}
+      onChange={(v) => {
+        setDate(v);
+        close();
+      }}
+    />
+  )}
+</Popover>
+```
+
+[DatePicker](./date-picker), [TimePicker](./time-picker), [DateTimePicker](./date-time-picker)가 바로 이 조합입니다.
+
 ## 조합
 
 `label`, `leftAddon`, `rightAddon`, `required`, `error`, `orientation`은 함께 쓸 수 있습니다.
@@ -310,19 +356,22 @@ const [value, setValue] = useState("");
 
 | Prop                 | 타입                         | 기본값       | 설명                                                                                      |
 | -------------------- | ---------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
-| `label`              | `ReactNode`                  | -            | 라벨. 생략하면 라벨 영역이 렌더링되지 않음                                                |
+| `label`              | `ReactNode`                  | -            | 라벨. 생략하면 라벨 영역이 렌더링되지 않음. 라벨을 누르면 입력 필드에 포커스가 감         |
 | `orientation`        | `"vertical" \| "horizontal"` | `"vertical"` | 라벨 배치. `vertical`은 위, `horizontal`은 왼쪽                                           |
-| `leftAddon`          | `ReactNode`                  | -            | 입력값 왼쪽 요소 (아이콘, 텍스트, 버튼 등)                                                |
-| `rightAddon`         | `ReactNode`                  | -            | 입력값 오른쪽 요소 (단위, 아이콘, 버튼 등)                                                |
 | `labelWidth`         | `number`                     | `80`         | 가로 배치일 때 라벨 영역 너비(px)                                                         |
 | `required`           | `boolean`                    | -            | 라벨 뒤에 `*`를 붙이고 입력 필드에 `required` 적용                                        |
-| `error`              | `ReactNode`                  | -            | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시                                        |
+| `description`        | `ReactNode`                  | -            | 입력 필드 아래 설명(도움말). `error`가 있으면 에러가 대신 표시됨                          |
+| `error`              | `ReactNode`                  | -            | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시(`role="alert"`)                        |
+| `leftAddon`          | `ReactNode`                  | -            | 입력값 왼쪽 요소 (아이콘, 텍스트, 버튼 등)                                                |
+| `rightAddon`         | `ReactNode`                  | -            | 입력값 오른쪽 요소 (단위, 아이콘, 버튼 등)                                                |
 | `containerClassName` | `string`                     | -            | 라벨·에러를 포함한 전체 컨테이너의 클래스                                                 |
 | `className`          | `string`                     | -            | `<input>`의 클래스. 배경·라운드는 바깥 필드 박스에 있으므로 글자 스타일 정도만 덮어쓰세요 |
-| `id`                 | `string`                     | 자동 생성    | 입력 필드 id. 라벨과 에러 메시지 연결에 쓰임                                              |
+| `fieldRef`           | `Ref<HTMLDivElement>`        | -            | 필드 박스(addon과 `<input>`을 감싸는 영역)의 ref. Popover의 기준 요소로 쓰임              |
+| `id`                 | `string`                     | 자동 생성    | 입력 필드 id. 라벨과 에러·설명 연결에 쓰임                                                |
+| `aria-describedby`   | `string`                     | -            | 직접 준 값은 설명/에러 id와 합쳐서 연결됨                                                 |
 | `ref`                | `Ref<HTMLInputElement>`      | -            | React 19 `ref` prop (입력 필드에 연결)                                                    |
 
-그 외 `value`, `onChange`, `placeholder`, `disabled`, `type` 등 `<input>` 속성은 그대로 전달됩니다.
+그 외 `value`, `onChange`, `placeholder`, `disabled`, `type` 등 `<input>` 속성은 그대로 전달됩니다. `onChange`는 [Textarea](./textarea)와 달리 일반 `<input>`처럼 **이벤트**를 받습니다.
 
 ## 참고
 

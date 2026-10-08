@@ -95,8 +95,8 @@ export const GroupHorizontal: Story = {
   render: function Render() {
     return (
       <CheckboxGroup
-        aria-label="채널 속성"
-        orientation="horizontal"
+        label="채널 속성"
+        direction="horizontal"
         defaultValue={["partner"]}
         options={[
           { value: "partner", label: "파트너" },
@@ -272,6 +272,95 @@ export const PermissionMatrix: Story = {
           {JSON.stringify(granted, null, 2)}
         </pre>
       </div>
+    );
+  },
+};
+
+// 묶음 제목은 `label`로 준다. 묶음에 `aria-labelledby`로 연결되고, `required`면 `*`가 붙는다.
+export const GroupWithLabel: Story = {
+  render: function Render() {
+    return (
+      <CheckboxGroup
+        label="채널 속성"
+        required
+        defaultValue={["partner"]}
+        options={[
+          { value: "partner", label: "파트너" },
+          { value: "trader", label: "트레이더" },
+        ]}
+      />
+    );
+  },
+};
+
+// `orientation="horizontal"`은 제목을 왼쪽에 놓는다(첫 옵션 줄과 맞춤). 옵션 배치는 `direction`이 정한다.
+export const GroupLabelOnLeft: Story = {
+  render: function Render() {
+    return (
+      <CheckboxGroup
+        label="채널 속성"
+        orientation="horizontal"
+        direction="horizontal"
+        defaultValue={["partner"]}
+        options={[
+          { value: "partner", label: "파트너" },
+          { value: "trader", label: "트레이더" },
+          { value: "media", label: "미디어" },
+        ]}
+      />
+    );
+  },
+};
+
+export const GroupWithDescription: Story = {
+  render: function Render() {
+    return (
+      <CheckboxGroup
+        label="노출 위치"
+        description="홈과 상세 중 하나 이상 선택하세요."
+        defaultValue={["home"]}
+        options={[
+          { value: "home", label: "홈" },
+          { value: "detail", label: "상세" },
+        ]}
+      />
+    );
+  },
+};
+
+// 에러가 있으면 모든 체크박스가 에러 상태가 되고 메시지가 아래에 보인다. 하나라도 고르면 에러를 지운다.
+export const GroupWithError: Story = {
+  render: function Render() {
+    const [value, setValue] = useState<string[]>([]);
+    return (
+      <CheckboxGroup
+        label="노출 위치"
+        required
+        description="홈과 상세 중 하나 이상 선택하세요."
+        error={value.length === 0 ? "노출 위치를 하나 이상 선택해 주세요." : undefined}
+        value={value}
+        onChange={setValue}
+        options={[
+          { value: "home", label: "홈" },
+          { value: "detail", label: "상세" },
+        ]}
+      />
+    );
+  },
+};
+
+// 단일 체크박스의 `error`: 라벨 글자 아래에 맞춰 표시되고 `description`은 가려진다.
+export const SingleWithError: Story = {
+  render: function Render() {
+    const [agreed, setAgreed] = useState(false);
+    return (
+      <Checkbox
+        label="이용 약관에 동의합니다"
+        description="서비스 이용을 위해 필요해요."
+        checked={agreed}
+        onChange={setAgreed}
+        error={agreed ? undefined : "약관에 동의해 주세요."}
+      />
     );
   },
 };

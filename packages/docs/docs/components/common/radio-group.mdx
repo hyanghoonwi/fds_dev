@@ -1,0 +1,475 @@
+---
+sidebar_position: 7
+---
+
+import { useState } from "react";
+import { Button, Input, RadioGroup, Textarea } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# RadioGroup
+
+여러 선택지 중 **하나만** 고르는 입력입니다. 게시/미게시, 노출/숨김, 승인/반려처럼 서로 배타적인 선택에 씁니다. 여러 개를 고를 수 있으면 [Checkbox](./checkbox)를 쓰세요.
+
+단독 `Radio`는 따로 공개하지 않습니다. 라디오는 하나만 있으면 의미가 없고(다른 선택지와 묶여야 상호배타가 성립), 묶음마다 `name`을 직접 맞춰 줘야 하는 실수가 생기기 때문에 **`options`를 받는 `RadioGroup` 하나**로 쓰는 것이 유일한 방법입니다.
+
+[Input](./input)과 같은 필드 props(`label`, `orientation`, `labelWidth`, `required`, `description`, `error`)를 내장합니다. 규칙은 [Input의 공통 필드 props](./input#폼-컨트롤-공통-필드-props)와 [FormField](./form-field)를 보세요.
+
+## Usage
+
+값은 `string`이고, 선택이 **바뀔 때만** `onChange`가 호출됩니다. 이미 선택된 옵션을 다시 눌러도 호출되지 않습니다.
+
+export function Demo() {
+  const [value, setValue] = useState("published");
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <RadioGroup
+        label="게시 상태"
+        options={[
+          { value: "published", label: "게시" },
+          { value: "unpublished", label: "미게시" },
+        ]}
+        value={value}
+        onChange={setValue}
+      />
+      <span style={{ fontSize: 13, color: "var(--fds-text-secondary)" }}>
+        현재 값: {value}
+      </span>
+    </div>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { RadioGroup } from "@fds/core";
+
+const [value, setValue] = useState<string | null>("published");
+
+<RadioGroup
+  label="게시 상태"
+  options={[
+    { value: "published", label: "게시" },
+    { value: "unpublished", label: "미게시" },
+  ]}
+  value={value}
+  onChange={setValue}
+/>
+```
+
+`value`가 `null`이면 아무것도 선택되지 않은 상태입니다. `value` 대신 `defaultValue`를 주면 상태를 컴포넌트가 가집니다(비제어). 제어 모드에서 부모가 `onChange`로 값을 바꾸지 않으면 선택은 그대로 유지됩니다. 값은 항상 부모가 정합니다.
+
+## direction과 orientation
+
+두 prop은 서로 다른 것을 정합니다.
+
+- **`direction`**: 옵션들을 어떻게 늘어놓을지. `"vertical"`(기본, 세로)과 `"horizontal"`(한 줄, 넘치면 줄바꿈).
+- **`orientation`**: 제목(라벨)을 어디에 둘지. `"vertical"`(기본, 제목이 위)과 `"horizontal"`(제목이 왼쪽, 첫 옵션 줄과 맞춤). [Input](./input)과 같은 의미입니다.
+
+와이어프레임의 `● 노출 ○ 숨김`처럼 한 줄로 나열하려면 `direction="horizontal"`입니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 480 }}
+>
+  <RadioGroup
+    label="노출 여부"
+    direction="horizontal"
+    defaultValue="visible"
+    options={[
+      { value: "visible", label: "노출" },
+      { value: "hidden", label: "숨김" },
+    ]}
+  />
+  <RadioGroup
+    label="노출 여부"
+    orientation="horizontal"
+    direction="horizontal"
+    defaultValue="visible"
+    options={[
+      { value: "visible", label: "노출" },
+      { value: "hidden", label: "숨김" },
+    ]}
+  />
+</Preview>
+
+```tsx
+// 옵션을 한 줄로
+<RadioGroup label="노출 여부" direction="horizontal" options={options} />
+// 제목도 왼쪽으로 (제목은 첫 옵션 줄과 맞춰짐)
+<RadioGroup
+  label="노출 여부"
+  orientation="horizontal"
+  direction="horizontal"
+  options={options}
+/>
+```
+
+## 옵션 설명과 비활성
+
+옵션마다 `description`을 붙이면 라벨 아래에 작게 표시되고 그 라디오의 `aria-describedby`로 연결됩니다. 묶음 전체의 설명은 `description` prop입니다. 일부 옵션만 `disabled`로 막을 수도 있습니다. 비활성 옵션은 클릭도, 방향키 이동도 건너뜁니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 440 }}
+>
+  <RadioGroup
+    label="신청 방식"
+    defaultValue="internal"
+    options={[
+      {
+        value: "internal",
+        label: "내부 신청",
+        description: "서비스 안의 신청 폼으로 받아요.",
+      },
+      {
+        value: "external",
+        label: "외부 링크",
+        description: "다른 사이트로 연결해요.",
+      },
+      {
+        value: "google",
+        label: "Google Form",
+        description: "구글 폼 링크로 연결해요.",
+      },
+    ]}
+  />
+  <RadioGroup
+    label="회원 조치"
+    defaultValue="none"
+    options={[
+      { value: "none", label: "조치 없음" },
+      { value: "warn", label: "경고" },
+      { value: "suspend", label: "이용정지", disabled: true },
+    ]}
+  />
+</Preview>
+
+```tsx
+<RadioGroup
+  label="신청 방식"
+  options={[
+    {
+      value: "internal",
+      label: "내부 신청",
+      description: "서비스 안의 신청 폼으로 받아요.",
+    },
+    {
+      value: "external",
+      label: "외부 링크",
+      description: "다른 사이트로 연결해요.",
+    },
+  ]}
+/>
+
+<RadioGroup
+  label="회원 조치"
+  options={[
+    { value: "none", label: "조치 없음" },
+    { value: "warn", label: "경고" },
+    { value: "suspend", label: "이용정지", disabled: true },
+  ]}
+/>
+```
+
+## Required, Error
+
+`required`는 제목 뒤에 `*`를 붙이고 각 라디오에 네이티브 `required`를, 그룹에 `aria-required`를 적용합니다. `error`가 있으면 에러 상태(동그라미 에러 색 테두리, 그룹 `aria-invalid`)와 메시지가 켜지고 `description`은 에러가 대신합니다.
+
+export function ErrorDemo() {
+  const [value, setValue] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        alignItems: "flex-start",
+      }}
+    >
+      <RadioGroup
+        label="콘텐츠 조치"
+        required
+        options={[
+          { value: "keep", label: "콘텐츠 유지" },
+          { value: "hide", label: "콘텐츠 숨김" },
+          { value: "delete", label: "콘텐츠 삭제" },
+        ]}
+        value={value}
+        onChange={setValue}
+        error={
+          submitted && value === null ? "조치를 선택해 주세요." : undefined
+        }
+      />
+      <Button variant="primary" onClick={() => setSubmitted(true)}>
+        저장
+      </Button>
+    </div>
+  );
+}
+
+<Preview>
+  <ErrorDemo />
+</Preview>
+
+```tsx
+<RadioGroup
+  label="콘텐츠 조치"
+  required
+  options={options}
+  value={value}
+  onChange={setValue}
+  error={submitted && value === null ? "조치를 선택해 주세요." : undefined}
+/>
+```
+
+## 조건부 필드
+
+선택한 값에 따라 다른 입력을 켜는 패턴입니다. 신청 방식이 "외부 링크"이면 URL 입력을, "Google Form"이면 폼 링크 입력을 활성화하고, 다른 방식으로 바꾸면 이전 입력은 비웁니다. 이 규칙은 앱 로직이고 `RadioGroup`은 값만 알려 줍니다.
+
+export function ConditionalFieldDemo() {
+  const [method, setMethod] = useState("internal");
+  const [externalUrl, setExternalUrl] = useState("");
+  const [formUrl, setFormUrl] = useState("");
+
+const handleChange = (next) => {
+setMethod(next);
+if (next !== "external") setExternalUrl("");
+if (next !== "google") setFormUrl("");
+};
+
+const payload = {
+method,
+...(method === "external" ? { url: externalUrl } : {}),
+...(method === "google" ? { formUrl } : {}),
+};
+
+return (
+<div style={{ display: "flex", flexDirection: "column", gap: 12, width: 360 }}>
+<RadioGroup
+label="신청 방식"
+options={[
+{ value: "internal", label: "내부 신청" },
+{ value: "external", label: "외부 링크" },
+{ value: "google", label: "Google Form" },
+]}
+value={method}
+onChange={handleChange}
+/>
+<Input
+label="외부 링크 URL"
+placeholder="https://"
+disabled={method !== "external"}
+value={externalUrl}
+onChange={(event) => setExternalUrl(event.target.value)}
+/>
+<Input
+label="Google Form 링크"
+placeholder="https://forms.gle/"
+disabled={method !== "google"}
+value={formUrl}
+onChange={(event) => setFormUrl(event.target.value)}
+/>
+<pre
+style={{
+          margin: 0,
+          fontSize: 12,
+          background: "var(--fds-bg-page)",
+          color: "var(--fds-text-primary)",
+          padding: 12,
+          borderRadius: 8,
+        }} >
+{JSON.stringify(payload, null, 2)}
+</pre>
+</div>
+);
+}
+
+<Preview>
+  <ConditionalFieldDemo />
+</Preview>
+
+```tsx
+const handleChange = (next: string) => {
+  setMethod(next);
+  if (next !== "external") setExternalUrl("");
+  if (next !== "google") setFormUrl("");
+};
+
+<RadioGroup label="신청 방식" options={options} value={method} onChange={handleChange} />
+<Input label="외부 링크 URL" disabled={method !== "external"} value={externalUrl} ... />
+<Input label="Google Form 링크" disabled={method !== "google"} value={formUrl} ... />
+```
+
+## 검수 결정
+
+승인/반려/확인중을 고르고, **반려를 고르면 사유가 필수**가 되며 사유가 비어 있으면 처리 버튼이 비활성입니다. 기획서의 "반려 사유 미입력 시 반려 버튼 비활성" 규칙을 그대로 옮긴 예시입니다.
+
+export function ReviewDemo() {
+  const [decision, setDecision] = useState("pending");
+  const [reason, setReason] = useState("");
+  const [result, setResult] = useState("아직 처리 안 함");
+
+const rejected = decision === "rejected";
+const canSubmit = decision !== "pending" && (!rejected || reason.trim().length > 0);
+
+return (
+<div style={{ display: "flex", flexDirection: "column", gap: 12, width: 360 }}>
+<RadioGroup
+label="검수 결과"
+direction="horizontal"
+options={[
+{ value: "pending", label: "확인중" },
+{ value: "approved", label: "승인" },
+{ value: "rejected", label: "반려" },
+]}
+value={decision}
+onChange={setDecision}
+/>
+{rejected && (
+<Textarea
+          label="반려 사유"
+          required
+          value={reason}
+          onChange={setReason}
+          placeholder="반려 사유를 입력해 주세요"
+          showCount
+          maxLength={200}
+        />
+)}
+<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+<Button
+variant={rejected ? "danger" : "primary"}
+disabled={!canSubmit}
+onClick={() => setResult(rejected ? "반려: " + reason.trim() : "승인")} >
+처리
+</Button>
+<span style={{ fontSize: 12, color: "var(--fds-text-secondary)" }}>
+결과: {result}
+</span>
+</div>
+</div>
+);
+}
+
+<Preview>
+  <ReviewDemo />
+</Preview>
+
+```tsx
+const rejected = decision === "rejected";
+const canSubmit =
+  decision !== "pending" && (!rejected || reason.trim().length > 0);
+
+<RadioGroup
+  label="검수 결과"
+  direction="horizontal"
+  options={options}
+  value={decision}
+  onChange={setDecision}
+/>;
+{
+  rejected && (
+    <Textarea
+      label="반려 사유"
+      required
+      value={reason}
+      onChange={setReason}
+      showCount
+      maxLength={200}
+    />
+  );
+}
+<Button variant={rejected ? "danger" : "primary"} disabled={!canSubmit}>
+  처리
+</Button>;
+```
+
+## 폼 제출
+
+`name`을 주면 `FormData`에 그 이름으로 선택된 값이 제출됩니다. 생략하면 이름이 자동으로 만들어져(방향키 이동과 그룹 묶음에는 쓰이지만) 의미 있는 이름으로는 제출되지 않으니, 폼으로 보내려면 `name`을 직접 주세요.
+
+export function FormDemo() {
+  const [output, setOutput] = useState("제출 전");
+  return (
+    <form
+      style={{ width: 280 }}
+      onSubmit={(event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        setOutput(JSON.stringify(Object.fromEntries(data.entries()), null, 2));
+      }}
+    >
+      <RadioGroup
+        aria-label="노출 여부"
+        name="visibility"
+        defaultValue="visible"
+        options={[
+          { value: "visible", label: "노출" },
+          { value: "hidden", label: "숨김" },
+        ]}
+      />
+      <div style={{ marginTop: 12 }}>
+        <Button type="submit" variant="primary">
+          제출
+        </Button>
+      </div>
+      <pre
+        style={{
+          margin: "12px 0 0",
+          fontSize: 12,
+          background: "var(--fds-bg-page)",
+          color: "var(--fds-text-primary)",
+          padding: 12,
+          borderRadius: 8,
+        }}
+      >
+        {output}
+      </pre>
+    </form>
+  );
+}
+
+<Preview>
+  <FormDemo />
+</Preview>
+
+```tsx
+<form onSubmit={handleSubmit}>
+  <RadioGroup name="visibility" defaultValue="visible" options={options} />
+</form>
+// 제출 시 FormData: visibility=visible
+```
+
+## Props
+
+`<div>`의 속성(`id`, `style`, `aria-*` 등)을 받아서 그룹 요소에 전달합니다. 단 `role`, `children`, `onChange`, `defaultValue`는 아래 시그니처로 대체됩니다.
+
+| Prop                 | 타입                                                                                 | 기본값       | 설명                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------ | ------------ | ---------------------------------------------------------------------------------------------- |
+| `options`            | `{ value: string; label: ReactNode; description?: ReactNode; disabled?: boolean }[]` | -            | 선택지 목록 (필수)                                                                             |
+| `value`              | `string \| null`                                                                     | -            | 선택된 값 (제어 모드). `null`은 선택 없음                                                      |
+| `defaultValue`       | `string \| null`                                                                     | `null`       | 처음 선택될 값 (비제어 모드)                                                                   |
+| `onChange`           | `(value: string) => void`                                                            | -            | 선택이 **바뀔 때만** 호출. 같은 옵션을 다시 눌러도 호출되지 않음                               |
+| `name`               | `string`                                                                             | 자동 생성    | 폼 제출 이름이자 같은 그룹으로 묶는 이름(방향키 이동). 직접 주면 `FormData`에 그 이름으로 제출 |
+| `direction`          | `"vertical" \| "horizontal"`                                                         | `"vertical"` | 옵션들의 배치. `horizontal`은 한 줄(넘치면 줄바꿈)                                             |
+| `label`              | `ReactNode`                                                                          | -            | 묶음의 제목. 그룹에 `aria-labelledby`로 연결됨                                                 |
+| `orientation`        | `"vertical" \| "horizontal"`                                                         | `"vertical"` | 제목 배치. `vertical`은 위, `horizontal`은 왼쪽(첫 옵션 줄과 맞춤)                             |
+| `labelWidth`         | `number`                                                                             | `80`         | 가로 배치일 때 제목 영역 너비(px)                                                              |
+| `required`           | `boolean`                                                                            | -            | 제목 뒤 `*`, 라디오에 `required`, 그룹에 `aria-required`                                       |
+| `description`        | `ReactNode`                                                                          | -            | 옵션들 아래 설명. `error`가 있으면 에러가 대신 표시됨                                          |
+| `error`              | `ReactNode`                                                                          | -            | 에러 메시지. 에러 상태가 켜지고 메시지가 옵션들 아래에 표시됨                                  |
+| `invalid`            | `boolean`                                                                            | -            | 에러 상태만 켬 (에러 색 테두리 + `aria-invalid`). 문구는 표시하지 않음                         |
+| `disabled`           | `boolean`                                                                            | -            | 그룹 전체 비활성                                                                               |
+| `containerClassName` | `string`                                                                             | -            | 제목·옵션·보조 문구를 모두 감싸는 컨테이너의 클래스                                            |
+| `className`          | `string`                                                                             | -            | 옵션들을 감싸는 그룹 요소의 클래스                                                             |
+| `aria-label`         | `string`                                                                             | -            | 제목(`label`)이 없을 때 그룹의 이름                                                            |
+| `ref`                | `Ref<HTMLDivElement>`                                                                | -            | React 19 `ref` prop. 그룹 요소에 연결                                                          |
+
+## 참고
+
+- **키보드**: 같은 `name`의 네이티브 라디오이므로 브라우저가 처리합니다. `Tab`은 그룹에 한 번만 들어가고(선택된 항목, 없으면 첫 항목) 한 번 더 누르면 그룹을 벗어납니다. `↑ ↓ ← →`로 옵션 사이를 이동하며 이동과 동시에 선택됩니다. 처음과 끝에서는 반대편으로 이어지고, 비활성 옵션은 건너뜁니다.
+- **접근성**: 그룹은 `role="radiogroup"`이고 제목은 `aria-labelledby`로 연결됩니다. 제목이 없으면 `aria-label`을 주세요. 옵션 설명은 해당 라디오의 `aria-describedby`로 읽힙니다.
+- 동그라미와 라벨 글자 어디를 눌러도 선택됩니다. 포커스 링은 키보드로 이동했을 때만 보입니다.
+- 에러 문구는 `error` prop이 그려 줍니다. 앱이 직접 그리는 경우에는 `aria-describedby`로 그룹에 연결하세요.

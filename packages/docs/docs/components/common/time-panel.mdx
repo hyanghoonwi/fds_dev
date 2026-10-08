@@ -1,0 +1,107 @@
+---
+sidebar_position: 19
+---
+
+import { useState } from "react";
+import { TimePanel } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# TimePanel
+
+"시"와 "분" 두 목록으로 시간을 고르는 **패널**입니다. 확인 버튼, 팝업, 열고 닫는 동작이 없어서 화면에 바로 놓거나, [Popover](./popover)나 Modal 안에 넣어 쓸 수 있습니다. 입력창과 확인 버튼까지 묶은 폼용 컴포넌트는 [TimePicker](./time-picker)입니다.
+
+## Usage
+
+값은 24시간제 `"HH:mm"` 문자열입니다. 시나 분을 **누를 때마다 `onChange`가 바로 호출**됩니다(확정 단계 없음). 값은 `value`로만 제어하므로 `useState`로 받아서 다시 넘깁니다.
+
+export function BasicDemo() {
+  const [time, setTime] = useState(null);
+  return (
+    <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+      <div
+        style={{
+          padding: 12,
+          border: "1px solid var(--fds-border-line)",
+          borderRadius: 12,
+        }}
+      >
+        <TimePanel value={time} onChange={setTime} />
+      </div>
+      <div style={{ fontSize: 14, lineHeight: "20px" }}>
+        선택한 값: <code>{time ?? "없음"}</code>
+      </div>
+    </div>
+  );
+}
+
+<Preview style={{ alignItems: "flex-start" }}>
+  <BasicDemo />
+</Preview>
+
+```tsx
+const [time, setTime] = useState<string | null>(null);
+
+<TimePanel value={time} onChange={setTime} />
+```
+
+- 값이 없는 상태에서 **시**를 고르면 `"HH:00"`, **분**을 고르면 `"00:mm"`이 됩니다.
+- 열릴 때 선택된 시/분이 목록 가운데 근처에 보이고, 은은한 파란 배경으로 표시됩니다.
+
+## minuteStep
+
+`minuteStep`으로 분 목록의 간격을 정합니다. 기본은 `1`(00~59)이고, 60의 약수(1, 5, 10, 15, 30)를 권장합니다.
+
+export function StepDemo() {
+  const [time, setTime] = useState("09:30");
+  return (
+    <div
+      style={{
+        padding: 12,
+        border: "1px solid var(--fds-border-line)",
+        borderRadius: 12,
+      }}
+    >
+      <TimePanel value={time} onChange={setTime} minuteStep={10} />
+    </div>
+  );
+}
+
+<Preview style={{ alignItems: "flex-start" }}>
+  <StepDemo />
+</Preview>
+
+```tsx
+<TimePanel value={time} onChange={setTime} minuteStep={10} />; // 00, 10, 20,
+30, (40, 50);
+```
+
+`minuteStep`에 없는 분(간격 10인데 `"14:33"`)이 들어와도 값은 그대로 유지되지만, 분 목록에서는 선택 표시가 되지 않습니다.
+
+## 키보드
+
+`autoFocus`를 켜면 열릴 때 시 목록의 선택 항목(없으면 `00`)에 포커스가 갑니다. 각 목록은 `listbox`, 항목은 `option`(`aria-selected`)입니다. 방향키는 페이지를 스크롤하지 않습니다.
+
+| 키              | 동작                                                            |
+| --------------- | --------------------------------------------------------------- |
+| `↑` `↓`         | 같은 목록에서 이전/다음 항목으로 포커스 이동 (처음/끝에서 멈춤) |
+| `Home` `End`    | 목록의 처음/끝으로 이동                                         |
+| `←` `→`         | 시 ↔ 분 목록 전환 (선택된 항목, 없으면 `00`으로 이동)           |
+| `Enter` `Space` | 포커스된 항목 선택 (`onChange`가 바로 호출됨)                   |
+
+## Props
+
+| Prop         | 타입                      | 기본값  | 설명                                                                        |
+| ------------ | ------------------------- | ------- | --------------------------------------------------------------------------- |
+| `value`      | `string \| null`          | -       | 선택된 시간 `"HH:mm"`(24시간제). 형식이 잘못된 문자열은 선택 안 함으로 취급 |
+| `onChange`   | `(value: string) => void` | -       | 시/분을 고를 때마다 바로 `"HH:mm"`으로 호출                                 |
+| `minuteStep` | `number`                  | `1`     | 분 목록의 간격. 60의 약수(1, 5, 10, 15, 30) 권장                            |
+| `autoFocus`  | `boolean`                 | `false` | 마운트될 때 시 목록의 선택 항목(없으면 `00`)에 포커스                       |
+| `className`  | `string`                  | -       | 추가 클래스                                                                 |
+| `ref`        | `Ref<HTMLDivElement>`     | -       | React 19 `ref` prop (패널 최상위 요소)                                      |
+
+## 참고
+
+- **24시간제만 지원합니다.** 오전/오후(AM/PM) 표기와 초 단위 선택은 지원하지 않습니다.
+- `TimePanel`은 `value`가 없어도 내부 상태를 갖지 않습니다. 항상 `value`/`onChange`로 제어하세요.
+- 값을 **확정하는 단계**(확인 버튼, 취소)가 필요하면 `TimePicker`를 쓰거나, 임시 값을 직접 들고 있다가 버튼에서 확정하세요.
+- 날짜와 함께 고르는 조합은 [DateTimePicker](./date-time-picker)가 `Calendar`와 `TimePanel`을 나란히 두는 방식으로 만들어져 있습니다.

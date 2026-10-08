@@ -12,7 +12,11 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    direction: { control: "inline-radio", options: ["vertical", "horizontal"] },
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
+    label: { control: "text" },
+    description: { control: "text" },
+    error: { control: "text" },
     disabled: { control: "boolean" },
     invalid: { control: "boolean" },
     required: { control: "boolean" },
@@ -60,10 +64,10 @@ export const FixedValue: Story = {
   args: { value: "published", onChange: () => {} },
 };
 
-// 노출/숨김 — 와이어프레임처럼 한 줄로 나열
-export const Horizontal: Story = {
+// 노출/숨김 — 와이어프레임처럼 옵션을 한 줄로 나열 (`direction`은 옵션 배치, `orientation`은 제목 배치)
+export const HorizontalOptions: Story = {
   args: {
-    orientation: "horizontal",
+    direction: "horizontal",
     options: [
       { value: "visible", label: "노출" },
       { value: "hidden", label: "숨김" },
@@ -76,8 +80,8 @@ export const Horizontal: Story = {
   },
 };
 
-// 옵션마다 설명을 붙일 수 있다
-export const WithDescription: Story = {
+// 옵션마다 설명을 붙일 수 있다 (묶음 전체의 설명은 `description` prop)
+export const OptionDescriptions: Story = {
   args: {
     options: [
       { value: "internal", label: "내부 신청", description: "서비스 안의 신청 폼으로 받아요." },
@@ -108,39 +112,29 @@ export const DisabledOption: Story = {
   },
 };
 
-// 저장했는데 선택이 없으면 에러 상태로 바꾼다 (invalid + 에러 문구는 앱이 그린다)
+// 저장했는데 선택이 없으면 `error`로 문구와 에러 상태를 함께 보여 준다
 export const Invalid: Story = {
   args: {
+    label: "콘텐츠 조치",
     required: true,
     options: [
       { value: "keep", label: "콘텐츠 유지" },
       { value: "hide", label: "콘텐츠 숨김" },
       { value: "delete", label: "콘텐츠 삭제" },
     ],
-    "aria-label": "콘텐츠 조치",
+    "aria-label": undefined,
   },
   render: function Render(args) {
     const [value, setValue] = useState<string | null>(null);
     const [submitted, setSubmitted] = useState(false);
-    const invalid = submitted && value === null;
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
         <RadioGroup
           {...args}
           value={value}
           onChange={setValue}
-          invalid={invalid}
-          aria-describedby="radio-invalid-message"
+          error={submitted && value === null ? "조치를 선택해 주세요." : undefined}
         />
-        {invalid && (
-          <p
-            id="radio-invalid-message"
-            role="alert"
-            style={{ margin: 0, fontSize: 11, color: "var(--fds-brand-error)" }}
-          >
-            조치를 선택해 주세요.
-          </p>
-        )}
         <Button variant="primary" onClick={() => setSubmitted(true)}>
           저장
         </Button>
@@ -207,7 +201,7 @@ export const ReviewDecision: Story = {
       { value: "approved", label: "승인" },
       { value: "rejected", label: "반려" },
     ],
-    orientation: "horizontal",
+    direction: "horizontal",
     "aria-label": "검수 결과",
   },
   render: function Render(args) {
@@ -274,6 +268,70 @@ export const InFormData: Story = {
         </div>
         <pre style={preStyle}>{output}</pre>
       </form>
+    );
+  },
+};
+
+// 묶음 제목은 `label`로 준다. 그룹에 `aria-labelledby`로 연결되고, `required`면 `*`가 붙는다.
+export const WithLabel: Story = {
+  args: {
+    label: "게시 상태",
+    required: true,
+    "aria-label": undefined,
+  },
+  render: function Render(args) {
+    const [value, setValue] = useState<string | null>("published");
+    return <RadioGroup {...args} value={value} onChange={setValue} />;
+  },
+};
+
+// 제목이 왼쪽에 놓인다(첫 옵션 줄과 맞춤). 옵션을 한 줄로 늘어놓으려면 `direction="horizontal"`을 함께 쓴다.
+export const Horizontal: Story = {
+  args: {
+    label: "노출 여부",
+    orientation: "horizontal",
+    direction: "horizontal",
+    options: [
+      { value: "visible", label: "노출" },
+      { value: "hidden", label: "숨김" },
+    ],
+    "aria-label": undefined,
+  },
+  render: function Render(args) {
+    const [value, setValue] = useState<string | null>("visible");
+    return <RadioGroup {...args} value={value} onChange={setValue} />;
+  },
+};
+
+export const WithDescription: Story = {
+  args: {
+    label: "게시 상태",
+    description: "미게시로 바꾸면 사용자 화면에서 바로 사라져요.",
+    "aria-label": undefined,
+  },
+  render: function Render(args) {
+    const [value, setValue] = useState<string | null>("published");
+    return <RadioGroup {...args} value={value} onChange={setValue} />;
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    label: "게시 상태",
+    required: true,
+    description: "게시 여부를 정해 주세요.",
+    error: "게시 상태를 선택해 주세요.",
+    "aria-label": undefined,
+  },
+  render: function Render(args) {
+    const [value, setValue] = useState<string | null>(null);
+    return (
+      <RadioGroup
+        {...args}
+        value={value}
+        onChange={setValue}
+        error={value === null ? args.error : undefined}
+      />
     );
   },
 };
