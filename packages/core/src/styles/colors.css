@@ -1,0 +1,124 @@
+/*
+ * 컬러 토큰 — Figma "Design Tokens — Full Reference" (node 485:8181)
+ *
+ * 시맨틱 컬러는 --fds-* 변수 하나에 라이트 값을 두고, [data-theme="dark"]에서 값만 덮어쓴다.
+ * Tailwind 유틸리티(--color-*)는 이 변수를 참조하므로 컴포넌트에 `dark:` 클래스를 붙일 필요가 없다.
+ *   예) bg-bg-surface / text-text-primary / border-border-line
+ */
+:root {
+  --fds-text-primary: #333d4b;
+  --fds-text-strong: #434446;
+  --fds-text-secondary: #5c646f;
+  --fds-text-tertiary: #62676d;
+  --fds-text-sub: #757575;
+  --fds-text-caption: #8b95a1;
+  --fds-text-timestamp: #8f9296;
+  --fds-text-muted: #9498a9;
+  --fds-text-disabled: #b0b8c1;
+  --fds-text-icon-default: #62676d;
+  --fds-text-inverse: #ffffff;
+  --fds-brand-primary: #3182f6;
+  --fds-brand-error: #f04438;
+  --fds-bg-surface: #ffffff;
+  --fds-bg-elevated: #f7f9fc;
+  --fds-bg-base: #eff0f1;
+  --fds-bg-blue-tint: #eef4ff;
+  --fds-bg-overlay: #000000;
+  --fds-bg-input: #eff0f1;
+  --fds-bg-page: #f2f4f6;
+  --fds-border-subtle: #ebeced;
+  --fds-border-light: #e5e8eb;
+  --fds-border-default: #dcddde;
+  --fds-border-strong: #d3d3d3;
+  --fds-border-line: #e7ebf2;
+  --fds-line-1: #dce8ff;
+  --fds-line-2: #e7ebf2;
+
+  /* Component */
+  --fds-segment-active-bg: #ffffff;
+  --fds-chat-card-bg: #ffffff;
+  --fds-switch-track-off: #c0c3c7;
+}
+
+[data-theme="dark"] {
+  --fds-text-primary: #f2f4f6;
+  --fds-text-strong: #f5f6f7;
+  --fds-text-secondary: #c7cbd1;
+  --fds-text-tertiary: #a9aeb4;
+  --fds-text-sub: #9aa0a6;
+  --fds-text-caption: #9199a6;
+  --fds-text-timestamp: #9ca0a5;
+  --fds-text-muted: #8890a0;
+  --fds-text-disabled: #5b6169;
+  --fds-text-icon-default: #a9aeb4;
+  --fds-text-inverse: #ffffff;
+  --fds-brand-primary: #4c8df8;
+  --fds-brand-error: #ff6b5e;
+  --fds-bg-surface: #1e2024;
+  --fds-bg-elevated: #262a31;
+  --fds-bg-base: #15171a;
+  --fds-bg-blue-tint: #1b2a44;
+  --fds-bg-overlay: #000000;
+  --fds-bg-input: #24272c;
+  --fds-bg-page: #17191c;
+  --fds-border-subtle: #2a2d31;
+  --fds-border-light: #33363b;
+  --fds-border-default: #3d4045;
+  --fds-border-strong: #4b4e53;
+  --fds-border-line: #2e333b;
+  --fds-line-1: #35507a;
+  --fds-line-2: #34383e;
+
+  /* Component */
+  --fds-segment-active-bg: #262a31;
+  --fds-chat-card-bg: #262a31;
+  --fds-switch-track-off: #242b35;
+}
+
+@theme inline {
+  --color-text-primary: var(--fds-text-primary);
+  --color-text-strong: var(--fds-text-strong);
+  --color-text-secondary: var(--fds-text-secondary);
+  --color-text-tertiary: var(--fds-text-tertiary);
+  --color-text-sub: var(--fds-text-sub);
+  --color-text-caption: var(--fds-text-caption);
+  --color-text-timestamp: var(--fds-text-timestamp);
+  --color-text-muted: var(--fds-text-muted);
+  --color-text-disabled: var(--fds-text-disabled);
+  --color-text-icon-default: var(--fds-text-icon-default);
+  --color-text-inverse: var(--fds-text-inverse);
+  --color-brand-primary: var(--fds-brand-primary);
+  --color-brand-error: var(--fds-brand-error);
+  --color-bg-surface: var(--fds-bg-surface);
+  --color-bg-elevated: var(--fds-bg-elevated);
+  --color-bg-base: var(--fds-bg-base);
+  --color-bg-blue-tint: var(--fds-bg-blue-tint);
+  --color-bg-overlay: var(--fds-bg-overlay);
+  --color-bg-input: var(--fds-bg-input);
+  --color-bg-page: var(--fds-bg-page);
+  --color-border-subtle: var(--fds-border-subtle);
+  --color-border-light: var(--fds-border-light);
+  --color-border-default: var(--fds-border-default);
+  --color-border-strong: var(--fds-border-strong);
+  --color-border-line: var(--fds-border-line);
+  --color-line-1: var(--fds-line-1);
+  --color-line-2: var(--fds-line-2);
+  --color-segment-active-bg: var(--fds-segment-active-bg);
+  --color-chat-card-bg: var(--fds-chat-card-bg);
+  --color-switch-track-off: var(--fds-switch-track-off);
+
+  /* Foundation (원시값, 모드 무관) */
+  --color-foundation-blue-50: #eef4ff;
+  --color-foundation-blue-400: #5a9bf8;
+  --color-foundation-blue-500: #3182f6;
+  --color-foundation-deepblue-100: #c0c3c7;
+  --color-foundation-deepblue-200: #b0b8c1;
+  --color-foundation-deepblue-400: #5c646f;
+  --color-foundation-deepblue-500: #333d4b;
+  --color-foundation-deepblue-600: #2e3844;
+  --color-foundation-deepblue-700: #242b35;
+  --color-foundation-grey-50: #f2f4f6;
+  --color-foundation-grey-100: #dcddde;
+  --color-foundation-grey-700: #62676d;
+  --color-foundation-white: #ffffff;
+}

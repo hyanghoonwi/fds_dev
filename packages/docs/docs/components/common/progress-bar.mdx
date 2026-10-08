@@ -1,0 +1,60 @@
+---
+sidebar_position: 11
+---
+
+import { useState } from "react";
+import { ProgressBar } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# ProgressBar
+
+0~100 값을 가로 막대로 보여주는 컴포넌트입니다. `onChange`를 넘기면 클릭과 드래그로 값을 바꿀 수 있는 슬라이더(예: 볼륨 바)로 동작합니다.
+
+export function Demo() {
+  const [value, setValue] = useState(30);
+  return (
+    <div style={{ width: 240 }}>
+      <ProgressBar value={value} onChange={setValue} />
+      <p style={{ margin: "12px 0 0", fontSize: 12 }}>
+        value: {Math.round(value)}
+      </p>
+    </div>
+  );
+}
+
+## Usage
+
+<Preview>
+  <div style={{ width: 240 }}>
+    <ProgressBar value={60} />
+  </div>
+</Preview>
+
+```tsx
+<ProgressBar value={60} />
+```
+
+## Interactive
+
+`onChange`가 있으면 포인터 클릭·드래그로 값이 갱신되고, 커서가 pointer로 바뀌며 hover/pressed 시 썸이 커집니다.
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+const [value, setValue] = useState(30);
+
+<ProgressBar value={value} onChange={setValue} />
+```
+
+## Props
+
+| Prop        | 타입                      | 기본값 | 설명                                                                    |
+| ----------- | ------------------------- | ------ | ----------------------------------------------------------------------- |
+| `value`     | `number`                  | -      | **필수.** 0 ~ 100. 범위를 벗어나면 클램프됩니다.                        |
+| `onChange`  | `(value: number) => void` | -      | 있으면 인터랙티브 모드. 클릭/드래그 위치를 0~100으로 환산해 호출합니다. |
+| `className` | `string`                  | -      | 추가 클래스                                                             |
+| `ref`       | `Ref<HTMLDivElement>`     | -      | React 19 `ref` prop                                                     |
+
+나머지 `<div>` 속성은 그대로 전달됩니다. 너비는 부모를 채우므로(`w-full`) 부모에서 크기를 지정하세요.

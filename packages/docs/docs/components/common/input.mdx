@@ -1,0 +1,333 @@
+---
+sidebar_position: 3
+---
+
+import { useState } from "react";
+import { Button, EyeIcon, Input, SearchIcon, UserIcon } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Input
+
+한 줄 텍스트 입력 필드입니다. 검색창처럼 높이가 고정된 입력에 사용하고, 내용에 따라 늘어나야 하면 [Textarea](./textarea)를 사용하세요.
+
+## Usage
+
+export function Demo() {
+  const [value, setValue] = useState("");
+  return (
+    <div style={{ width: 280 }}>
+      <Input
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        placeholder="메시지를 입력하세요"
+      />
+    </div>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { Button, EyeIcon, Input, SearchIcon, UserIcon } from "@fds/core";
+
+const [value, setValue] = useState("");
+
+<Input
+  value={value}
+  onChange={(e) => setValue(e.target.value)}
+  placeholder="메시지를 입력하세요"
+/>
+```
+
+## States
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Input placeholder="placeholder" />
+  </div>
+  <div style={{ width: 280 }}>
+    <Input defaultValue="입력된 값" />
+  </div>
+  <div style={{ width: 280 }}>
+    <Input placeholder="disabled" disabled />
+  </div>
+</Preview>
+
+```tsx
+<Input placeholder="placeholder" />
+<Input defaultValue="입력된 값" />
+<Input placeholder="disabled" disabled />
+```
+
+## Label
+
+`label`을 넘기면 입력 필드 위에 라벨이 붙습니다. 라벨은 `htmlFor`로 입력 필드와 자동 연결되므로 라벨을 눌러도 입력 필드에 포커스가 갑니다.
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Input label="닉네임" placeholder="닉네임을 입력하세요" />
+  </div>
+</Preview>
+
+```tsx
+<Input label="닉네임" placeholder="닉네임을 입력하세요" />
+```
+
+## Orientation
+
+`orientation="horizontal"`이면 라벨이 입력 필드 왼쪽에 놓입니다. 설정 화면이나 어드민 폼처럼 항목이 세로로 쌓이는 곳에 맞습니다. 라벨 영역은 고정 너비(기본 80px)라서 여러 줄을 쌓아도 입력 필드의 왼쪽 선이 맞습니다. 라벨이 길어서 줄바꿈되면 `labelWidth`로 늘리세요.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 420 }}
+>
+  <Input
+    label="닉네임"
+    orientation="horizontal"
+    placeholder="닉네임을 입력하세요"
+  />
+  <Input
+    label="이메일"
+    orientation="horizontal"
+    required
+    placeholder="name@example.com"
+  />
+</Preview>
+
+```tsx
+<Input
+  label="닉네임"
+  orientation="horizontal"
+  placeholder="닉네임을 입력하세요"
+/>
+<Input
+  label="이메일"
+  orientation="horizontal"
+  required
+  placeholder="name@example.com"
+/>
+```
+
+## Required
+
+`required`를 넘기면 라벨 뒤에 필수 표시(`*`)가 붙고, 입력 필드에도 `required` 속성이 적용됩니다. 표시는 스크린 리더에는 읽히지 않고(`aria-hidden`), 필수 여부는 `required` 속성으로 전달됩니다.
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Input label="이메일" required placeholder="name@example.com" />
+  </div>
+</Preview>
+
+```tsx
+<Input label="이메일" required placeholder="name@example.com" />
+```
+
+## Description
+
+`description`을 넘기면 입력 필드 아래에 설명(도움말)이 표시됩니다. 입력 규칙이나 안내처럼 에러가 아니어도 알려 줄 내용이 있을 때 사용합니다. 세로·가로 배치 모두 입력 필드 바로 아래, 입력 필드의 왼쪽 선에 맞춰 표시됩니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 420 }}
+>
+  <Input
+    label="닉네임"
+    placeholder="닉네임을 입력하세요"
+    description="2~12자의 한글, 영문, 숫자만 사용할 수 있어요."
+  />
+  <Input
+    label="닉네임"
+    orientation="horizontal"
+    placeholder="닉네임을 입력하세요"
+    description="2~12자의 한글, 영문, 숫자만 사용할 수 있어요."
+  />
+</Preview>
+
+```tsx
+<Input
+  label="닉네임"
+  placeholder="닉네임을 입력하세요"
+  description="2~12자의 한글, 영문, 숫자만 사용할 수 있어요."
+/>
+```
+
+`error`가 있으면 설명 대신 에러 메시지가 표시됩니다. 둘을 함께 쌓으면 하단이 복잡해지므로, 에러가 사라지면 설명이 다시 나타나게 하려고 `description`은 그대로 두고 `error`만 토글하면 됩니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 420 }}
+>
+  <Input
+    label="이메일"
+    defaultValue="name@"
+    description="회사 메일을 입력해 주세요."
+    error="올바른 이메일 형식이 아니에요."
+  />
+</Preview>
+
+```tsx
+<Input
+  label="이메일"
+  defaultValue="name@"
+  description="회사 메일을 입력해 주세요."
+  error="올바른 이메일 형식이 아니에요." // 있으면 description 대신 표시됨
+/>
+```
+
+설명은 입력 필드의 `aria-describedby`에 연결되어 스크린 리더가 입력 필드와 함께 읽습니다.
+
+## Error
+
+`error`에 메시지를 넘기면 입력 필드가 에러 스타일(빨간 테두리)이 되고 메시지가 아래에 표시됩니다. 값이 없으면(`undefined`, `""`) 에러 상태가 해제됩니다.
+
+<Preview style={{ flexDirection: "column", alignItems: "stretch" }}>
+  <Input
+    label="이메일"
+    required
+    defaultValue="name@"
+    error="올바른 이메일 형식이 아니에요."
+  />
+  <Input
+    label="이메일"
+    required
+    orientation="horizontal"
+    defaultValue="name@"
+    error="올바른 이메일 형식이 아니에요."
+  />
+</Preview>
+
+```tsx
+<Input
+  label="이메일"
+  required
+  defaultValue="name@"
+  error="올바른 이메일 형식이 아니에요."
+/>
+<Input
+  label="이메일"
+  required
+  orientation="horizontal"
+  defaultValue="name@"
+  error="올바른 이메일 형식이 아니에요."
+/>
+```
+
+에러가 있으면 `aria-invalid`가 켜지고, 메시지는 `role="alert"`로 `aria-describedby`에 연결됩니다. 입력 중에 에러가 나타나거나 사라져도 입력 필드는 다시 만들어지지 않아 포커스를 잃지 않습니다.
+
+## Addon
+
+`leftAddon`, `rightAddon`에 아이콘, 텍스트, 버튼 등 원하는 요소를 넣을 수 있습니다. 입력값을 가운데 두고 양옆에 붙고, 높이는 그대로(42px)입니다.
+
+- **아이콘(svg)**: 20px로 표시되고 색은 `text-icon-default` 토큰을 따릅니다.
+- **텍스트**: 단위(`px`, `%`, `원` 등)로 쓰면 됩니다. `type="number"`와 함께 쓰면 브라우저 기본 증감 버튼이 숨겨져서 겹치지 않습니다.
+- **버튼**: addon 안의 버튼은 자체 클릭 동작을 그대로 가집니다. 반대로 아이콘이나 텍스트 영역을 누르면 입력 필드에 포커스가 갑니다.
+
+### 아이콘
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 280 }}
+>
+  <Input leftAddon={<SearchIcon />} placeholder="검색어를 입력하세요" />
+  <Input type="password" defaultValue="password" rightAddon={<EyeIcon />} />
+</Preview>
+
+```tsx
+<Input leftAddon={<SearchIcon />} placeholder="검색어를 입력하세요" />
+<Input type="password" defaultValue="password" rightAddon={<EyeIcon />} />
+```
+
+### 단위
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 280 }}
+>
+  <Input type="number" defaultValue={14} rightAddon="px" />
+  <Input type="number" defaultValue={30} rightAddon="%" />
+  <Input type="number" defaultValue={10000} rightAddon="원" />
+</Preview>
+
+```tsx
+<Input type="number" defaultValue={14} rightAddon="px" />
+<Input type="number" defaultValue={30} rightAddon="%" />
+<Input type="number" defaultValue={10000} rightAddon="원" />
+```
+
+### 버튼
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 360 }}
+>
+  <Input
+    label="이메일"
+    placeholder="name@example.com"
+    rightAddon={<Button variant="tint">중복확인</Button>}
+  />
+</Preview>
+
+```tsx
+<Input
+  label="이메일"
+  placeholder="name@example.com"
+  rightAddon={<Button variant="tint">중복확인</Button>}
+/>
+```
+
+## 조합
+
+`label`, `leftAddon`, `rightAddon`, `required`, `error`, `orientation`은 함께 쓸 수 있습니다.
+
+<Preview
+  style={{ flexDirection: "column", alignItems: "stretch", maxWidth: 420 }}
+>
+  <Input
+    label="최대 인원"
+    orientation="horizontal"
+    required
+    leftAddon={<UserIcon />}
+    rightAddon="명"
+    type="number"
+    defaultValue={0}
+    error="1명 이상 입력해 주세요."
+  />
+</Preview>
+
+```tsx
+<Input
+  label="최대 인원"
+  orientation="horizontal"
+  required
+  leftAddon={<UserIcon />}
+  rightAddon="명"
+  type="number"
+  defaultValue={0}
+  error="1명 이상 입력해 주세요."
+/>
+```
+
+## Props
+
+`Input`은 `<input>`의 모든 속성을 그대로 받습니다.
+
+| Prop                 | 타입                         | 기본값       | 설명                                                                                      |
+| -------------------- | ---------------------------- | ------------ | ----------------------------------------------------------------------------------------- |
+| `label`              | `ReactNode`                  | -            | 라벨. 생략하면 라벨 영역이 렌더링되지 않음                                                |
+| `orientation`        | `"vertical" \| "horizontal"` | `"vertical"` | 라벨 배치. `vertical`은 위, `horizontal`은 왼쪽                                           |
+| `leftAddon`          | `ReactNode`                  | -            | 입력값 왼쪽 요소 (아이콘, 텍스트, 버튼 등)                                                |
+| `rightAddon`         | `ReactNode`                  | -            | 입력값 오른쪽 요소 (단위, 아이콘, 버튼 등)                                                |
+| `labelWidth`         | `number`                     | `80`         | 가로 배치일 때 라벨 영역 너비(px)                                                         |
+| `required`           | `boolean`                    | -            | 라벨 뒤에 `*`를 붙이고 입력 필드에 `required` 적용                                        |
+| `error`              | `ReactNode`                  | -            | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시                                        |
+| `containerClassName` | `string`                     | -            | 라벨·에러를 포함한 전체 컨테이너의 클래스                                                 |
+| `className`          | `string`                     | -            | `<input>`의 클래스. 배경·라운드는 바깥 필드 박스에 있으므로 글자 스타일 정도만 덮어쓰세요 |
+| `id`                 | `string`                     | 자동 생성    | 입력 필드 id. 라벨과 에러 메시지 연결에 쓰임                                              |
+| `ref`                | `Ref<HTMLInputElement>`      | -            | React 19 `ref` prop (입력 필드에 연결)                                                    |
+
+그 외 `value`, `onChange`, `placeholder`, `disabled`, `type` 등 `<input>` 속성은 그대로 전달됩니다.
+
+## 참고
+
+- 컨테이너와 입력 필드 모두 `w-full`이라 부모 너비를 따릅니다. 너비를 제한하려면 부모에서 지정하세요.
+- 가로 배치의 라벨 영역은 `labelWidth`(기본 80px)로 고정돼서, 같은 폼의 입력 필드 왼쪽 선이 맞습니다.
+- 배경은 `bg-page`, 라디우스는 `rounded-12`(Figma Text Field 기준)이고, 필드 박스(아이콘·입력값·단위를 감싸는 영역)가 가지고 있습니다.
+- 포커스되면 필드 박스에 `brand-primary` 1px 링이 표시됩니다(에러 상태에서는 빨간색 유지).
+- `type="number"`일 때 브라우저 기본 스피너는 숨겨집니다.

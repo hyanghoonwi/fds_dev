@@ -1,0 +1,233 @@
+---
+sidebar_position: 1
+---
+
+import { useState } from "react";
+import { Button, Modal, OverlayProvider, useOverlay } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# useOverlay
+
+`<OverlayProvider>`를 앱에 한 번만 두면, 컴포넌트 안이든 이벤트 핸들러든 **함수 안에서** 모달 같은 overlay를 열 수 있는 훅입니다. 열어서 그리는 건 React 노드이므로 `Modal`뿐 아니라 어떤 UI든 넘길 수 있고, `openAsync`를 쓰면 사용자의 선택을 `await`로 바로 받습니다.
+
+```tsx
+const ok = await overlay.openAsync<boolean>(({ isOpen, close }) => (
+  <Modal open={isOpen} onClose={() => close(false)} ... />
+));
+```
+
+## 설정
+
+앱 최상단에 `OverlayProvider`를 한 번 감쌉니다. `useOverlay`는 이 Provider 안에서만 쓸 수 있고, 밖에서 호출하면 에러가 납니다.
+
+```tsx
+import { OverlayProvider } from "@fds/core";
+
+export function App() {
+  return (
+    <OverlayProvider>
+      <Routes />
+    </OverlayProvider>
+  );
+}
+```
+
+overlay는 Provider 위치의 DOM 안에 그려집니다(`document.body` 포털을 쓰지 않음). 다크 모드의 `data-theme` 같은 스코프가 DOM 위치에 걸려 있어도 토큰이 그대로 적용되도록 하기 위해서입니다. `Modal`이 `position: fixed`라 화면 전체를 덮는 데는 문제가 없습니다.
+
+## open
+
+`open(render)`로 overlay를 열고 id를 반환합니다. 닫기는 `render`가 받은 `close`로 처리합니다.
+
+export function OpenDemo() {
+  const overlay = useOverlay();
+  return (
+    <Button
+      variant="primary"
+      onClick={() =>
+        overlay.open(({ isOpen, close }) => (
+          <Modal
+            open={isOpen}
+            onClose={close}
+            header="공지"
+            style={{ width: 320 }}
+            actions={
+              <Button variant="primary" onClick={() => close()}>
+                확인
+              </Button>
+            }
+          >
+            <p style={{ margin: 0, fontSize: 14 }}>
+              함수 안에서 연 모달이에요.
+            </p>
+          </Modal>
+        ))
+      }
+    >
+      모달 열기
+    </Button>
+  );
+}
+
+<Preview>
+  <OverlayProvider>
+    <OpenDemo />
+  </OverlayProvider>
+</Preview>
+
+```tsx
+function Notice() {
+  const overlay = useOverlay();
+
+  return (
+    <Button
+      onClick={() =>
+        overlay.open(({ isOpen, close }) => (
+          <Modal
+            open={isOpen}
+            onClose={close}
+            header="공지"
+            actions={
+              <Button variant="primary" onClick={() => close()}>
+                확인
+              </Button>
+            }
+          >
+            함수 안에서 연 모달이에요.
+          </Modal>
+        ))
+      }
+    >
+      모달 열기
+    </Button>
+  );
+}
+```
+
+:::note
+이 데모는 모달이 뜨면 화면 전체에 딤이 깔립니다. 확인 버튼, Esc, 바깥 클릭으로 닫을 수 있습니다.
+:::
+
+## openAsync
+
+`openAsync<T>(render)`는 overlay가 닫힐 때까지 기다렸다가 `close(value)`로 넘긴 값을 반환합니다. 확인/취소처럼 **사용자의 선택을 이어서 처리**해야 할 때 콜백 대신 `await`로 쓸 수 있습니다.
+
+export function ConfirmDemo() {
+  const overlay = useOverlay();
+  const [result, setResult] = useState("아직 선택 안 함");
+  const handleBlock = async () => {
+    const ok = await overlay.openAsync(({ isOpen, close }) => (
+      <Modal
+        open={isOpen}
+        onClose={() => close(false)}
+        header="채팅 차단"
+        style={{ width: 320 }}
+        actions={
+          <>
+            <Button variant="line" onClick={() => close(false)}>
+              취소
+            </Button>
+            <Button variant="danger" onClick={() => close(true)}>
+              차단
+            </Button>
+          </>
+        }
+      >
+        <p style={{ margin: 0, fontSize: 14 }}>이 사용자를 차단하시겠어요?</p>
+      </Modal>
+    ));
+    setResult(ok ? "차단했어요" : "취소했어요");
+  };
+  return (
+    <>
+      <Button variant="danger" onClick={handleBlock}>
+        차단하기
+      </Button>
+      <span style={{ fontSize: 14, color: "var(--fds-text-secondary)" }}>
+        결과: {result}
+      </span>
+    </>
+  );
+}
+
+<Preview>
+  <OverlayProvider>
+    <ConfirmDemo />
+  </OverlayProvider>
+</Preview>
+
+```tsx
+const handleBlock = async () => {
+  const ok = await overlay.openAsync<boolean>(({ isOpen, close }) => (
+    <Modal
+      open={isOpen}
+      onClose={() => close(false)}
+      header="채팅 차단"
+      actions={
+        <>
+          <Button variant="line" onClick={() => close(false)}>
+            취소
+          </Button>
+          <Button variant="danger" onClick={() => close(true)}>
+            차단
+          </Button>
+        </>
+      }
+    >
+      이 사용자를 차단하시겠어요?
+    </Modal>
+  ));
+
+  if (ok) {
+    await blockUser(userId);
+  }
+};
+```
+
+값 없이 닫히거나(`close()`, `overlay.close(id)`, `closeAll()`), Provider가 사라지면 Promise는 `undefined`로 끝납니다. 그래서 반환 타입은 `Promise<T | undefined>`입니다. 위 예제처럼 `onClose={() => close(false)}`로 바깥 클릭과 Esc에도 값을 정해 두면 `undefined`를 신경 쓰지 않아도 됩니다.
+
+여러 개를 이어서 열 수도 있습니다.
+
+```tsx
+const ok = await overlay.openAsync<boolean>(renderConfirm);
+if (ok) {
+  await overlay.openAsync(renderDone); // 확인 모달이 닫힐 때까지 기다림
+}
+```
+
+## API
+
+`useOverlay()`는 아래 함수를 가진 객체를 반환합니다. 이 객체와 함수들은 렌더링 사이에 바뀌지 않으므로 `useEffect` 의존성에 넣어도 불필요한 재실행이 생기지 않습니다.
+
+| 이름        | 시그니처                                           | 설명                                                        |
+| ----------- | -------------------------------------------------- | ----------------------------------------------------------- |
+| `open`      | `(render, options?) => string`                     | overlay를 열고 id를 반환                                    |
+| `openAsync` | `<T>(render, options?) => Promise<T \| undefined>` | 열고, 닫힐 때 `close(value)`의 값을 반환                    |
+| `close`     | `(overlayId: string) => void`                      | id에 해당하는 overlay를 닫음 (Promise는 `undefined`로 종료) |
+| `exit`      | `(overlayId: string) => void`                      | id에 해당하는 overlay를 즉시 트리에서 제거                  |
+| `closeAll`  | `() => void`                                       | 열려 있는 모든 overlay를 닫음                               |
+
+### render 함수
+
+`open`, `openAsync`의 첫 번째 인자는 React 노드를 반환하는 함수이고, 아래 값을 받습니다.
+
+| 값          | 타입                  | 설명                                                |
+| ----------- | --------------------- | --------------------------------------------------- |
+| `overlayId` | `string`              | 이 overlay의 id                                     |
+| `isOpen`    | `boolean`             | 열림 여부. `Modal`의 `open`에 그대로 넘기면 됨      |
+| `close`     | `(value?: T) => void` | overlay를 닫음. `openAsync`라면 넘긴 값이 결과가 됨 |
+| `exit`      | `() => void`          | 닫힘 애니메이션이 끝난 뒤 등, 즉시 트리에서 제거    |
+
+### options
+
+| 이름        | 타입     | 기본값    | 설명                                                                                             |
+| ----------- | -------- | --------- | ------------------------------------------------------------------------------------------------ |
+| `overlayId` | `string` | 자동 생성 | overlay id. 같은 id가 이미 열려 있으면 새로 열지 않아서 **중복 열림을 막는 데** 쓸 수 있음       |
+| `exitDelay` | `number` | `0`       | `close` 이후 트리에서 제거하기까지 기다리는 시간(ms). 닫힘 애니메이션이 있을 때 그 시간만큼 지정 |
+
+## 참고
+
+- `close`를 호출하면 `isOpen`이 `false`가 되고, `exitDelay`(기본 0ms) 뒤에 자동으로 트리에서 제거됩니다. 닫힘 애니메이션이 필요하면 `exitDelay`를 늘리거나, 직접 `exit`을 호출하세요.
+- overlay는 Provider 쪽에서 그려지므로, **열었던 컴포넌트가 사라져도 overlay는 남습니다.** 화면 이동 때 같이 닫으려면 `useEffect` 정리 함수에서 `closeAll()`이나 `close(id)`를 호출하세요.
+- `render` 함수는 열 때의 값을 캡처합니다. overlay 안에서 계속 바뀌는 상태(입력값 등)가 필요하면 render 안에서 상태를 가진 컴포넌트를 반환하세요. 그 컴포넌트가 직접 `close(value)`를 호출하면 됩니다.
+- 여러 overlay가 열리면 나중에 연 것이 위에 쌓입니다.
+- `useOverlay`를 `OverlayProvider` 밖에서 호출하면 `useOverlay는 <OverlayProvider> 안에서만 사용할 수 있어요.` 에러가 납니다.

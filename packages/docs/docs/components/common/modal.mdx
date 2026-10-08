@@ -1,0 +1,180 @@
+---
+sidebar_position: 7
+---
+
+import { useState } from "react";
+import { Button, Modal } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Modal
+
+확인창, 알림창, 설정 메뉴처럼 화면 위에 띄우는 패널입니다. 열림 상태는 트리거 버튼이 들고 있다가 `open`으로 제어합니다.
+
+:::info
+Modal은 `position: fixed`로 뷰포트 전체를 덮습니다. 아래 데모를 열면 문서 화면이 딤 처리되며, `Esc` 또는 배경 클릭으로 닫을 수 있습니다.
+:::
+
+export function Demo({
+  header,
+  dimmed,
+  position,
+  children,
+  renderActions,
+  label,
+}) {
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+  return (
+    <>
+      <Button variant="primary" onClick={() => setOpen(true)}>
+        {label}
+      </Button>
+      <Modal
+        open={open}
+        onClose={close}
+        header={header}
+        dimmed={dimmed}
+        position={position}
+        style={{ width: 320 }}
+        actions={renderActions?.(close)}
+      >
+        {children}
+      </Modal>
+    </>
+  );
+}
+
+## Usage
+
+<Preview>
+  <Demo
+    label="모달 열기"
+    header="채팅 차단"
+    renderActions={(close) => (
+      <>
+        <Button variant="line" onClick={close}>
+          취소
+        </Button>
+        <Button variant="danger" onClick={close}>
+          차단
+        </Button>
+      </>
+    )}
+  >
+    <p style={{ margin: 0, fontSize: 14 }}>
+      이 사용자를 차단하시겠어요? 차단하면 더 이상 메시지가 보이지 않아요.
+    </p>
+  </Demo>
+</Preview>
+
+```tsx
+const [open, setOpen] = useState(false);
+const close = () => setOpen(false);
+
+<Button variant="primary" onClick={() => setOpen(true)}>
+  모달 열기
+</Button>
+<Modal
+  open={open}
+  onClose={close}
+  header="채팅 차단"
+  actions={
+    <>
+      <Button variant="line" onClick={close}>
+        취소
+      </Button>
+      <Button variant="danger" onClick={close}>
+        차단
+      </Button>
+    </>
+  }
+>
+  <p>이 사용자를 차단하시겠어요?</p>
+</Modal>
+```
+
+## Variants
+
+### Confirm
+
+버튼 2개는 균등 분할됩니다. 위 Usage가 Confirm 형태입니다.
+
+### Alert
+
+`header`를 생략하면 제목 영역이 렌더링되지 않습니다. 버튼 1개는 전체 폭을 차지합니다.
+
+<Preview>
+  <Demo
+    label="알림 열기"
+    renderActions={(close) => (
+      <Button variant="primary" onClick={close}>
+        확인
+      </Button>
+    )}
+  >
+    <p style={{ margin: 0, fontSize: 14, textAlign: "center" }}>
+      연결이 끊어졌어요.
+    </p>
+  </Demo>
+</Preview>
+
+```tsx
+<Modal
+  open={open}
+  onClose={close}
+  actions={
+    <Button variant="primary" onClick={close}>
+      확인
+    </Button>
+  }
+>
+  <p>연결이 끊어졌어요.</p>
+</Modal>
+```
+
+### Anchored
+
+트리거 버튼 아래에 띄우는 설정 메뉴류입니다. `dimmed={false}`로 딤을 끄고 `position`으로 위치를 지정합니다.
+
+<Preview>
+  <Demo
+    label="설정 열기"
+    header="설정"
+    dimmed={false}
+    position={{ top: 120, left: "50%", transform: "translateX(-50%)" }}
+  >
+    <p style={{ margin: 0, fontSize: 14 }}>설정 항목을 여기에 배치합니다.</p>
+  </Demo>
+</Preview>
+
+```tsx
+<Modal
+  open={open}
+  onClose={close}
+  header="설정"
+  dimmed={false}
+  position={{ top: 56, right: 16 }}
+>
+  ...
+</Modal>
+```
+
+## Props
+
+| Prop       | 타입                  | 기본값 | 설명                                                                                                  |
+| ---------- | --------------------- | ------ | ----------------------------------------------------------------------------------------------------- |
+| `open`     | `boolean`             | `true` | 열림 여부. `false`면 아무것도 렌더링하지 않습니다.                                                    |
+| `onClose`  | `() => void`          | -      | **필수.** `Esc` 키 또는 배경 클릭 시 호출됩니다.                                                      |
+| `children` | `ReactNode`           | -      | **필수.** 본문. 세로 gap이 적용된 body 영역으로 감싸집니다.                                           |
+| `header`   | `ReactNode`           | -      | 제목 영역. 생략하면 헤더 자체가 렌더링되지 않습니다.                                                  |
+| `actions`  | `ReactNode`           | -      | 하단 버튼 줄. 1개는 전체 폭, 2개는 균등 분할됩니다. 생략하면 렌더링되지 않습니다.                     |
+| `dimmed`   | `boolean`             | `true` | 뒤 배경 딤 처리. 설정 메뉴류는 `false`.                                                               |
+| `position` | `CSSProperties`       | -      | 패널 위치. 없으면 화면 정중앙이며, 트리거 기준으로 띄우려면 `top`/`left`/`right`/`bottom`을 넘깁니다. |
+| `ref`      | `Ref<HTMLDivElement>` | -      | 패널(`role="dialog"`)에 연결되는 React 19 `ref` prop                                                  |
+
+나머지 `<div>` 속성(`className`, `style` 등)은 패널에 그대로 전달됩니다.
+
+## 참고
+
+- `createPortal`을 쓰지 않습니다. 다크 모드 `data-theme` 범위가 컴포넌트의 실제 DOM 위치에만 걸려 있을 수 있어, `document.body`로 빼면 테마 토큰이 내려오지 않기 때문입니다.
+- 패널은 `role="dialog"`, `aria-modal="true"`를 가집니다.

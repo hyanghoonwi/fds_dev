@@ -1,0 +1,68 @@
+---
+sidebar_position: 5
+---
+
+import { useState } from "react";
+import { Switch } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Switch
+
+켜고 끄는 토글 스위치입니다. 설정 화면에서 옵션을 즉시 적용하는 on/off 값에 사용합니다.
+
+## Usage
+
+export function Demo() {
+  const [checked, setChecked] = useState(false);
+  return <Switch checked={checked} onChange={setChecked} aria-label="알림" />;
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { Switch } from "@fds/core";
+
+const [checked, setChecked] = useState(false);
+
+<Switch checked={checked} onChange={setChecked} aria-label="알림" />
+```
+
+## States
+
+<Preview>
+  <Switch checked={false} onChange={() => {}} aria-label="off" />
+  <Switch checked onChange={() => {}} aria-label="on" />
+  <Switch
+    checked={false}
+    onChange={() => {}}
+    disabled
+    aria-label="off disabled"
+  />
+  <Switch checked onChange={() => {}} disabled aria-label="on disabled" />
+</Preview>
+
+```tsx
+<Switch checked={false} onChange={setChecked} />
+<Switch checked onChange={setChecked} />
+<Switch checked={false} onChange={setChecked} disabled />
+<Switch checked onChange={setChecked} disabled />
+```
+
+## Props
+
+| Prop        | 타입                         | 기본값 | 설명                          |
+| ----------- | ---------------------------- | ------ | ----------------------------- |
+| `checked`   | `boolean`                    | -      | 켜짐 여부 (필수, controlled)  |
+| `onChange`  | `(checked: boolean) => void` | -      | 클릭 시 다음 값을 전달 (필수) |
+| `className` | `string`                     | -      | 추가 클래스                   |
+| `ref`       | `Ref<HTMLButtonElement>`     | -      | React 19 `ref` prop           |
+
+나머지 `<button>` 속성(`disabled`, `aria-label` 등)은 그대로 전달됩니다. `role`, `children`, `type`은 내부에서 고정됩니다.
+
+## 참고
+
+- `role="switch"`와 `aria-checked`가 자동으로 설정됩니다. 보이는 라벨이 없으면 `aria-label`을 지정하세요.
+- 꺼짐 상태 트랙 색은 `switch-track-off` 토큰입니다.

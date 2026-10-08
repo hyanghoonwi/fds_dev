@@ -1,0 +1,7 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": { "@fds/core": ["../core/src/index.ts"] }
+  },
+  "include": ["stories", ".storybook", "vitest.shims.d.ts"]
+}

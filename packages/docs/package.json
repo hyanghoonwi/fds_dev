@@ -1,0 +1,39 @@
+{
+  "name": "@fds/docs",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "predev": "npm run build -w @fds/core",
+    "prebuild": "npm run build -w @fds/core",
+    "dev": "docusaurus start --port 3000",
+    "build": "docusaurus build",
+    "serve": "docusaurus serve",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.10.2",
+    "@docusaurus/preset-classic": "^3.10.2",
+    "@fds/core": "*",
+    "@mdx-js/react": "^3.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.10.2",
+    "@docusaurus/tsconfig": "^3.10.2",
+    "@docusaurus/types": "^3.10.2"
+  },
+  "browserslist": {
+    "production": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version",
+      "last 3 edge version"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,0 +1,49 @@
+---
+sidebar_position: 7
+---
+
+import { Thumbnail } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Thumbnail
+
+110×60 크기의 썸네일 이미지 박스입니다. 이미지가 없거나 로딩 전이면 회색 박스가 자리를 차지합니다.
+
+## Usage
+
+export const sample =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3182f6"/><stop offset="1" stop-color="#242b35"/></linearGradient></defs><rect width="220" height="120" fill="url(#g)"/></svg>',
+  );
+
+<Preview>
+  <Thumbnail src={sample} alt="썸네일 예시" />
+</Preview>
+
+```tsx
+<Thumbnail src="/images/vod-1.jpg" alt="오늘의 시황 분석" />
+```
+
+## States
+
+`src`를 생략하면 이미지 없이 빈 박스만 표시됩니다.
+
+<Preview>
+  <Thumbnail />
+</Preview>
+
+```tsx
+<Thumbnail />
+```
+
+## Props
+
+| Prop        | 타입                  | 기본값 | 설명                              |
+| ----------- | --------------------- | ------ | --------------------------------- |
+| `src`       | `string`              | -      | 이미지 주소. 없으면 빈 박스       |
+| `alt`       | `string`              | `""`   | 이미지 대체 텍스트                |
+| `className` | `string`              | -      | 추가 클래스 (크기를 바꿀 때 사용) |
+| `ref`       | `Ref<HTMLDivElement>` | -      | React 19 `ref` prop               |
+
+나머지 `<div>` 속성은 그대로 전달됩니다. 이미지는 `object-fit: cover`로 박스를 채웁니다.

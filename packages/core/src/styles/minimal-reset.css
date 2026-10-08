@@ -1,0 +1,17 @@
+/* :where()로 specificity 0 — 어떤 앱 스타일도 덮어쓰지 않는다 */
+:where(button, input, textarea, select) {
+  font: inherit;
+  color: inherit;
+  margin: 0;
+  background-color: transparent;
+  border: 0 solid;
+  padding: 0;
+}
+
+:where(button) {
+  cursor: pointer;
+}
+
+:where(*, ::before, ::after) {
+  box-sizing: border-box;
+}

@@ -1,0 +1,13 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css");
+@import "tailwindcss";
+
+/* 다른 패키지(storybook 등)에서 이 CSS를 가져와도 core 컴포넌트의 클래스를 스캔하도록 명시 */
+@source "./components";
+
+/* [data-theme="dark"] 속성 기반으로 dark: variant가 동작하도록 설정 */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@import "./styles/colors.css";
+@import "./styles/typography.css";
+@import "./styles/shape.css";
+@import "./styles/base.css";

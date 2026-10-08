@@ -1,0 +1,47 @@
+---
+sidebar_position: 1
+---
+
+import { ChatBubble } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# ChatBubble
+
+채팅 메시지를 담는 말풍선입니다. 받은 메시지와 보낸 메시지를 `variant`로 구분합니다.
+
+## Usage
+
+<Preview>
+  <ChatBubble>안녕하세요! 방송 잘 보고 있어요</ChatBubble>
+</Preview>
+
+```tsx
+<ChatBubble>안녕하세요! 방송 잘 보고 있어요</ChatBubble>
+```
+
+## Variants
+
+<Preview style={{ flexDirection: "column", alignItems: "flex-start" }}>
+  <ChatBubble variant="received">받은 메시지입니다.</ChatBubble>
+  <ChatBubble variant="sent">보낸 메시지입니다.</ChatBubble>
+</Preview>
+
+```tsx
+<ChatBubble variant="received">받은 메시지입니다.</ChatBubble>
+<ChatBubble variant="sent">보낸 메시지입니다.</ChatBubble>
+```
+
+## Props
+
+| Prop        | 타입                   | 기본값       | 설명                                                                   |
+| ----------- | ---------------------- | ------------ | ---------------------------------------------------------------------- |
+| `variant`   | `"received" \| "sent"` | `"received"` | 받은 메시지(회색, 좌상단 각짐) / 보낸 메시지(브랜드 컬러, 우하단 각짐) |
+| `children`  | `ReactNode`            | -            | 말풍선 내용 (필수)                                                     |
+| `className` | `string`               | -            | 추가 클래스                                                            |
+| `ref`       | `Ref<HTMLDivElement>`  | -            | React 19 `ref` prop                                                    |
+
+나머지 `<div>` 속성은 그대로 전달됩니다.
+
+## 참고
+
+- 최대 너비는 260px이며, 긴 텍스트는 줄바꿈되고 공백과 개행은 그대로 유지됩니다.

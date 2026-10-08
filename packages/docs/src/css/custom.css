@@ -1,0 +1,67 @@
+/* @fds/core 컴포넌트 스타일 (Tailwind 유틸리티 + 토큰) */
+@import "@fds/core/style.no-reset.css";
+
+/*
+ * Docusaurus도 [data-theme="dark"]로 다크 모드를 표시하므로
+ * core 토큰(--fds-*)이 별도 연동 없이 함께 전환된다.
+ * Infima 변수를 FDS 토큰에 연결해 문서 UI 색을 맞춘다.
+ */
+:root {
+  /* 사이트 전체 컨테이너: 헤더·문서 본문·푸터·홈 문구가 모두 이 폭 안에서 가운데 정렬된다 */
+  --fds-container: 1440px;
+  --fds-gutter: 24px;
+  --ifm-container-width: var(--fds-container);
+  --ifm-color-primary: var(--fds-brand-primary);
+  --ifm-font-family-base: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+  --ifm-background-color: var(--fds-bg-surface);
+  --ifm-font-color-base: var(--fds-text-primary);
+}
+
+[data-theme="dark"] {
+  --ifm-background-color: var(--fds-bg-page);
+}
+
+/* 홈: 네비바를 영상 위에 투명하게 올리고(스크롤하면 함께 올라감) 글씨는 흰색으로 */
+.fds-home .navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: transparent;
+  box-shadow: none;
+  --ifm-navbar-link-color: var(--fds-text-inverse);
+  --ifm-navbar-link-hover-color: var(--fds-text-inverse);
+  --ifm-navbar-link-active-color: var(--fds-text-inverse);
+}
+
+.fds-home .navbar__title,
+.fds-home .navbar__link {
+  color: var(--fds-text-inverse);
+}
+
+.fds-home .navbar__link:hover {
+  opacity: 0.8;
+}
+
+/*
+ * 컨테이너 정렬
+ * 화면이 컨테이너보다 넓으면 좌우 여백이 생기고, 좁으면 gutter만 남는다.
+ * 헤더/히어로는 같은 계산식을 써서 로고와 본문 왼쪽 선이 맞는다.
+ */
+.navbar {
+  padding-inline: max(var(--fds-gutter), calc((100% - var(--fds-container)) / 2 + var(--fds-gutter)));
+}
+
+/* 문서 영역(사이드바 + 본문)도 컨테이너 폭으로 제한 */
+[class*="docRoot_"] {
+  width: 100%;
+  max-width: var(--fds-container);
+  margin-inline: auto;
+}
+
+/* 다크 모드 토글: 아이콘은 흰색, hover 효과 없음 */
+.fds-home .navbar [class*="toggleButton"],
+.fds-home .navbar [class*="toggleButton"]:hover {
+  color: var(--fds-text-inverse);
+  background: transparent;
+}

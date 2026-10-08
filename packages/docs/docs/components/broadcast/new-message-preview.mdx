@@ -1,0 +1,73 @@
+---
+sidebar_position: 3
+---
+
+import { NewMessagePreview } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# NewMessagePreview
+
+스크롤을 위로 올린 상태에서 새 메시지가 도착하면 뜨는 미리보기 바입니다. 누르면 최신 메시지로 이동하는 동작에 연결합니다.
+
+## Usage
+
+<Preview>
+  <NewMessagePreview
+    style={{ width: 320 }}
+    nickname="유저1"
+    message="지금 들어왔는데 어디까지 진행됐나요? 설명 좀 부탁드려요"
+    onClick={() => alert("최신 메시지로 이동")}
+  />
+</Preview>
+
+```tsx
+<NewMessagePreview
+  nickname="유저1"
+  message="지금 들어왔는데 어디까지 진행됐나요? 설명 좀 부탁드려요"
+  onClick={scrollToBottom}
+/>
+```
+
+## Variants
+
+스트리머나 매니저처럼 강조할 발신자는 `isNicknameHighlighted`로 닉네임을 브랜드 컬러로 표시합니다.
+
+<Preview style={{ flexDirection: "column", alignItems: "flex-start" }}>
+  <NewMessagePreview
+    style={{ width: 320 }}
+    nickname="유저1"
+    message="일반 유저 메시지"
+  />
+  <NewMessagePreview
+    style={{ width: 320 }}
+    nickname="스트리머"
+    message="강조 대상 발신자 메시지"
+    isNicknameHighlighted
+  />
+</Preview>
+
+```tsx
+<NewMessagePreview nickname="유저1" message="일반 유저 메시지" />
+<NewMessagePreview
+  nickname="스트리머"
+  message="강조 대상 발신자 메시지"
+  isNicknameHighlighted
+/>
+```
+
+## Props
+
+| Prop                    | 타입                                | 기본값  | 설명                                          |
+| ----------------------- | ----------------------------------- | ------- | --------------------------------------------- |
+| `nickname`              | `string`                            | -       | 발신자 닉네임 (필수)                          |
+| `message`               | `string`                            | -       | 메시지 내용. 길면 한 줄로 말줄임 처리 (필수)  |
+| `isNicknameHighlighted` | `boolean`                           | `false` | 닉네임을 브랜드 컬러로 강조 (스트리머/매니저) |
+| `onClick`               | `MouseEventHandler<HTMLDivElement>` | -       | 클릭 핸들러. Enter/Space 키로도 동작          |
+| `className`             | `string`                            | -       | 추가 클래스                                   |
+| `ref`                   | `Ref<HTMLDivElement>`               | -       | React 19 `ref` prop                           |
+
+나머지 `<div>` 속성은 그대로 전달됩니다. 너비는 `style`이나 `className`으로 지정합니다.
+
+## 참고
+
+- `role="button"`과 `tabIndex={0}`이 기본으로 설정되어 키보드로 조작할 수 있습니다.

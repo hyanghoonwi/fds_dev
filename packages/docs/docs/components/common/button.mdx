@@ -1,0 +1,87 @@
+---
+sidebar_position: 1
+---
+
+import { Button, PlusIcon } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Button
+
+텍스트 버튼입니다. 헤더 내비게이션, 확인/취소 같은 피드백 영역에 사용합니다.
+
+## Usage
+
+<Preview>
+  <Button variant="primary">재접속</Button>
+</Preview>
+
+```tsx
+import { Button } from "@fds/core";
+
+<Button variant="primary">재접속</Button>
+```
+
+## Variants
+
+<Preview>
+  <Button variant="line">line</Button>
+  <Button variant="primary">primary</Button>
+  <Button variant="tint">tint</Button>
+  <Button variant="danger">danger</Button>
+</Preview>
+
+```tsx
+<Button variant="line">line</Button>
+<Button variant="primary">primary</Button>
+<Button variant="tint">tint</Button>
+<Button variant="danger">danger</Button>
+```
+
+`danger`는 차단처럼 되돌리기 어렵거나 부정적인 동작에 사용합니다.
+
+## States
+
+<Preview>
+  <Button variant="line" disabled>
+    line
+  </Button>
+  <Button variant="primary" disabled>
+    primary
+  </Button>
+</Preview>
+
+```tsx
+<Button disabled>line</Button>
+<Button variant="primary" disabled>
+  primary
+</Button>
+```
+
+## Icon
+
+`icon`으로 텍스트 앞에 아이콘을 붙입니다.
+
+<Preview>
+  <Button variant="tint" icon={<PlusIcon />}>
+    추가
+  </Button>
+</Preview>
+
+```tsx
+import { Button, PlusIcon } from "@fds/core";
+
+<Button variant="tint" icon={<PlusIcon />}>
+  추가
+</Button>
+```
+
+## Props
+
+| Prop      | 타입                                        | 기본값     | 설명                                                      |
+| --------- | ------------------------------------------- | ---------- | --------------------------------------------------------- |
+| `variant` | `"line" \| "primary" \| "tint" \| "danger"` | `"line"`   | 시각 스타일                                               |
+| `icon`    | `ReactNode`                                 | -          | 텍스트 앞에 붙는 아이콘 슬롯                              |
+| `type`    | `"button" \| "submit" \| "reset"`           | `"button"` | 폼 안에서 의도치 않게 submit되지 않도록 기본값은 `button` |
+| `ref`     | `Ref<HTMLButtonElement>`                    | -          | React 19 `ref` prop                                       |
+
+나머지 `<button>` 속성(`onClick`, `disabled` 등)은 그대로 전달됩니다.

@@ -1,0 +1,86 @@
+---
+sidebar_position: 5
+---
+
+import { useState } from "react";
+import { Adjuster } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Adjuster
+
+값을 한 단계씩 줄이고 늘리는 스테퍼입니다. 현재는 글자 크기 조절(`fontSize`) 타입을 제공합니다.
+
+## Usage
+
+export function Demo() {
+  const [size, setSize] = useState(14);
+  return (
+    <>
+      <Adjuster
+        type="fontSize"
+        onDecrease={() => setSize((s) => s - 1)}
+        onIncrease={() => setSize((s) => s + 1)}
+        decreaseDisabled={size <= 10}
+        increaseDisabled={size >= 20}
+      />
+      <span style={{ fontSize: size }}>글자 크기 {size}px</span>
+    </>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+const [size, setSize] = useState(14);
+
+<Adjuster
+  type="fontSize"
+  onDecrease={() => setSize((s) => s - 1)}
+  onIncrease={() => setSize((s) => s + 1)}
+  decreaseDisabled={size <= 10}
+  increaseDisabled={size >= 20}
+/>
+```
+
+## States
+
+`decreaseDisabled` / `increaseDisabled`로 최소·최대 값에 도달했을 때 각 버튼을 비활성화합니다.
+
+<Preview>
+  <Adjuster
+    type="fontSize"
+    onDecrease={() => {}}
+    onIncrease={() => {}}
+    decreaseDisabled
+  />
+  <Adjuster
+    type="fontSize"
+    onDecrease={() => {}}
+    onIncrease={() => {}}
+    increaseDisabled
+  />
+</Preview>
+
+```tsx
+<Adjuster type="fontSize" onDecrease={dec} onIncrease={inc} decreaseDisabled />
+<Adjuster type="fontSize" onDecrease={dec} onIncrease={inc} increaseDisabled />
+```
+
+## Props
+
+| Prop               | 타입                  | 기본값 | 설명                                                 |
+| ------------------ | --------------------- | ------ | ---------------------------------------------------- |
+| `type`             | `"fontSize"`          | -      | 조절 대상 종류. 버튼 모양이 타입별로 정해진다 (필수) |
+| `onDecrease`       | `() => void`          | -      | 감소 버튼 클릭 (필수)                                |
+| `onIncrease`       | `() => void`          | -      | 증가 버튼 클릭 (필수)                                |
+| `decreaseDisabled` | `boolean`             | -      | 감소 버튼 비활성화                                   |
+| `increaseDisabled` | `boolean`             | -      | 증가 버튼 비활성화                                   |
+| `className`        | `string`              | -      | 추가 클래스                                          |
+| `ref`              | `Ref<HTMLDivElement>` | -      | React 19 `ref` prop                                  |
+
+## 참고
+
+- 현재 값은 컴포넌트가 들고 있지 않습니다. 값과 범위는 호출하는 쪽에서 관리합니다.
+- 버튼에는 `aria-label`로 "감소", "증가"가 설정됩니다.

@@ -1,0 +1,114 @@
+---
+sidebar_position: 12
+---
+
+import { useState } from "react";
+import { ResizeHandle } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# ResizeHandle
+
+패널 크기를 드래그로 조절하는 핸들입니다. 핸들은 위치를 직접 바꾸지 않고, 이동량(`delta`)만 `onResize`로 전달합니다. 크기 상태는 사용하는 쪽에서 관리합니다.
+
+export function BarDemo() {
+  const [width, setWidth] = useState(200);
+  return (
+    <div style={{ display: "flex", height: 100, width: "100%" }}>
+      <div
+        style={{
+          width,
+          background: "var(--fds-bg-blue-tint)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+        }}
+      >
+        {width}px
+      </div>
+      <ResizeHandle
+        type="bar"
+        onResize={(delta) => setWidth((w) => Math.max(80, w + delta))}
+      />
+    </div>
+  );
+}
+
+export function CircleDemo() {
+  const [height, setHeight] = useState(80);
+  return (
+    <div style={{ width: "100%" }}>
+      <div
+        style={{
+          height,
+          background: "var(--fds-bg-blue-tint)",
+          borderRadius: 8,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+        }}
+      >
+        {height}px
+      </div>
+      <ResizeHandle
+        type="circle"
+        onResize={(delta) => setHeight((h) => Math.max(40, h + delta))}
+      />
+    </div>
+  );
+}
+
+## Usage
+
+<Preview>
+  <BarDemo />
+</Preview>
+
+```tsx
+const [width, setWidth] = useState(200);
+
+<div style={{ display: "flex", height: 100 }}>
+  <div style={{ width }}>...</div>
+  <ResizeHandle
+    type="bar"
+    onResize={(delta) => setWidth((w) => Math.max(80, w + delta))}
+  />
+</div>
+```
+
+## Variants
+
+### bar
+
+세로로 긴 막대(4×40)이며 가로 드래그(`clientX`)의 이동량을 전달합니다. 기본은 `text-disabled`, 누르는 동안 `brand-primary` 색입니다. 높이는 부모를 채웁니다.
+
+### circle
+
+12px 가로 바 위에 24px 원형 그립이 올라간 형태이며 세로 드래그(`clientY`)의 이동량을 전달합니다. hover/pressed 시 파란 틴트로 바뀝니다. 너비는 부모를 채웁니다.
+
+<Preview>
+  <CircleDemo />
+</Preview>
+
+```tsx
+const [height, setHeight] = useState(80);
+
+<div style={{ height }}>...</div>
+<ResizeHandle
+  type="circle"
+  onResize={(delta) => setHeight((h) => Math.max(40, h + delta))}
+/>
+```
+
+## Props
+
+| Prop        | 타입                      | 기본값  | 설명                                            |
+| ----------- | ------------------------- | ------- | ----------------------------------------------- |
+| `type`      | `"bar" \| "circle"`       | `"bar"` | 핸들 모양. `bar`는 가로, `circle`은 세로 드래그 |
+| `onResize`  | `(delta: number) => void` | -       | **필수.** 드래그 중 이전 위치 대비 이동량(px)   |
+| `className` | `string`                  | -       | 추가 클래스                                     |
+| `ref`       | `Ref<HTMLDivElement>`     | -       | React 19 `ref` prop                             |
+
+나머지 `<div>` 속성은 그대로 전달됩니다.

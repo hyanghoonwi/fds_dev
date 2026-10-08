@@ -1,0 +1,61 @@
+---
+sidebar_position: 9
+---
+
+import { Text } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Text
+
+디자인 토큰이 적용된 기본 텍스트입니다. 제목형 텍스트와 보조 설명(캡션)을 같은 규칙으로 표현합니다.
+
+## Usage
+
+<Preview>
+  <Text>채팅 설정</Text>
+</Preview>
+
+```tsx
+<Text>채팅 설정</Text>
+```
+
+## Variants
+
+<Preview>
+  <Text variant="title">title — 13px SemiBold</Text>
+  <Text variant="caption">caption — 12px Regular</Text>
+</Preview>
+
+```tsx
+<Text variant="title">title — 13px SemiBold</Text>
+<Text variant="caption">caption — 12px Regular</Text>
+```
+
+## 렌더링 태그
+
+`as`로 `span`(기본값)과 `p` 중 하나를 고를 수 있습니다. `p`는 `margin: 0`이 적용되어 있어 별도 리셋이 필요 없습니다.
+
+<Preview style={{ flexDirection: "column", alignItems: "flex-start" }}>
+  <Text as="p">p 태그로 렌더링</Text>
+  <Text as="span" variant="caption">
+    span 태그로 렌더링
+  </Text>
+</Preview>
+
+```tsx
+<Text as="p">p 태그로 렌더링</Text>
+<Text as="span" variant="caption">
+  span 태그로 렌더링
+</Text>
+```
+
+## Props
+
+| Prop        | 타입                   | 기본값    | 설명                |
+| ----------- | ---------------------- | --------- | ------------------- |
+| `variant`   | `"title" \| "caption"` | `"title"` | 텍스트 스타일       |
+| `as`        | `"p" \| "span"`        | `"span"`  | 렌더링할 태그       |
+| `className` | `string`               | -         | 추가 클래스         |
+| `ref`       | `Ref<HTMLSpanElement>` | -         | React 19 `ref` prop |
+
+나머지 `<span>` 속성은 그대로 전달됩니다.

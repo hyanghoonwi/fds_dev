@@ -1,0 +1,116 @@
+---
+sidebar_position: 2
+---
+
+import { IconButton, SettingIcon, MoonIcon, PaperPlaneIcon } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# IconButton
+
+원형 아이콘 버튼입니다. 헤더 우측 설정 버튼, 채팅 전송 버튼처럼 텍스트 없이 아이콘만 쓰는 동작에 사용합니다.
+
+## Usage
+
+<Preview>
+  <IconButton aria-label="설정">
+    <SettingIcon />
+  </IconButton>
+</Preview>
+
+```tsx
+import { IconButton, SettingIcon } from "@fds/core";
+
+<IconButton aria-label="설정">
+  <SettingIcon />
+</IconButton>
+```
+
+텍스트가 없으므로 `aria-label`을 반드시 지정하세요.
+
+## Variants
+
+<Preview>
+  <IconButton variant="line" aria-label="테마">
+    <MoonIcon />
+  </IconButton>
+  <IconButton variant="primary" aria-label="전송">
+    <PaperPlaneIcon />
+  </IconButton>
+  <IconButton variant="tint" aria-label="테마">
+    <MoonIcon />
+  </IconButton>
+  <IconButton variant="ad" aria-label="광고" />
+</Preview>
+
+```tsx
+<IconButton variant="line" aria-label="테마">
+  <MoonIcon />
+</IconButton>
+<IconButton variant="primary" aria-label="전송">
+  <PaperPlaneIcon />
+</IconButton>
+<IconButton variant="tint" aria-label="테마">
+  <MoonIcon />
+</IconButton>
+<IconButton variant="ad" aria-label="광고" />
+```
+
+`ad`는 "Ad" 마크가 내장되어 있어 `children`이 필요 없습니다. 방송이 광고 상태임을 표시할 때 사용합니다.
+
+## Sizes
+
+<Preview>
+  <IconButton size="sm" aria-label="설정">
+    <SettingIcon />
+  </IconButton>
+  <IconButton size="md" aria-label="설정">
+    <SettingIcon />
+  </IconButton>
+</Preview>
+
+```tsx
+<IconButton size="sm" aria-label="설정">
+  <SettingIcon />
+</IconButton>
+<IconButton size="md" aria-label="설정">
+  <SettingIcon />
+</IconButton>
+```
+
+`sm`은 36px, `md`는 40px입니다.
+
+## States
+
+<Preview>
+  <IconButton disabled aria-label="설정">
+    <SettingIcon />
+  </IconButton>
+  <IconButton variant="primary" disabled aria-label="전송">
+    <PaperPlaneIcon />
+  </IconButton>
+</Preview>
+
+```tsx
+<IconButton disabled aria-label="설정">
+  <SettingIcon />
+</IconButton>
+<IconButton variant="primary" disabled aria-label="전송">
+  <PaperPlaneIcon />
+</IconButton>
+```
+
+## Props
+
+| Prop       | 타입                                    | 기본값     | 설명                                               |
+| ---------- | --------------------------------------- | ---------- | -------------------------------------------------- |
+| `variant`  | `"line" \| "primary" \| "tint" \| "ad"` | `"line"`   | 시각 스타일. `ad`는 "Ad" 마크 내장                 |
+| `size`     | `"sm" \| "md"`                          | `"sm"`     | `sm` 36px, `md` 40px                               |
+| `children` | `ReactNode`                             | -          | 버튼 안에 넣을 아이콘. `variant="ad"`에서는 무시됨 |
+| `type`     | `"button" \| "submit" \| "reset"`       | `"button"` |                                                    |
+| `ref`      | `Ref<HTMLButtonElement>`                | -          | React 19 `ref` prop                                |
+
+나머지 `<button>` 속성은 그대로 전달됩니다.
+
+:::note
+기본 크기가 `md`(40px)에서 `sm`(36px)으로 바뀌었습니다. 40px이 필요하면 `size="md"`를 지정하세요.
+:::

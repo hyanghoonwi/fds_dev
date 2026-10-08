@@ -1,0 +1,42 @@
+---
+sidebar_position: 1
+---
+
+# Colors
+
+시맨틱 컬러는 라이트 값을 기본으로 두고, `data-theme="dark"`에서 값만 바뀝니다. Tailwind 유틸리티 이름은 `bg-bg-surface`, `text-text-primary`처럼 그룹 접두사를 포함합니다.
+
+export const groups = {
+  text: [
+    "primary",
+    "strong",
+    "secondary",
+    "tertiary",
+    "sub",
+    "caption",
+    "timestamp",
+    "muted",
+    "disabled",
+    "icon-default",
+  ],
+  brand: ["primary", "error"],
+  bg: ["surface", "elevated", "base", "blue-tint", "input", "page"],
+  border: ["subtle", "light", "default", "strong", "line"],
+  line: ["1", "2"],
+};
+
+{Object.entries(groups).map(([group, names]) => (
+
+  <section key={group}>
+    <h2>{group}</h2>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 12 }}>
+      {names.map((name) => (
+        <div key={name} style={{ border: "1px solid var(--fds-border-light)", borderRadius: 8, padding: 8 }}>
+          <div style={{ height: 56, borderRadius: 6, background: `var(--fds-${group}-${name})`, border: "1px solid var(--fds-border-subtle)" }} />
+          <div style={{ marginTop: 6, fontSize: 12, fontWeight: 600 }}>{group}/{name}</div>
+          <code style={{ fontSize: 11 }}>--fds-{group}-{name}</code>
+        </div>
+      ))}
+    </div>
+  </section>
+))}

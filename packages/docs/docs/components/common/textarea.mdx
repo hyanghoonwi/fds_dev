@@ -1,0 +1,147 @@
+---
+sidebar_position: 4
+---
+
+import { useState } from "react";
+import { Textarea } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Textarea
+
+내용에 맞춰 높이가 자동으로 늘어나는 입력 필드입니다. 채팅 입력창처럼 여러 줄이 될 수 있는 입력에 사용합니다.
+
+## Usage
+
+export function Demo() {
+  const [value, setValue] = useState("");
+  return (
+    <div style={{ width: 280 }}>
+      <Textarea
+        value={value}
+        onChange={setValue}
+        placeholder="메시지를 입력하세요"
+      />
+    </div>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { Textarea } from "@fds/core";
+
+const [value, setValue] = useState("");
+
+<Textarea value={value} onChange={setValue} placeholder="메시지를 입력하세요" />
+```
+
+`onChange`는 이벤트가 아니라 **문자열 값**을 받습니다. 여러 줄을 입력해 보면 높이가 늘어나다가 `maxHeight`에서 멈추고 스크롤됩니다.
+
+## Max height
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Textarea
+      value={"한 줄\n두 줄\n세 줄\n네 줄\n다섯 줄\n여섯 줄"}
+      onChange={() => {}}
+      maxHeight={60}
+    />
+  </div>
+</Preview>
+
+```tsx
+<Textarea value={value} onChange={setValue} maxHeight={60} />
+```
+
+## Character count
+
+`showCount`를 켜면 입력창 아래 왼쪽에 글자수가 `현재/최대`로 표시됩니다. 최대값은 별도 prop이 아니라 `<textarea>`의 `maxLength`를 그대로 씁니다. 그래서 입력 제한과 표시가 항상 같은 값을 가리킵니다.
+
+export function CountDemo() {
+  const [value, setValue] = useState("");
+  return (
+    <div style={{ width: 280 }}>
+      <Textarea
+        value={value}
+        onChange={setValue}
+        placeholder="최대 100자까지 입력할 수 있어요"
+        showCount
+        maxLength={100}
+      />
+    </div>
+  );
+}
+
+<Preview>
+  <CountDemo />
+</Preview>
+
+```tsx
+<Textarea
+  value={value}
+  onChange={setValue}
+  placeholder="최대 100자까지 입력할 수 있어요"
+  showCount
+  maxLength={100}
+/>
+```
+
+- `maxLength`가 없으면 현재 글자수만 표시됩니다(`12`).
+- 글자수는 `maxLength`가 세는 방식과 같게 `value.length`(UTF-16 코드 유닛)로 셉니다. 한글은 한 글자가 1, 이모지는 보통 2로 계산됩니다.
+- 입력으로는 `maxLength`를 넘길 수 없지만, `value`가 코드로 넘치게 주어지면 글자수가 에러 색(`brand-error`)으로 바뀝니다.
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Textarea
+      value="초과된 값이 외부에서 주어진 경우"
+      onChange={() => {}}
+      showCount
+      maxLength={10}
+    />
+  </div>
+</Preview>
+
+```tsx
+<Textarea
+  value="초과된 값이 외부에서 주어진 경우"
+  onChange={setValue}
+  showCount
+  maxLength={10}
+/>
+```
+
+## States
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <Textarea value="" onChange={() => {}} placeholder="disabled" disabled />
+  </div>
+</Preview>
+
+```tsx
+<Textarea value="" onChange={setValue} placeholder="disabled" disabled />
+```
+
+## Props
+
+| Prop                 | 타입                       | 기본값  | 설명                                                                                |
+| -------------------- | -------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| `value`              | `string`                   | -       | 입력값 (필수, controlled)                                                           |
+| `onChange`           | `(value: string) => void`  | -       | 값 변경 콜백. 이벤트가 아닌 문자열을 전달 (필수)                                    |
+| `maxHeight`          | `number`                   | `86`    | 자동 확장 최대 높이(px). 필드 박스 기준(글자수는 박스 바깥이라 제외). 넘으면 스크롤 |
+| `showCount`          | `boolean`                  | `false` | 입력창 아래 왼쪽에 글자수 표시. 최대값은 `maxLength`                                |
+| `maxLength`          | `number`                   | -       | 최대 글자수. 입력을 제한하고 `showCount`의 최대값으로 쓰임                          |
+| `containerClassName` | `string`                   | -       | 필드 박스와 글자수를 감싸는 바깥 컨테이너의 클래스                                  |
+| `className`          | `string`                   | -       | `<textarea>`의 클래스. 배경·라운드는 바깥 필드 박스에 있음                          |
+| `ref`                | `Ref<HTMLTextAreaElement>` | -       | React 19 `ref` prop. 내부 높이 계산용 ref와 함께 병합됨                             |
+
+나머지 `<textarea>` 속성(`placeholder`, `disabled` 등)은 그대로 전달됩니다. 단 `value`와 `onChange`는 위 시그니처로 대체됩니다.
+
+## 참고
+
+- 항상 `rows={1}`에서 시작해 내용만큼 늘어납니다.
+- 기본 `maxHeight`(86px)는 Figma 채팅 입력창 기준이며, 배경·패딩을 가진 필드 박스의 총 높이입니다. 글자수 표시는 박스 바깥이라 이 높이에 포함되지 않습니다.
+- 배경·라운드·포커스 링은 바깥 필드 박스가 가지고 있습니다(Input과 동일). 포커스되면 `brand-primary` 1px 링이 표시되고, 박스 안쪽 여백을 눌러도 입력창에 포커스가 갑니다.

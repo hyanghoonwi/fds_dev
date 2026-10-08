@@ -1,0 +1,134 @@
+---
+sidebar_position: 3
+---
+
+import { useState } from "react";
+import * as fds from "@fds/core";
+
+# Icons
+
+FDS에서 쓰는 아이콘 세트입니다. 모두 `@fds/core`에서 가져와 React 컴포넌트로 사용합니다. `Product`는 방송 화면 전용 아이콘이고, 나머지는 어드민을 포함해 범용으로 쓰는 [Vuesax](https://vuesax.com) Linear 아이콘(24×24, stroke 1.5)입니다.
+
+export function IconGallery() {
+  const [query, setQuery] = useState("");
+  const q = query.trim().toLowerCase();
+  return (
+    <div>
+      <input
+        type="search"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="아이콘 검색 (예: user, arrow)"
+        style={{
+          width: "100%",
+          padding: "10px 12px",
+          marginBottom: 24,
+          border: "1px solid var(--fds-border-default)",
+          borderRadius: 10,
+          background: "var(--fds-bg-input)",
+          color: "var(--fds-text-primary)",
+          font: "inherit",
+        }}
+      />
+      {Object.entries(fds.iconGroups).map(([group, names]) => {
+        const shown = names.filter((n) => n.toLowerCase().includes(q));
+        if (shown.length === 0) return null;
+        return (
+          <section key={group} style={{ marginBottom: 32 }}>
+            <h3>
+              {group}{" "}
+              <small
+                style={{ color: "var(--fds-text-caption)", fontWeight: 400 }}
+              >
+                {shown.length}
+              </small>
+            </h3>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(112px, 1fr))",
+                gap: 8,
+              }}
+            >
+              {shown.map((n) => {
+                const Icon = fds[`${n}Icon`];
+                return (
+                  <div
+                    key={n}
+                    title={`${n}Icon`}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "14px 6px",
+                      border: "1px solid var(--fds-border-light)",
+                      borderRadius: 8,
+                      background: "var(--fds-bg-surface)",
+                      color: "var(--fds-text-icon-default)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        height: 32,
+                      }}
+                    >
+                      <Icon />
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        color: "var(--fds-text-primary)",
+                        wordBreak: "break-all",
+                        textAlign: "center",
+                      }}
+                    >
+                      {n}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+<IconGallery />
+
+## Usage
+
+```tsx
+import { CheckIcon, CloseIcon } from "@fds/core";
+
+<CheckIcon />
+<CloseIcon size={20} />
+```
+
+## Props
+
+`AdIcon`, `AdCrossIcon`을 제외한 아이콘은 SVG 컴포넌트이며 `IconProps`를 받습니다.
+
+| Prop   | 타입     | 기본값                         | 설명               |
+| ------ | -------- | ------------------------------ | ------------------ |
+| `size` | `number` | 아이콘마다 다름 (위 표의 크기) | 가로·세로 크기(px) |
+
+나머지 `<svg>` 속성(`className`, `style`, `aria-label` 등)은 그대로 전달됩니다.
+
+`AdIcon`, `AdCrossIcon`은 SVG가 아니라 "Ad" 텍스트를 그리는 `<span>` 컴포넌트이며 `<span>` 속성을 받습니다. `children`은 "Ad" 뒤에 이어 붙습니다.
+
+## 색상
+
+아이콘은 `stroke="currentColor"`를 쓰므로 부모의 `color`를 따라갑니다. 색을 바꿀 때는 Tailwind 유틸리티나 토큰을 `color`로 지정하세요.
+
+```tsx
+<SettingIcon className="text-text-icon-default" />
+<CheckIcon className="text-brand-primary" />
+```
+
+다크 모드에서는 `text-icon-default` 같은 시맨틱 토큰이 자동으로 전환되므로 `dark:` 클래스가 필요 없습니다.

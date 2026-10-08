@@ -1,0 +1,49 @@
+---
+sidebar_position: 2
+---
+
+# Typography
+
+Pretendard 기반 Text Style입니다. `text-title-1`, `text-body-1`처럼 Tailwind 유틸리티로 사용합니다.
+
+export const styles = [
+  ["display-1", "56 / Bold"],
+  ["display-2", "40 / Bold"],
+  ["display-3", "36 / Bold"],
+  ["title-1", "32 / Bold"],
+  ["title-2", "28 / Bold"],
+  ["title-3", "24 / Bold"],
+  ["heading-1", "22 / SemiBold"],
+  ["heading-2", "20 / SemiBold"],
+  ["headline-1", "18 / SemiBold"],
+  ["headline-2", "17 / SemiBold"],
+  ["body-1", "16 / Regular"],
+  ["body-2", "16 / Medium"],
+  ["label-1-normal", "14 / SemiBold"],
+  ["label-2", "13 / Regular"],
+  ["caption-1", "12 / Regular"],
+  ["caption-2", "11 / Regular"],
+];
+
+<table>
+  <thead>
+    <tr>
+      <th>클래스</th>
+      <th>스펙</th>
+      <th>미리보기</th>
+    </tr>
+  </thead>
+  <tbody>
+    {styles.map(([name, spec]) => (
+      <tr key={name}>
+        <td>
+          <code>text-{name}</code>
+        </td>
+        <td>{spec}</td>
+        <td>
+          <span className={`text-${name}`}>다람쥐 헌 쳇바퀴에 타고파</span>
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>

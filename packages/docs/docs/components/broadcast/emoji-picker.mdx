@@ -1,0 +1,135 @@
+---
+sidebar_position: 2
+---
+
+import { useState } from "react";
+import {
+  EmojiPicker,
+  SmileIcon,
+  encodeEmojiMarker,
+  renderEmojiMarkedText,
+} from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# EmojiPicker
+
+채팅 입력 영역의 이모지 선택 토글입니다. 버튼을 누르면 이모지 패널이 열리고, 패널 바깥을 누르면 닫힙니다.
+
+## Usage
+
+export function Demo() {
+  const [picked, setPicked] = useState(null);
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        minHeight: 200,
+        paddingTop: 140,
+      }}
+    >
+      <EmojiPicker
+        icon={<SmileIcon />}
+        onSelect={(emoji) => setPicked(emoji.label)}
+      />
+      <span>선택한 이모지: {picked ?? "없음"}</span>
+    </div>
+  );
+}
+
+<Preview>
+  <Demo />
+</Preview>
+
+```tsx
+import {
+  EmojiPicker,
+  SmileIcon,
+  encodeEmojiMarker,
+  renderEmojiMarkedText,
+} from "@fds/core";
+
+<EmojiPicker icon={<SmileIcon />} onSelect={(emoji) => console.log(emoji.id)} />
+```
+
+## 패널 위치
+
+`placement`로 열리는 방향, `align`으로 정렬 기준, `offset`으로 버튼과의 간격(px)을 지정합니다.
+
+```tsx
+<EmojiPicker
+  icon={<SmileIcon />}
+  placement="bottom"
+  align="end"
+  offset={12}
+  onSelect={handleSelect}
+/>
+```
+
+## 이모지 마커
+
+텍스트와 이모지가 섞인 메시지는 body 안에 `{{emoji:id}}` 마커로 이모지 위치를 표시합니다. 전송할 때 `encodeEmojiMarker`로 마커를 만들고, 렌더링할 때 `renderEmojiMarkedText`로 실제 `<img>`로 바꿉니다.
+
+export function MarkerDemo() {
+  const body = `응원합니다 ${encodeEmojiMarker("heart")} 파이팅 ${encodeEmojiMarker("party")}`;
+  return (
+    <div>
+      <div style={{ marginBottom: 8 }}>
+        <code>{body}</code>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        {renderEmojiMarkedText(body)}
+      </div>
+    </div>
+  );
+}
+
+<Preview>
+  <MarkerDemo />
+</Preview>
+
+```tsx
+import { encodeEmojiMarker, renderEmojiMarkedText } from "@fds/core";
+
+const body = `응원합니다 ${encodeEmojiMarker("heart")}`; // "응원합니다 {{emoji:heart}}"
+
+// renderText로 일반 텍스트 구간을 직접 처리할 수 있다 (마스킹, urlify 등)
+renderEmojiMarkedText(body, "size-5", (segment) => segment);
+```
+
+## Props
+
+| Prop            | 타입                           | 기본값           | 설명                                                                            |
+| --------------- | ------------------------------ | ---------------- | ------------------------------------------------------------------------------- |
+| `icon`          | `ReactNode`                    | -                | 토글 버튼 안에 표시할 아이콘 (필수)                                             |
+| `onSelect`      | `(emoji: EmojiItem) => void`   | -                | 이모지를 골랐을 때 호출 (필수)                                                  |
+| `items`         | `EmojiItem[]`                  | `DEFAULT_EMOJIS` | 패널에 표시할 이모지 목록                                                       |
+| `placement`     | `"top" \| "bottom"`            | `"top"`          | 버튼 기준 패널이 열리는 방향                                                    |
+| `align`         | `"start" \| "end" \| "center"` | `"start"`        | 버튼 기준 패널 가로 정렬                                                        |
+| `offset`        | `number`                       | `8`              | 버튼과 패널 사이 간격(px)                                                       |
+| `closeOnSelect` | `boolean`                      | `false`          | 이모지를 고르면 패널을 닫을지 여부. 연속으로 여러 개 보내는 채팅 입력은 `false` |
+| `className`     | `string`                       | -                | 래퍼에 붙는 추가 클래스                                                         |
+
+### EmojiItem
+
+| 필드    | 타입     | 설명                               |
+| ------- | -------- | ---------------------------------- |
+| `id`    | `string` | 마커에 쓰이는 식별자 (소문자 영문) |
+| `label` | `string` | 접근성/툴팁 텍스트                 |
+| `src`   | `string` | 이미지 주소                        |
+
+### Exports
+
+| 이름                                                                 | 설명                                                                                                |
+| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `DEFAULT_EMOJIS`                                                     | 기본 이모지 9종 (`party`, `heart`, `thumbup`, `clap`, `hand`, `smile`, `think`, `scream`, `crying`) |
+| `encodeEmojiMarker(id)`                                              | `{{emoji:id}}` 마커 문자열 생성                                                                     |
+| `EMOJI_MARKER_REGEX`                                                 | 마커를 찾는 정규식 `/\{\{emoji:([a-z]+)\}\}/g`                                                      |
+| `renderEmojiMarkedText(body, emojiClassName?, renderText?, emojis?)` | body의 마커를 `<img>`로 치환. 마커가 없으면 `renderText`만 호출                                     |
+| `EmojiPickerPlacement`, `EmojiPickerAlign`                           | `placement`, `align`의 타입                                                                         |
+
+## 참고
+
+- 버튼과 이모지를 눌러도 입력창의 포커스와 캐럿이 유지되도록 `mousedown` 기본 동작을 막습니다.
+- 이 컴포넌트는 `ref`를 받지 않습니다.

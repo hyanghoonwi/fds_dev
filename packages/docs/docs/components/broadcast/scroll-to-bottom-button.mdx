@@ -1,0 +1,39 @@
+---
+sidebar_position: 4
+---
+
+import { ScrollToBottomButton } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# ScrollToBottomButton
+
+채팅 영역에서 맨 아래로 이동할 때 쓰는 32px 원형 버튼입니다. 테마와 상관없이 항상 짙은 네이비 배경에 흰 화살표로 표시됩니다.
+
+## Usage
+
+<Preview>
+  <ScrollToBottomButton onClick={() => alert("맨 아래로 이동")} />
+</Preview>
+
+```tsx
+<ScrollToBottomButton onClick={scrollToBottom} />
+```
+
+## States
+
+hover와 pressed 상태에서는 배경이 한 단계 밝아집니다.
+
+## Props
+
+별도 prop 없이 `<button>`의 모든 속성을 받습니다.
+
+| Prop        | 타입                                   | 기본값 | 설명                |
+| ----------- | -------------------------------------- | ------ | ------------------- |
+| `onClick`   | `MouseEventHandler<HTMLButtonElement>` | -      | 클릭 핸들러         |
+| `disabled`  | `boolean`                              | -      | 비활성화            |
+| `className` | `string`                               | -      | 추가 클래스         |
+| `ref`       | `Ref<HTMLButtonElement>`               | -      | React 19 `ref` prop |
+
+## 참고
+
+- `type="button"`과 `aria-label="맨 아래로 이동"`이 기본으로 설정됩니다. 필요하면 `aria-label`을 덮어쓸 수 있습니다.

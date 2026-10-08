@@ -1,0 +1,77 @@
+---
+sidebar_position: 8
+---
+
+import { VodList } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# VodList
+
+다시보기(VOD) 목록입니다. 썸네일, 배지, 제목, 시간을 한 줄 항목으로 보여주고, 항목을 누르면 `onClick`이 호출됩니다.
+
+## Usage
+
+export const thumb = (from, to) =>
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="120"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="220" height="120" fill="url(#g)"/></svg>`,
+  );
+
+export const items = [
+  {
+    id: "1",
+    thumbnailSrc: thumb("#3182f6", "#242b35"),
+    badgeLabel: "VOD",
+    title: "오늘의 시황 분석과 종목 추천 라이브",
+    timestamp: "2시간 전",
+    onClick: () => alert("VOD 1 재생"),
+  },
+  {
+    id: "2",
+    badgeLabel: "VOD",
+    title:
+      "제목이 아주 길어지는 경우에는 한 줄로 말줄임 처리가 됩니다 정말 길어요",
+    timestamp: "어제",
+    onClick: () => alert("VOD 2 재생"),
+  },
+];
+
+<Preview>
+  <VodList style={{ width: 300 }} items={items} />
+</Preview>
+
+```tsx
+<VodList
+  items={[
+    {
+      id: "1",
+      thumbnailSrc: "/images/vod-1.jpg",
+      badgeLabel: "VOD",
+      title: "오늘의 시황 분석과 종목 추천 라이브",
+      timestamp: "2시간 전",
+      onClick: () => play("1"),
+    },
+  ]}
+/>
+```
+
+## Props
+
+| Prop        | 타입                  | 기본값 | 설명                |
+| ----------- | --------------------- | ------ | ------------------- |
+| `items`     | `VodListItem[]`       | -      | 목록 항목 (필수)    |
+| `className` | `string`              | -      | 추가 클래스         |
+| `ref`       | `Ref<HTMLDivElement>` | -      | React 19 `ref` prop |
+
+나머지 `<div>` 속성은 그대로 전달됩니다.
+
+### VodListItem
+
+| 필드           | 타입         | 필수 | 설명                                                                 |
+| -------------- | ------------ | ---- | -------------------------------------------------------------------- |
+| `id`           | `string`     | ✓    | 항목 key                                                             |
+| `badgeLabel`   | `string`     | ✓    | 제목 위에 표시되는 배지 텍스트                                       |
+| `title`        | `string`     | ✓    | 제목. 길면 한 줄로 말줄임 처리                                       |
+| `timestamp`    | `string`     | ✓    | 방송 시점 등 보조 텍스트                                             |
+| `thumbnailSrc` | `string`     |      | 썸네일 이미지 주소. 없으면 빈 박스                                   |
+| `onClick`      | `() => void` |      | 항목 클릭 핸들러. 있으면 `role="button"`이 되고 Enter/Space로도 동작 |

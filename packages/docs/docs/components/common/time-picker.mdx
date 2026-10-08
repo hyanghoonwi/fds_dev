@@ -1,0 +1,172 @@
+---
+sidebar_position: 14
+---
+
+import { useState } from "react";
+import { TimePicker } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# TimePicker
+
+시간을 고르는 입력 컴포넌트입니다. 입력창이나 오른쪽 시계 아이콘을 누르면 아래에 "시" / "분" 두 개의 스크롤 목록이 열리고, 항목을 골라 **확인**을 누르면 값이 확정됩니다. 방송 시작 시간, 예약 시간처럼 정해진 간격의 시각을 고를 때 사용합니다.
+
+## Usage
+
+값은 24시간제 `"HH:mm"` 문자열입니다. **"확인"을 누르면** `onChange`가 호출되므로 `value`와 `onChange`로 제어하세요.
+
+export function Demo() {
+  const [time, setTime] = useState("14:30");
+  return (
+    <div style={{ width: 280 }}>
+      <TimePicker value={time} onChange={setTime} />
+      <p
+        style={{
+          margin: "12px 0 0",
+          fontSize: 13,
+          color: "var(--fds-text-caption)",
+        }}
+      >
+        선택한 시간: {time ?? "없음"}
+      </p>
+    </div>
+  );
+}
+
+<Preview style={{ minHeight: 340, alignItems: "flex-start" }}>
+  <Demo />
+</Preview>
+
+```tsx
+import { useState } from "react";
+import { TimePicker } from "@fds/core";
+
+const [time, setTime] = useState<string | null>("14:30");
+
+<TimePicker value={time} onChange={setTime} />
+```
+
+값을 직접 관리할 필요가 없으면 `defaultValue`만 넘기는 비제어 방식도 됩니다.
+
+```tsx
+<TimePicker defaultValue="09:00" onChange={(time) => console.log(time)} />
+```
+
+## 선택 동작
+
+팝오버가 열릴 때 현재 값이 목록 가운데 근처에 보이고, 선택된 시/분은 은은한 파란 배경(`bg-blue-tint`)과 굵은 글씨로 표시됩니다.
+
+- **시**를 누르면 시가 선택되고 팝오버는 열린 채로 유지됩니다. 분이 비어 있으면 `00`으로 채워집니다.
+- **분**을 누르면 분이 선택되고 팝오버는 열린 채로 유지됩니다. 시가 비어 있으면 `00`으로 채워집니다.
+- 목록은 스크롤해서 보고, 항목을 눌러서 고릅니다.
+
+### 확정 규칙
+
+팝오버 안에서 고르는 값은 임시 값(draft)입니다. 입력창에는 확정된 값만 표시되고, 고르는 도중의 값은 목록의 선택 표시로만 보입니다.
+
+| 동작                                      | 결과                                                                                                                  |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **확인** 버튼                             | draft를 확정합니다. `onChange("HH:mm")`가 호출되고 입력창에 반영된 뒤 팝오버가 닫히며 포커스가 입력창으로 돌아갑니다. |
+| `Esc`, 바깥 클릭, 입력창/아이콘 다시 클릭 | draft를 버리고 닫습니다. `onChange`는 호출되지 않습니다. 다시 열면 현재 확정된 값에서 시작합니다.                     |
+
+값이 없는 상태에서 아무것도 고르지 않으면 **확인** 버튼은 비활성화됩니다.
+
+## minuteStep
+
+`minuteStep`으로 분 목록의 간격을 정합니다. 기본값은 `1`(00~59)이고, 15분 단위 예약처럼 간격이 정해진 곳에서는 `10`, `15`, `30` 등을 사용하세요.
+
+<Preview style={{ minHeight: 340, alignItems: "flex-start", gap: 24 }}>
+  <div style={{ width: 200 }}>
+    <TimePicker minuteStep={10} defaultValue="09:30" />
+  </div>
+  <div style={{ width: 200 }}>
+    <TimePicker minuteStep={15} placeholder="15분 단위" />
+  </div>
+</Preview>
+
+```tsx
+<TimePicker minuteStep={10} defaultValue="09:30" />
+<TimePicker minuteStep={15} placeholder="15분 단위" />
+```
+
+## Label / Required / Error
+
+[Input](./input)과 같은 `label`, `required`, `error`, `orientation`, `labelWidth` prop을 그대로 사용합니다. 라벨을 눌러도 팝오버가 열립니다.
+
+<Preview
+  style={{
+    minHeight: 340,
+    flexDirection: "column",
+    alignItems: "stretch",
+    maxWidth: 420,
+  }}
+>
+  <TimePicker label="방송 시작 시간" required />
+  <TimePicker
+    label="방송 종료 시간"
+    orientation="horizontal"
+    required
+    error="시작 시간보다 늦어야 해요."
+  />
+</Preview>
+
+```tsx
+<TimePicker label="방송 시작 시간" required />
+<TimePicker
+  label="방송 종료 시간"
+  orientation="horizontal"
+  required
+  error="시작 시간보다 늦어야 해요."
+/>
+```
+
+## Disabled
+
+<Preview>
+  <div style={{ width: 280 }}>
+    <TimePicker disabled defaultValue="14:30" />
+  </div>
+</Preview>
+
+```tsx
+<TimePicker disabled defaultValue="14:30" />
+```
+
+## Props
+
+`TimePicker`는 [Input](./input)의 `label`, `orientation`, `labelWidth`, `required`, `error`, `containerClassName`, `className`, `placeholder`, `disabled`, `id`, `name`, `ref` 등을 그대로 받습니다(입력창은 읽기 전용이라 `value`, `onChange`, `readOnly`, `leftAddon`, `rightAddon`은 제외).
+
+| Prop           | 타입                             | 기본값        | 설명                                                                                                |
+| -------------- | -------------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| `value`        | `string \| null`                 | -             | 확정된 시간(`"HH:mm"`, 24시간제). 넘기면 제어 컴포넌트로 동작하고, 비우려면 `null`                  |
+| `defaultValue` | `string \| null`                 | `null`        | 비제어 모드의 초기값                                                                                |
+| `onChange`     | `(time: string \| null) => void` | -             | 팝오버에서 **확인**을 눌렀을 때 `"HH:mm"` 문자열로 호출됨. `Esc`/바깥 클릭으로 닫으면 호출되지 않음 |
+| `minuteStep`   | `number`                         | `1`           | 분 목록의 간격. 60의 약수(1, 5, 10, 15, 30) 권장                                                    |
+| `placeholder`  | `string`                         | `"시간 선택"` | 값이 없을 때 표시할 문구                                                                            |
+| `label`        | `ReactNode`                      | -             | 라벨                                                                                                |
+| `orientation`  | `"vertical" \| "horizontal"`     | `"vertical"`  | 라벨 배치                                                                                           |
+| `required`     | `boolean`                        | -             | 라벨 뒤에 `*` 표시 + `required` 적용                                                                |
+| `error`        | `ReactNode`                      | -             | 에러 메시지. 값이 있으면 에러 스타일 + 메시지 표시                                                  |
+| `disabled`     | `boolean`                        | -             | 비활성화 (팝오버가 열리지 않음)                                                                     |
+| `name`         | `string`                         | -             | 폼 제출 시 이름. 값은 확정된 `"HH:mm"` 문자열로 전송됨                                              |
+| `ref`          | `Ref<HTMLInputElement>`          | -             | React 19 `ref` prop (입력창에 연결)                                                                 |
+
+## 키보드
+
+팝오버가 열리면 **시 목록**의 선택 항목(없으면 `00`)에 포커스가 갑니다. 각 목록은 `listbox`이고 항목은 `option`(`aria-selected`는 draft 기준)입니다. 방향키는 페이지를 스크롤하지 않습니다.
+
+| 키              | 동작                                                                      |
+| --------------- | ------------------------------------------------------------------------- |
+| `↑` `↓`         | 같은 목록에서 이전/다음 항목으로 포커스 이동 (순환 없이 처음/끝에서 멈춤) |
+| `Home` `End`    | 목록의 처음/끝으로 이동                                                   |
+| `←` `→`         | 시 ↔ 분 목록 전환 (선택된 항목, 없으면 `00`으로 이동)                     |
+| `Enter` `Space` | 포커스된 항목을 선택 (draft에 반영, 팝오버는 유지)                        |
+| `Tab`           | **확인** 버튼으로 이동 (확인 버튼에서 `Enter`/`Space`는 일반 버튼 동작)   |
+| `Esc`           | draft를 버리고 닫은 뒤 입력창으로 포커스 이동                             |
+
+## 참고
+
+- **24시간제만 지원합니다.** 오전/오후(AM/PM) 표기와 초 단위 선택은 지원하지 않습니다.
+- 입력창은 읽기 전용이라 직접 타이핑할 수 없습니다. 항상 팝오버의 목록에서 고릅니다.
+- `value`가 `"HH:mm"` 형식이 아니면 값이 없는 것으로 취급합니다.
+- `minuteStep`에 없는 분(예: 간격 10인데 `"14:33"`)이 들어와도 입력창에는 그대로 표시되지만, 분 목록에서는 선택 표시가 되지 않습니다.
+- 팝오버는 입력창 바로 아래에 `position: absolute`로 뜹니다. `overflow: hidden`인 부모 안에 두면 잘릴 수 있습니다.

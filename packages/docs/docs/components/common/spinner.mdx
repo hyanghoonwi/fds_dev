@@ -1,0 +1,47 @@
+---
+sidebar_position: 10
+---
+
+import { Spinner } from "@fds/core";
+import Preview from "@site/src/components/Preview";
+
+# Spinner
+
+로딩 중임을 나타내는 회전 인디케이터입니다. `role="status"`와 `aria-label="로딩 중"`이 포함되어 있습니다.
+
+## Usage
+
+<Preview>
+  <Spinner />
+</Preview>
+
+```tsx
+<Spinner />
+```
+
+## Sizes
+
+`size`(px)로 크기를 조절합니다.
+
+<Preview>
+  <Spinner size={16} />
+  <Spinner size={20} />
+  <Spinner size={32} />
+  <Spinner size={48} />
+</Preview>
+
+```tsx
+<Spinner size={16} />
+<Spinner size={20} />
+<Spinner size={32} />
+<Spinner size={48} />
+```
+
+## Props
+
+| Prop        | 타입     | 기본값 | 설명                       |
+| ----------- | -------- | ------ | -------------------------- |
+| `size`      | `number` | `20`   | 가로·세로 크기(px)         |
+| `className` | `string` | -      | `<svg>`에 붙는 추가 클래스 |
+
+`ref`와 그 외 HTML 속성은 받지 않습니다.

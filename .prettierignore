@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+storybook-static
+.docusaurus
+package-lock.json
+
+# 자동 생성 파일 (svg-to-icon.mjs / generate-icon-barrel.mjs 출력)
+packages/core/src/components/icon/*Icon.tsx
+packages/core/src/components/icon/index.ts
