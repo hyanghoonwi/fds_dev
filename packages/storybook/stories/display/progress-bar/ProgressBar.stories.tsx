@@ -3,7 +3,7 @@ import { useArgs } from "storybook/preview-api";
 import { ProgressBar } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/ProgressBar",
+  title: "Components/Display/ProgressBar",
   component: ProgressBar,
   tags: ["autodocs"],
   parameters: {

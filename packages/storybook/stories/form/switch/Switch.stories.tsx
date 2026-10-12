@@ -3,7 +3,7 @@ import { useArgs } from "storybook/preview-api";
 import { Switch } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Switch",
+  title: "Components/Form/Switch",
   component: Switch,
   tags: ["autodocs"],
   parameters: {

@@ -3,7 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button, Checkbox, CheckboxGroup } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Checkbox",
+  title: "Components/Form/Checkbox",
   component: Checkbox,
   tags: ["autodocs"],
   parameters: {
@@ -38,18 +38,16 @@ export const WithDescription: Story = {
 
 // 상태 모음 (설명용 줄 배치는 순수 HTML)
 export const States: Story = {
-  render: function Render() {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <Checkbox label="기본" />
-        <Checkbox label="체크됨" defaultChecked />
-        <Checkbox label="부분 선택" indeterminate />
-        <Checkbox label="비활성" disabled />
-        <Checkbox label="비활성 + 체크됨" disabled defaultChecked />
-        <Checkbox label="에러 (필수 항목)" invalid />
-      </div>
-    );
-  },
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Checkbox label="기본" />
+      <Checkbox label="체크됨" defaultChecked />
+      <Checkbox label="부분 선택" indeterminate />
+      <Checkbox label="비활성" disabled />
+      <Checkbox label="비활성 + 체크됨" disabled defaultChecked />
+      <Checkbox label="에러 (필수 항목)" invalid />
+    </div>
+  ),
 };
 
 // 단일 체크 + 제어 모드: 값은 onChange의 boolean으로 받는다
@@ -92,20 +90,18 @@ export const Group: Story = {
 };
 
 export const GroupHorizontal: Story = {
-  render: function Render() {
-    return (
-      <CheckboxGroup
-        label="채널 속성"
-        direction="horizontal"
-        defaultValue={["partner"]}
-        options={[
-          { value: "partner", label: "파트너" },
-          { value: "trader", label: "트레이더" },
-          { value: "media", label: "미디어" },
-        ]}
-      />
-    );
-  },
+  render: () => (
+    <CheckboxGroup
+      label="채널 속성"
+      direction="horizontal"
+      defaultValue={["partner"]}
+      options={[
+        { value: "partner", label: "파트너" },
+        { value: "trader", label: "트레이더" },
+        { value: "media", label: "미디어" },
+      ]}
+    />
+  ),
 };
 
 // 일부만 선택되면 "전체 선택"이 부분 선택(-)이 되고, 누르면 전체 선택된다
@@ -278,54 +274,48 @@ export const PermissionMatrix: Story = {
 
 // 묶음 제목은 `label`로 준다. 묶음에 `aria-labelledby`로 연결되고, `required`면 `*`가 붙는다.
 export const GroupWithLabel: Story = {
-  render: function Render() {
-    return (
-      <CheckboxGroup
-        label="채널 속성"
-        required
-        defaultValue={["partner"]}
-        options={[
-          { value: "partner", label: "파트너" },
-          { value: "trader", label: "트레이더" },
-        ]}
-      />
-    );
-  },
+  render: () => (
+    <CheckboxGroup
+      label="채널 속성"
+      required
+      defaultValue={["partner"]}
+      options={[
+        { value: "partner", label: "파트너" },
+        { value: "trader", label: "트레이더" },
+      ]}
+    />
+  ),
 };
 
 // `orientation="horizontal"`은 제목을 왼쪽에 놓는다(첫 옵션 줄과 맞춤). 옵션 배치는 `direction`이 정한다.
 export const GroupLabelOnLeft: Story = {
-  render: function Render() {
-    return (
-      <CheckboxGroup
-        label="채널 속성"
-        orientation="horizontal"
-        direction="horizontal"
-        defaultValue={["partner"]}
-        options={[
-          { value: "partner", label: "파트너" },
-          { value: "trader", label: "트레이더" },
-          { value: "media", label: "미디어" },
-        ]}
-      />
-    );
-  },
+  render: () => (
+    <CheckboxGroup
+      label="채널 속성"
+      orientation="horizontal"
+      direction="horizontal"
+      defaultValue={["partner"]}
+      options={[
+        { value: "partner", label: "파트너" },
+        { value: "trader", label: "트레이더" },
+        { value: "media", label: "미디어" },
+      ]}
+    />
+  ),
 };
 
 export const GroupWithDescription: Story = {
-  render: function Render() {
-    return (
-      <CheckboxGroup
-        label="노출 위치"
-        description="홈과 상세 중 하나 이상 선택하세요."
-        defaultValue={["home"]}
-        options={[
-          { value: "home", label: "홈" },
-          { value: "detail", label: "상세" },
-        ]}
-      />
-    );
-  },
+  render: () => (
+    <CheckboxGroup
+      label="노출 위치"
+      description="홈과 상세 중 하나 이상 선택하세요."
+      defaultValue={["home"]}
+      options={[
+        { value: "home", label: "홈" },
+        { value: "detail", label: "상세" },
+      ]}
+    />
+  ),
 };
 
 // 에러가 있으면 모든 체크박스가 에러 상태가 되고 메시지가 아래에 보인다. 하나라도 고르면 에러를 지운다.

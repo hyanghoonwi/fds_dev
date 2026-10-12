@@ -3,7 +3,7 @@ import { useArgs } from "storybook/preview-api";
 import { SegmentedControl } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/SegmentedControl",
+  title: "Components/Navigation/SegmentedControl",
   component: SegmentedControl,
   tags: ["autodocs"],
   parameters: {

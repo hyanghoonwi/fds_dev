@@ -5,7 +5,7 @@ import { Button, Input, RadioGroup, Textarea } from "@fds/core";
 // 상호배타 선택 입력. 값은 `string`이고, 선택이 "바뀔 때만" onChange가 호출된다.
 // 방향키 이동, Tab 처리, 폼 제출은 브라우저의 네이티브 radio가 맡는다.
 const meta = {
-  title: "Components/Common/RadioGroup",
+  title: "Components/Form/RadioGroup",
   component: RadioGroup,
   tags: ["autodocs"],
   parameters: {

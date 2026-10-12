@@ -6,7 +6,7 @@ import { Button, CheckboxGroup, FormField, Input, RadioGroup, Select, Textarea }
 // Input · Select · Textarea · CheckboxGroup · RadioGroup은 라벨·설명·에러를 props로 이미 가지고 있다.
 // FormField는 FDS에 없는 컨트롤(파일 선택, 색상 선택, 서드파티 위젯 등)에 같은 레이아웃을 입히는 래퍼다.
 const meta = {
-  title: "Components/Common/FormField",
+  title: "Components/Form/FormField",
   component: FormField,
   tags: ["autodocs"],
   parameters: {

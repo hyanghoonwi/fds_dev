@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Text } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Text",
+  title: "Components/Display/Text",
   component: Text,
   tags: ["autodocs"],
   parameters: {
