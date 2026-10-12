@@ -3,7 +3,7 @@ import { fn } from "storybook/test";
 import { Button } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Button",
+  title: "Components/Actions/Button",
   component: Button,
   tags: ["autodocs"],
   parameters: {
@@ -14,6 +14,7 @@ const meta = {
       control: "select",
       options: ["line", "primary", "tint", "danger"],
     },
+    size: { control: "inline-radio", options: ["sm", "md"] },
     disabled: { control: "boolean" },
     icon: { control: false },
   },
@@ -44,6 +45,18 @@ export const Danger: Story = {
 
 export const Disabled: Story = {
   args: { variant: "line", disabled: true },
+};
+
+// sm(28px) / md(36px, 기본)
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      <Button {...args} size="sm" variant="primary" />
+      <Button {...args} size="md" variant="primary" />
+      <Button {...args} size="sm" variant="line" />
+      <Button {...args} size="md" variant="line" />
+    </div>
+  ),
 };
 
 export const AllVariants: Story = {

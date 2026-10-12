@@ -1,6 +1,7 @@
 import { useId } from "react";
 import type { ReactNode } from "react";
 import { cn } from "../../utils/cn";
+import type { FieldSize } from "./fieldSize";
 
 export type FieldOrientation = "vertical" | "horizontal";
 
@@ -13,7 +14,7 @@ export type FieldLabelMode = "for" | "group";
 
 /**
  * 가로 배치에서 라벨의 세로 위치를 어디에 맞출지.
- * - `field`: 높이 42px 입력 박스의 첫 줄(Input, Textarea, Select)
+ * - `field`: 입력 박스(md 42px, sm 36px)의 첫 줄(Input, Textarea, Select)
  * - `first-row`: 첫 번째 옵션 줄(CheckboxGroup, RadioGroup)
  */
 export type FieldLabelAlign = "field" | "first-row";
@@ -47,6 +48,8 @@ export interface FieldLayoutProps {
   id?: string;
   labelMode?: FieldLabelMode;
   labelAlign?: FieldLabelAlign;
+  /** 입력 박스 크기. 가로 배치에서 라벨을 박스 첫 줄에 맞추는 데 쓴다. 기본 `md` */
+  size?: FieldSize;
   /** 라벨·컨트롤·보조 문구를 모두 감싸는 컨테이너의 클래스 */
   containerClassName?: string;
   /** 설명/에러 아래에 붙는 요소(예: Textarea 글자수). 위치가 고정되어 있어 토글돼도 컨트롤이 다시 만들어지지 않는다. */
@@ -69,6 +72,7 @@ export function FieldLayout({
   id,
   labelMode = "for",
   labelAlign = "field",
+  size = "md",
   containerClassName,
   footer,
   children,
@@ -87,8 +91,9 @@ export function FieldLayout({
     style: horizontal ? { width: labelWidth } : undefined,
     className: cn(
       "font-fds text-label-1-normal text-text-secondary",
-      // 가로 배치: 라벨 줄(20px)의 중심을 입력 박스(42px) 첫 줄의 중심에 맞춘다. 묶음은 첫 옵션 줄(20px)과 위쪽을 맞춘다.
-      horizontal && cn("shrink-0", labelAlign === "field" && "pt-[11px]"),
+      // 가로 배치: 라벨 줄(20px)의 중심을 입력 박스(md 42px, sm 36px) 첫 줄의 중심에 맞춘다. 묶음은 첫 옵션 줄(20px)과 위쪽을 맞춘다.
+      horizontal &&
+        cn("shrink-0", labelAlign === "field" && (size === "sm" ? "pt-2" : "pt-[11px]")),
     ),
   };
   const labelContent = (

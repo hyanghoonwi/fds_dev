@@ -2,7 +2,11 @@ import { useRef, useState } from "react";
 import type { FormEvent } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button, Input, Modal, Select } from "@fds/core";
-import type { SelectOption } from "@fds/core";
+import type { SelectOption, SelectProps } from "@fds/core";
+
+// SelectProps는 `multiple` 여부로 갈리는 유니온이라 Storybook이 Args를 추론하지 못한다. 단일/여러 개 스토리용 타입을 따로 둔다.
+type SingleSelectProps = Extract<SelectProps, { multiple?: false }>;
+type MultipleSelectProps = Extract<SelectProps, { multiple: true }>;
 
 // 검색형 Select 확인용 데이터: 영문/한글이 섞인 asset 목록
 const assetOptions: SelectOption[] = [
@@ -136,7 +140,7 @@ const cityOptions: SelectOption[] = [
 ].map((city) => ({ value: city, label: city }));
 
 const meta = {
-  title: "Components/Common/Select",
+  title: "Components/Form/Select",
   component: Select,
   tags: ["autodocs"],
   parameters: {
@@ -146,6 +150,7 @@ const meta = {
     docs: { story: { height: "300px" } },
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md"] },
     disabled: { control: "boolean" },
     invalid: { control: "boolean" },
     label: { control: "text" },
@@ -155,13 +160,9 @@ const meta = {
     required: { control: "boolean" },
     placeholder: { control: "text" },
     maxMenuHeight: { control: "number" },
-    searchable: { control: "boolean" },
-    loading: { control: "boolean" },
-    emptyMessage: { control: "text" },
-    searchPlaceholder: { control: "text" },
-    searchDelay: { control: "number" },
-    selectedLabel: { control: "text" },
-    onSearch: { control: false },
+    search: { control: "boolean" },
+    multiple: { control: "boolean" },
+    maxSelected: { control: "number" },
     onChange: { control: false },
     options: { control: false },
   },
@@ -176,12 +177,24 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Select>;
+} satisfies Meta<SingleSelectProps>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
+type MultipleStory = StoryObj<MultipleSelectProps>;
 
 export const Default: Story = {};
+
+// sm(36px) / md(42px, 기본). 검색형도 같은 크기를 따른다
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Select {...args} size="md" placeholder="md (기본)" />
+      <Select {...args} size="sm" placeholder="sm" />
+      <Select {...args} size="sm" search placeholder="sm · 검색형" />
+    </div>
+  ),
+};
 
 // "전체"(값 "")가 선택된 상태는 placeholder가 아니라 "전체"로 보인다
 export const WithValue: Story = {
@@ -210,9 +223,11 @@ export const Controlled: Story = {
 
 // 목록 화면의 필터 한 줄: 상태/유형 Select + 검색어 + 조회/초기화
 export const FilterBar: Story = {
+  // centered는 Docs에서 감싸는 상자가 내용 크기로 줄어들어 폭이 넓은 예시가 잘린다
+  parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div style={{ width: 720 }}>
+      <div style={{ width: "100%", maxWidth: 720, minWidth: 0 }}>
         <Story />
       </div>
     ),
@@ -230,8 +245,8 @@ export const FilterBar: Story = {
           setApplied(draft);
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 12 }}>
-          <div style={{ width: 160 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: 12 }}>
+          <div style={{ width: 160, flexShrink: 0 }}>
             <Select
               label="상태"
               options={statusOptions}
@@ -239,7 +254,7 @@ export const FilterBar: Story = {
               onChange={(status) => setDraft((prev) => ({ ...prev, status }))}
             />
           </div>
-          <div style={{ width: 160 }}>
+          <div style={{ width: 160, flexShrink: 0 }}>
             <Select
               label="유형"
               options={typeOptions}
@@ -269,7 +284,15 @@ export const FilterBar: Story = {
           </Button>
         </div>
         <pre
-          style={{ margin: 0, padding: 12, background: "#f2f4f6", borderRadius: 8, fontSize: 12 }}
+          style={{
+            margin: 0,
+            padding: 12,
+            background: "#f2f4f6",
+            borderRadius: 8,
+            fontSize: 12,
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-all",
+          }}
         >
           {`적용된 조건: ${JSON.stringify(applied)}`}
         </pre>
@@ -326,49 +349,45 @@ export const InForm: Story = {
 };
 
 export const DisabledAndDisabledOption: Story = {
-  render: function Render() {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 12 }}>전체 비활성</span>
-          <Select options={statusOptions} defaultValue="pending" disabled />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 12 }}>일부 옵션 비활성 (방향키로 건너뛰고 클릭도 안 됨)</span>
-          <Select
-            options={[
-              { value: "", label: "전체" },
-              { value: "pending", label: "접수대기" },
-              { value: "reviewing", label: "검토중", disabled: true },
-              { value: "done", label: "처리완료" },
-              { value: "rejected", label: "반려", disabled: true },
-            ]}
-            defaultValue=""
-          />
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: 12 }}>invalid</span>
-          <Select options={roleOptions} placeholder="역할 선택" invalid />
-        </div>
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 12 }}>전체 비활성</span>
+        <Select options={statusOptions} defaultValue="pending" disabled />
       </div>
-    );
-  },
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 12 }}>일부 옵션 비활성 (방향키로 건너뛰고 클릭도 안 됨)</span>
+        <Select
+          options={[
+            { value: "", label: "전체" },
+            { value: "pending", label: "접수대기" },
+            { value: "reviewing", label: "검토중", disabled: true },
+            { value: "done", label: "처리완료" },
+            { value: "rejected", label: "반려", disabled: true },
+          ]}
+          defaultValue=""
+        />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        <span style={{ fontSize: 12 }}>invalid</span>
+        <Select options={roleOptions} placeholder="역할 선택" invalid />
+      </div>
+    </div>
+  ),
 };
 
 // 32개 항목: 목록 안에서 스크롤되고, 글자를 입력하면 해당 항목으로 이동한다
 export const LongListWithTypeahead: Story = {
   args: { options: cityOptions, placeholder: "지역 선택", defaultValue: "청주" },
-  render: function Render(args) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        <Select {...args} />
-        <span style={{ fontSize: 12, color: "#5c646f" }}>
-          열린 상태에서 글자를 입력해 보세요. “서”는 서산, 이어서 “울”은 서울로 이동합니다.
-          Home/End, 방향키도 됩니다.
-        </span>
-      </div>
-    );
-  },
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Select {...args} />
+      <span style={{ fontSize: 12, color: "#5c646f" }}>
+        열린 상태에서 글자를 입력해 보세요. “서”는 서산, 이어서 “울”은 서울로 이동합니다. Home/End,
+        방향키도 됩니다.
+      </span>
+    </div>
+  ),
 };
 
 // 모달 안에서도 열린다. Esc는 목록을 먼저 닫고, 한 번 더 누르면 모달이 닫힌다.
@@ -384,30 +403,26 @@ export const InModal: Story = {
         <Button variant="primary" onClick={() => setOpen(true)}>
           회원 등록
         </Button>
-        <Modal
-          open={open}
-          onClose={() => setOpen(false)}
-          header="회원 등록"
-          style={{ width: 360, minHeight: 420 }}
-          actions={
-            <>
-              <Button variant="line" onClick={() => setOpen(false)}>
-                취소
-              </Button>
-              <Button variant="primary" onClick={() => setOpen(false)}>
-                등록
-              </Button>
-            </>
-          }
-        >
-          <Select
-            label="역할"
-            options={roleOptions}
-            value={role}
-            onChange={setRole}
-            placeholder="역할을 선택하세요"
-          />
-          <Select label="상태" options={statusOptions} value={status} onChange={setStatus} />
+        <Modal open={open} onClose={() => setOpen(false)} style={{ width: 360, minHeight: 420 }}>
+          <Modal.Header>회원 등록</Modal.Header>
+          <Modal.Body>
+            <Select
+              label="역할"
+              options={roleOptions}
+              value={role}
+              onChange={setRole}
+              placeholder="역할을 선택하세요"
+            />
+            <Select label="상태" options={statusOptions} value={status} onChange={setStatus} />
+          </Modal.Body>
+          <Modal.Actions>
+            <Button variant="line" onClick={() => setOpen(false)}>
+              취소
+            </Button>
+            <Button variant="primary" onClick={() => setOpen(false)}>
+              등록
+            </Button>
+          </Modal.Actions>
         </Modal>
       </>
     );
@@ -450,16 +465,15 @@ export const WithError: Story = {
   },
 };
 
-// ---- 검색 가능한 Select (`searchable`) ----
+// ---- 검색 가능한 Select (`search`) ----
 
 // 글자를 입력하면 목록이 걸러진다 (대소문자 무시). 첫 번째 결과가 활성화되고 Enter로 고른다.
 export const Searchable: Story = {
   args: {
-    searchable: true,
+    search: true,
     label: "연결 asset",
     options: assetOptions,
     placeholder: "asset 검색/선택",
-    searchPlaceholder: "이름이나 심볼로 검색",
   },
   parameters: { docs: { story: { height: "340px" } } },
 };
@@ -467,7 +481,7 @@ export const Searchable: Story = {
 // 선택된 값이 있으면 입력창에 라벨이 보인다. 열면 라벨이 전체 선택되어 바로 입력하면 검색어로 바뀐다.
 export const SearchableWithValue: Story = {
   args: {
-    searchable: true,
+    search: true,
     label: "연결 asset",
     options: assetOptions,
     defaultValue: "ETH",
@@ -476,7 +490,7 @@ export const SearchableWithValue: Story = {
   parameters: { docs: { story: { height: "340px" } } },
 };
 
-// 서버에서 검색하는 경우: `onSearch`를 넘기면 컴포넌트는 거르지 않고, 부모가 결과로 `options`를 바꾼다.
+// 서버에서 검색하는 경우: `search={{ onSearch }}`를 넘기면 컴포넌트는 거르지 않고, 부모가 결과로 `options`를 바꾼다.
 // 빠르게 입력해도 디바운스(기본 250ms) 뒤 한 번만 요청하고, 먼저 보낸 요청의 응답은 무시한다.
 export const SearchableServerSide: Story = {
   render: function Render(args) {
@@ -511,13 +525,11 @@ export const SearchableServerSide: Story = {
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <Select
           {...args}
-          searchable
+          search={{ onSearch: handleSearch, loading }}
           label="연결 asset"
           options={results}
           value={assetId}
           onChange={setAssetId}
-          onSearch={handleSearch}
-          loading={loading}
           placeholder="asset 검색/선택"
           description="200개 중 검색어와 맞는 최대 20개만 불러와요."
         />
@@ -553,7 +565,7 @@ export const SearchableInForm: Story = {
       <form onSubmit={handleSubmit} noValidate style={{ width: 320 }}>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <Select
-            searchable
+            search
             name="place"
             label="장소"
             required
@@ -581,13 +593,13 @@ export const SearchableInForm: Story = {
 export const SearchableHorizontal: Story = {
   decorators: [
     (Story) => (
-      <div style={{ width: 460 }}>
+      <div style={{ width: "100%", maxWidth: 460, minWidth: 0 }}>
         <Story />
       </div>
     ),
   ],
   args: {
-    searchable: true,
+    search: true,
     label: "연결 asset",
     orientation: "horizontal",
     options: assetOptions,
@@ -609,32 +621,198 @@ export const SearchableInModal: Story = {
         <Button variant="primary" onClick={() => setOpen(true)}>
           asset 연결
         </Button>
-        <Modal
-          open={open}
-          onClose={() => setOpen(false)}
-          header="asset 연결"
-          style={{ width: 360, minHeight: 460 }}
-          actions={
-            <>
-              <Button variant="line" onClick={() => setOpen(false)}>
-                취소
-              </Button>
-              <Button variant="primary" onClick={() => setOpen(false)}>
-                연결
-              </Button>
-            </>
-          }
-        >
-          <Select
-            searchable
-            label="연결할 asset"
-            options={assetOptions}
-            value={asset}
-            onChange={setAsset}
-            placeholder="asset 검색/선택"
-          />
+        <Modal open={open} onClose={() => setOpen(false)} style={{ width: 360, minHeight: 460 }}>
+          <Modal.Header>asset 연결</Modal.Header>
+          <Modal.Body>
+            <Select
+              search
+              label="연결할 asset"
+              options={assetOptions}
+              value={asset}
+              onChange={setAsset}
+              placeholder="asset 검색/선택"
+            />
+          </Modal.Body>
+          <Modal.Actions>
+            <Button variant="line" onClick={() => setOpen(false)}>
+              취소
+            </Button>
+            <Button variant="primary" onClick={() => setOpen(false)}>
+              연결
+            </Button>
+          </Modal.Actions>
         </Modal>
       </>
     );
   },
+};
+
+// ---- 여러 개 선택 (`multiple`) ----
+
+// 고른 값은 필드 아래에 Chip으로 쌓이고 필드에는 "N개 선택"이 보인다. 목록은 고를 때 닫히지 않는다.
+// 이미 고른 옵션을 다시 누르거나 칩의 ×를 누르면 해제된다. 키보드: 방향키로 이동, Enter/Space로 고르고 해제.
+export const Multiple: MultipleStory = {
+  args: {
+    multiple: true,
+    label: "노출 코인",
+    options: assetOptions,
+    placeholder: "코인 선택",
+  },
+  parameters: { docs: { story: { height: "340px" } } },
+};
+
+export const MultipleWithValues: MultipleStory = {
+  args: {
+    multiple: true,
+    label: "노출 코인",
+    options: assetOptions,
+    defaultValue: ["BTC", "USDT"],
+  },
+  parameters: { docs: { story: { height: "340px" } } },
+};
+
+// search와 함께 쓰면 검색해서 여러 개를 고른다. 고르면 검색어가 지워져 이어서 검색할 수 있다.
+export const MultipleSearchable: MultipleStory = {
+  args: {
+    multiple: true,
+    search: true,
+    label: "노출 코인",
+    options: assetOptions,
+    placeholder: "코인 검색/선택",
+    defaultValue: ["ETH"],
+  },
+  parameters: { docs: { story: { height: "340px" } } },
+};
+
+// maxSelected에 닿으면 아직 고르지 않은 옵션은 비활성화된다. 하나를 해제하면 다시 고를 수 있다.
+export const MultipleMaxSelected: MultipleStory = {
+  args: {
+    multiple: true,
+    label: "대표 코인",
+    description: "최대 3개까지 고를 수 있어요.",
+    options: assetOptions,
+    maxSelected: 3,
+    defaultValue: ["BTC", "ETH", "XRP"],
+  },
+  parameters: { docs: { story: { height: "380px" } } },
+};
+
+export const MultipleWithError: MultipleStory = {
+  args: {
+    multiple: true,
+    label: "노출 코인",
+    required: true,
+    options: assetOptions,
+    error: "한 개 이상 선택해 주세요.",
+  },
+  parameters: { docs: { story: { height: "340px" } } },
+};
+
+export const MultipleDisabled: MultipleStory = {
+  args: {
+    multiple: true,
+    label: "노출 코인",
+    options: assetOptions,
+    defaultValue: ["BTC", "USDT"],
+    disabled: true,
+  },
+};
+
+// 제어 모드: 값은 고른 순서의 string[]이다
+export const MultipleControlled: MultipleStory = {
+  render: function Render(args) {
+    const [coins, setCoins] = useState<string[]>(["BTC"]);
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <Select
+          {...args}
+          multiple
+          label="노출 코인"
+          options={assetOptions}
+          value={coins}
+          onChange={setCoins}
+        />
+        <pre style={{ margin: 0, fontSize: 12 }}>{JSON.stringify(coins)}</pre>
+        <button type="button" onClick={() => setCoins([])}>
+          모두 해제
+        </button>
+      </div>
+    );
+  },
+  parameters: { docs: { story: { height: "420px" } } },
+};
+
+// 서버 검색: 결과가 바뀌어 options에서 사라져도 고른 칩의 라벨은 유지된다.
+// 저장된 값을 처음 보여 줄 때는 search.selectedOptions로 라벨을 알려 준다.
+export const MultipleServerSide: MultipleStory = {
+  render: function Render(args) {
+    const [coins, setCoins] = useState<string[]>(["BTC"]);
+    const [results, setResults] = useState<SelectOption[]>(serverDataset.slice(0, 20));
+    const [loading, setLoading] = useState(false);
+    const latestRequest = useRef(0);
+
+    const handleSearch = (query: string) => {
+      const requestId = latestRequest.current + 1;
+      latestRequest.current = requestId;
+      setLoading(true);
+      setTimeout(() => {
+        if (requestId !== latestRequest.current) {
+          return;
+        }
+        const keyword = query.trim().toLowerCase();
+        setResults(
+          serverDataset
+            .filter((option) => option.label.toLowerCase().includes(keyword))
+            .slice(0, 20),
+        );
+        setLoading(false);
+      }, 600);
+    };
+
+    return (
+      <Select
+        {...args}
+        multiple
+        search={{
+          onSearch: handleSearch,
+          loading,
+          selectedOptions: [{ value: "BTC", label: "비트코인 (BTC)" }],
+        }}
+        label="연결 asset"
+        options={results}
+        value={coins}
+        onChange={setCoins}
+        placeholder="asset 검색/선택"
+      />
+    );
+  },
+  parameters: { docs: { story: { height: "420px" } } },
+};
+
+// 폼: 고른 값마다 같은 name의 숨은 input이 만들어져 FormData.getAll(name)으로 읽는다
+export const MultipleInForm: MultipleStory = {
+  render: function Render(args) {
+    const [submitted, setSubmitted] = useState<string[] | null>(null);
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setSubmitted(new FormData(event.currentTarget).getAll("coins").map(String));
+    };
+    return (
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <Select
+          {...args}
+          multiple
+          name="coins"
+          label="노출 코인"
+          options={assetOptions}
+          defaultValue={["BTC", "ETH"]}
+        />
+        <Button type="submit" variant="primary">
+          저장
+        </Button>
+        {submitted && <pre style={{ margin: 0, fontSize: 12 }}>{JSON.stringify(submitted)}</pre>}
+      </form>
+    );
+  },
+  parameters: { docs: { story: { height: "420px" } } },
 };

@@ -11,10 +11,31 @@ import type {
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
+import { fieldTextClass, type FieldSize } from "../_internal/fieldSize";
 import { CheckIcon } from "../icon/CheckIcon";
+import { Chip } from "../chip/Chip";
 import { ChevronDownIcon } from "../icon/ChevronDownIcon";
 import { Popover } from "../popover/Popover";
 import { Spinner } from "../spinner/Spinner";
+
+export interface SelectSearchOptions {
+  /**
+   * 검색어가 바뀔 때 호출된다(`delay`만큼 디바운스). 이걸 넘기면 컴포넌트는 직접 거르지 않고,
+   * 부모가 검색 결과로 `options`를 갱신하는 것으로 본다(서버 검색). 메뉴를 닫으면 `""`로 한 번 더 호출된다.
+   */
+  onSearch?: (query: string) => void;
+  /** `onSearch`를 부르기까지 기다리는 시간(ms). 기본 250 */
+  delay?: number;
+  /** 검색 결과를 불러오는 중인지. 목록에 로딩 표시가 나오고 `aria-busy`가 켜진다. */
+  loading?: boolean;
+  /** 검색 결과가 없을 때 보이는 문구. 기본 "검색 결과가 없어요" */
+  emptyMessage?: string;
+  /**
+   * 현재 값에 해당하는 옵션이 `options`에 없을 때 보여 줄 옵션(입력창의 라벨, 여러 개 선택의 칩).
+   * 서버 검색에서 저장된 값을 처음 보여 줄 때 쓴다(고른 뒤에는 컴포넌트가 선택한 라벨을 기억한다).
+   */
+  selectedOptions?: SelectOption[];
+}
 
 export interface SelectOption {
   /** 선택했을 때 `onChange`로 전달되는 값. 빈 문자열(`""`)도 실제 옵션 값이다(예: "전체"). */
@@ -24,48 +45,23 @@ export interface SelectOption {
   disabled?: boolean;
 }
 
-export interface SelectProps extends Omit<
+interface SelectBaseProps extends Omit<
   ComponentProps<"button">,
   "value" | "defaultValue" | "onChange" | "children" | "role" | "type" | "name" | "required" | "ref"
 > {
   options: SelectOption[];
+  /** 크기. `md`는 높이 42px, `sm`은 36px. 기본 `md` */
+  size?: FieldSize;
   /**
-   * 트리거에 연결되는 ref. 기본은 `<button>`이고, `searchable`이면 텍스트 `<input>`이다.
+   * 트리거에 연결되는 ref. 기본은 `<button>`이고, `search`를 켜면 텍스트 `<input>`이다.
    */
   ref?: Ref<HTMLButtonElement | HTMLInputElement>;
   /**
-   * 목록을 검색해서 고르는 모드. 트리거가 텍스트 입력(combobox)이 되고, 입력한 글자로 `options`를 걸러낸다.
+   * 목록을 검색해서 고르는 모드. `true`이면 트리거가 텍스트 입력(combobox)이 되고, 입력한 글자로 `options`를 걸러낸다.
    * 선택할 수 있는 값은 항상 `options` 안의 값뿐이다(입력한 글자가 값이 되는 일은 없다).
-   * 서버에서 검색하려면 `onSearch`를 함께 쓴다.
+   * 서버에서 검색하거나 로딩 표시 등이 필요하면 객체로 넘긴다(`SelectSearchOptions`).
    */
-  searchable?: boolean;
-  /**
-   * 검색어가 바뀔 때 호출된다(`searchDelay`만큼 디바운스). 이걸 넘기면 컴포넌트는 직접 거르지 않고,
-   * 부모가 검색 결과로 `options`를 갱신하는 것으로 본다(서버 검색). 메뉴를 닫으면 `""`로 한 번 더 호출된다.
-   */
-  onSearch?: (query: string) => void;
-  /** `onSearch`를 부르기까지 기다리는 시간(ms). 기본 250 */
-  searchDelay?: number;
-  /** 검색 결과를 불러오는 중인지. 목록에 로딩 표시가 나오고 `aria-busy`가 켜진다. */
-  loading?: boolean;
-  /** 검색 결과가 없을 때 보이는 문구. 기본 "검색 결과가 없어요" */
-  emptyMessage?: string;
-  /** 검색 입력의 placeholder(메뉴가 열려 있을 때). 기본은 `placeholder`와 같다. */
-  searchPlaceholder?: string;
-  /**
-   * 현재 값에 해당하는 옵션이 `options`에 없을 때 입력창에 보여 줄 라벨.
-   * 서버 검색에서 저장된 값을 처음 보여 줄 때 쓴다(고른 뒤에는 컴포넌트가 선택한 라벨을 기억한다).
-   */
-  selectedLabel?: string;
-  /**
-   * 선택된 값 (제어 모드). `null`은 "선택 안 함"이라 `placeholder`가 보인다.
-   * `""`는 값이 빈 문자열인 옵션(예: "전체")을 가리키므로 placeholder가 아니라 그 옵션이 보인다.
-   */
-  value?: string | null;
-  /** 처음 선택된 값 (비제어 모드) */
-  defaultValue?: string | null;
-  /** 다른 옵션을 선택했을 때 호출된다. 이미 선택된 옵션을 다시 고르면 호출되지 않는다. */
-  onChange?: (value: string) => void;
+  search?: boolean | SelectSearchOptions;
   /** 선택된 값이 없을 때 보이는 문구 */
   placeholder?: string;
   /** 폼 제출용 이름. 지정하면 선택값을 담은 숨은 `<input>`이 함께 렌더링된다. */
@@ -93,15 +89,51 @@ export interface SelectProps extends Omit<
   containerClassName?: string;
 }
 
+interface SelectSingleProps {
+  /** 하나만 고른다(기본). */
+  multiple?: false;
+  /**
+   * 선택된 값 (제어 모드). `null`은 "선택 안 함"이라 `placeholder`가 보인다.
+   * `""`는 값이 빈 문자열인 옵션(예: "전체")을 가리키므로 placeholder가 아니라 그 옵션이 보인다.
+   */
+  value?: string | null;
+  /** 처음 선택된 값 (비제어 모드) */
+  defaultValue?: string | null;
+  /** 다른 옵션을 선택했을 때 호출된다. 이미 선택된 옵션을 다시 고르면 호출되지 않는다. */
+  onChange?: (value: string) => void;
+  maxSelected?: never;
+}
+
+interface SelectMultipleProps {
+  /**
+   * 여러 개를 고른다. 고른 값은 필드 아래에 `Chip`으로 쌓이고, 필드에는 "N개 선택"이 보인다.
+   * 목록은 고를 때 닫히지 않고, 이미 고른 옵션을 다시 누르면 해제된다. 칩의 ×로도 지운다.
+   * `search`와 함께 쓰면 검색해서 여러 개를 고를 수 있다.
+   */
+  multiple: true;
+  /** 선택된 값들 (제어 모드). **고른 순서**대로 담긴다(`options` 순서가 아니다). 비어 있으면 `[]`. */
+  value?: string[];
+  /** 처음 선택된 값들 (비제어 모드) */
+  defaultValue?: string[];
+  /** 고르거나 해제할 때마다 새 배열로 호출된다. */
+  onChange?: (value: string[]) => void;
+  /** 고를 수 있는 최대 개수. 가득 차면 나머지 옵션은 비활성화된다. */
+  maxSelected?: number;
+}
+
+export type SelectProps = SelectBaseProps & (SelectSingleProps | SelectMultipleProps);
+
 // 타입어헤드 입력이 이어지는 것으로 보는 간격(ms)
 const TYPEAHEAD_RESET_MS = 600;
 
-// 트리거는 Input의 필드 박스와 같은 모양(bg-page, radius 12, 높이 42px)이다.
+// 트리거는 Input의 필드 박스와 같은 모양(bg-page, radius 12, 높이 md 42px · sm 36px)이다.
 export function Select({
   options,
+  multiple = false,
   value,
-  defaultValue = null,
+  defaultValue,
   onChange,
+  maxSelected,
   placeholder = "선택",
   name,
   required,
@@ -110,6 +142,7 @@ export function Select({
   maxMenuHeight = 240,
   label,
   orientation,
+  size = "md",
   labelWidth,
   description,
   error,
@@ -117,13 +150,7 @@ export function Select({
   className,
   containerClassName,
   ref,
-  searchable: searchableProp,
-  onSearch,
-  searchDelay = 250,
-  loading,
-  emptyMessage = "검색 결과가 없어요",
-  searchPlaceholder,
-  selectedLabel,
+  search,
   onKeyDown,
   onClick,
   onFocus,
@@ -135,16 +162,27 @@ export function Select({
   const baseId = useId();
   const optionId = (index: number) => `${baseId}-option-${index}`;
 
-  const searchable = Boolean(searchableProp);
+  const searchable = Boolean(search);
+  const {
+    onSearch,
+    delay: searchDelay = 250,
+    loading,
+    emptyMessage = "검색 결과가 없어요",
+    selectedOptions,
+  }: SelectSearchOptions = typeof search === "object" ? search : {};
   const serverSide = searchable && onSearch !== undefined;
 
   const [open, setOpen] = useState(false);
-  const [innerValue, setInnerValue] = useState<string | null>(defaultValue);
+  const [innerValue, setInnerValue] = useState<string | string[] | null>(
+    defaultValue ?? (multiple ? [] : null),
+  );
   const [activeIndex, setActiveIndex] = useState(-1);
   // 입력창에 사용자가 입력한 검색어. null이면 입력하지 않은 상태(선택된 라벨을 보여 준다).
   const [query, setQuery] = useState<string | null>(null);
   // 서버 검색에서 결과가 바뀌어도 선택한 옵션의 라벨을 잃지 않도록 기억해 둔다
   const [chosenOption, setChosenOption] = useState<SelectOption | null>(null);
+  // 여러 개 선택에서 고른 값의 라벨을 기억해 둔다(서버 검색으로 `options`에서 사라져도 칩의 라벨을 잃지 않게)
+  const [chosenLabels, setChosenLabels] = useState<Record<string, string>>({});
   const typeahead = useRef<{ buffer: string; timer?: ReturnType<typeof setTimeout> }>({
     buffer: "",
   });
@@ -158,7 +196,26 @@ export function Select({
   useEffect(() => () => clearTimeout(searchTimer.current), []);
 
   const controlled = value !== undefined;
-  const currentValue = controlled ? value : innerValue;
+  const rawValue = controlled ? value : innerValue;
+  // 단일과 여러 개를 같은 배열로 다룬다. 단일의 `null`은 빈 배열이다(`""`는 값이 있는 것).
+  const values: string[] = multiple
+    ? Array.isArray(rawValue)
+      ? rawValue
+      : []
+    : typeof rawValue === "string"
+      ? [rawValue]
+      : [];
+  // 단일 모드에서의 현재 값
+  const currentValue = typeof rawValue === "string" ? rawValue : null;
+  const limitReached = multiple && maxSelected !== undefined && values.length >= maxSelected;
+  // 목록에서 고를 수 없는 옵션: 비활성이거나, 최대 개수에 닿았는데 아직 고르지 않은 옵션
+  const isOptionDisabled = (option: SelectOption) =>
+    Boolean(option.disabled) || (limitReached && !values.includes(option.value));
+  const chipLabel = (chipValue: string) =>
+    options.find((option) => option.value === chipValue)?.label ??
+    chosenLabels[chipValue] ??
+    selectedOptions?.find((option) => option.value === chipValue)?.label ??
+    chipValue;
 
   // 목록에 보이는 옵션. 검색 모드에서 `onSearch`가 없으면 검색어로 직접 거른다. 인덱스는 모두 이 목록 기준이다.
   const list = useMemo(() => {
@@ -169,8 +226,7 @@ export function Select({
     return options.filter((option) => option.label.toLowerCase().includes(keyword));
   }, [options, searchable, serverSide, query]);
 
-  const selectedIndex =
-    currentValue === null ? -1 : list.findIndex((option) => option.value === currentValue);
+  const selectedIndex = list.findIndex((option) => values.includes(option.value));
   const selectedOption = (() => {
     if (currentValue === null) {
       return undefined;
@@ -182,12 +238,13 @@ export function Select({
     if (chosenOption?.value === currentValue) {
       return chosenOption;
     }
-    return selectedLabel !== undefined ? { value: currentValue, label: selectedLabel } : undefined;
+    return selectedOptions?.find((option) => option.value === currentValue);
   })();
 
-  const isEnabled = (index: number) => index >= 0 && index < list.length && !list[index].disabled;
-  const firstEnabled = () => list.findIndex((option) => !option.disabled);
-  const lastEnabled = () => list.findLastIndex((option) => !option.disabled);
+  const isEnabled = (index: number) =>
+    index >= 0 && index < list.length && !isOptionDisabled(list[index]);
+  const firstEnabled = () => list.findIndex((option) => !isOptionDisabled(option));
+  const lastEnabled = () => list.findLastIndex((option) => !isOptionDisabled(option));
 
   // 건너뛸 옵션(disabled)을 제외하고 `from`에서 dir 방향의 다음 옵션을 찾는다. 끝에서는 멈춘다(순환 없음).
   const stepFrom = (from: number, dir: 1 | -1) => {
@@ -203,7 +260,7 @@ export function Select({
   const signature = list.map((option) => option.value).join("\u0001");
   useEffect(() => {
     if (searchable && open && query !== null) {
-      setActiveIndex(list.findIndex((option) => !option.disabled));
+      setActiveIndex(firstEnabled());
     }
   }, [signature, query]);
 
@@ -241,17 +298,45 @@ export function Select({
     }
   };
 
+  const commitMultiple = (next: string[]) => {
+    if (!controlled) {
+      setInnerValue(next);
+    }
+    (onChange as ((value: string[]) => void) | undefined)?.(next);
+  };
+
+  const removeValue = (target: string) => {
+    if (!disabled) {
+      commitMultiple(values.filter((item) => item !== target));
+    }
+  };
+
   const select = (index: number) => {
     if (!isEnabled(index)) {
       return;
     }
-    const next = list[index].value;
+    const option = list[index];
+    if (multiple) {
+      // 목록은 열어 둔 채 고르거나 해제한다. 검색어는 지워서 이어서 검색할 수 있게 한다.
+      if (values.includes(option.value)) {
+        commitMultiple(values.filter((item) => item !== option.value));
+      } else {
+        setChosenLabels((prev) => ({ ...prev, [option.value]: option.label }));
+        commitMultiple([...values, option.value]);
+      }
+      if (query) {
+        setQuery("");
+        scheduleSearch("");
+      }
+      return;
+    }
+    const next = option.value;
     if (next !== currentValue) {
       if (!controlled) {
         setInnerValue(next);
       }
-      setChosenOption(list[index]);
-      onChange?.(next);
+      setChosenOption(option);
+      (onChange as ((value: string) => void) | undefined)?.(next);
     }
     closeMenu();
   };
@@ -486,6 +571,7 @@ export function Select({
       label={label}
       orientation={orientation}
       labelWidth={labelWidth}
+      size={size}
       required={required}
       description={description}
       error={error}
@@ -494,42 +580,118 @@ export function Select({
     >
       {(field) => {
         const invalid = invalidProp || field.invalid;
+        const hasValue = multiple ? values.length > 0 : Boolean(selectedOption);
         return (
-          <Popover
-            open={open}
-            onOpenChange={handleOpenChange}
-            label={ariaLabel ?? placeholder}
-            role="listbox"
-            busy={searchable && loading}
-            className="w-max max-w-80 min-w-full p-1"
-            trigger={({ anchorRef, popupId }) =>
-              searchable ? (
-                <>
-                  <div
-                    ref={anchorRef}
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-12 bg-bg-page px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
-                      invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
-                      disabled && "cursor-not-allowed opacity-50",
-                      className,
-                    )}
-                  >
-                    <input
-                      {...(buttonProps as unknown as ComponentProps<"input">)}
+          <>
+            <Popover
+              open={open}
+              onOpenChange={handleOpenChange}
+              label={ariaLabel ?? placeholder}
+              role="listbox"
+              busy={searchable && loading}
+              multiselectable={multiple}
+              matchAnchorWidth
+              className="w-max max-w-80 p-1"
+              trigger={({ anchorRef, popupId }) =>
+                searchable ? (
+                  <>
+                    <div
+                      ref={anchorRef}
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-12 bg-bg-input px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+                        invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
+                        disabled && "cursor-not-allowed opacity-50",
+                        className,
+                      )}
+                    >
+                      <input
+                        {...(buttonProps as unknown as ComponentProps<"input">)}
+                        id={field.id}
+                        ref={(node) => {
+                          inputRef.current = node;
+                          if (typeof ref === "function") {
+                            ref(node);
+                          } else if (ref) {
+                            ref.current = node;
+                          }
+                        }}
+                        type="text"
+                        role="combobox"
+                        autoComplete="off"
+                        spellCheck={false}
+                        aria-autocomplete="list"
+                        aria-haspopup="listbox"
+                        aria-expanded={open}
+                        aria-controls={popupId}
+                        aria-activedescendant={
+                          open && activeIndex >= 0 ? optionId(activeIndex) : undefined
+                        }
+                        aria-label={ariaLabel}
+                        aria-describedby={
+                          [field.describedBy, describedBy].filter(Boolean).join(" ") || undefined
+                        }
+                        aria-required={required || undefined}
+                        aria-invalid={invalid || undefined}
+                        disabled={disabled}
+                        value={
+                          query !== null ? query : multiple ? "" : (selectedOption?.label ?? "")
+                        }
+                        placeholder={
+                          multiple && values.length > 0 ? `${values.length}개 선택` : placeholder
+                        }
+                        onChange={handleSearchChange}
+                        onKeyDown={handleSearchKeyDown}
+                        onFocus={handleSearchFocus}
+                        onBlur={handleSearchBlur}
+                        onClick={handleSearchClick}
+                        className={cn(
+                          "min-w-0 flex-1 bg-transparent font-fds text-text-primary outline-none placeholder:text-text-tertiary disabled:cursor-not-allowed",
+                          fieldTextClass[size],
+                        )}
+                      />
+                      {/* 입력창의 포커스를 빼앗지 않는 보조 토글. 키보드 사용자는 방향키로 연다. */}
+                      <button
+                        type="button"
+                        tabIndex={-1}
+                        disabled={disabled}
+                        aria-label={open ? "목록 닫기" : "목록 열기"}
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={handleChevronClick}
+                        className="flex shrink-0 cursor-pointer items-center disabled:cursor-not-allowed"
+                      >
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className={cn(
+                            "text-text-icon-default transition-transform duration-150",
+                            open && "rotate-180",
+                          )}
+                        />
+                      </button>
+                    </div>
+                    {name !== undefined &&
+                      (multiple ? (
+                        values.map((item) => (
+                          <input key={item} type="hidden" name={name} value={item} />
+                        ))
+                      ) : (
+                        <input type="hidden" name={name} value={currentValue ?? ""} />
+                      ))}
+                  </>
+                ) : (
+                  <>
+                    <button
+                      {...buttonProps}
                       id={field.id}
                       ref={(node) => {
-                        inputRef.current = node;
+                        anchorRef(node);
                         if (typeof ref === "function") {
                           ref(node);
                         } else if (ref) {
                           ref.current = node;
                         }
                       }}
-                      type="text"
+                      type="button"
                       role="combobox"
-                      autoComplete="off"
-                      spellCheck={false}
-                      aria-autocomplete="list"
                       aria-haspopup="listbox"
                       aria-expanded={open}
                       aria-controls={popupId}
@@ -543,153 +705,114 @@ export function Select({
                       aria-required={required || undefined}
                       aria-invalid={invalid || undefined}
                       disabled={disabled}
-                      value={query !== null ? query : (selectedOption?.label ?? "")}
-                      placeholder={open ? (searchPlaceholder ?? placeholder) : placeholder}
-                      onChange={handleSearchChange}
-                      onKeyDown={handleSearchKeyDown}
-                      onFocus={handleSearchFocus}
-                      onBlur={handleSearchBlur}
-                      onClick={handleSearchClick}
-                      className="min-w-0 flex-1 bg-transparent py-2.5 font-fds text-sm leading-[1.571] tracking-[0.0145em] text-text-primary outline-none placeholder:text-text-tertiary disabled:cursor-not-allowed"
-                    />
-                    {/* 입력창의 포커스를 빼앗지 않는 보조 토글. 키보드 사용자는 방향키로 연다. */}
-                    <button
-                      type="button"
-                      tabIndex={-1}
-                      disabled={disabled}
-                      aria-label={open ? "목록 닫기" : "목록 열기"}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={handleChevronClick}
-                      className="flex shrink-0 cursor-pointer items-center disabled:cursor-not-allowed"
+                      onKeyDown={handleKeyDown}
+                      onClick={handleClick}
+                      className={cn(
+                        "flex w-full cursor-pointer items-center justify-between gap-2 rounded-12 bg-bg-input px-2.5 text-left font-fds ring-inset outline-none focus:ring-1 focus:ring-brand-primary",
+                        fieldTextClass[size],
+                        invalid && "ring-1 ring-brand-error focus:ring-brand-error",
+                        disabled && "cursor-not-allowed opacity-50",
+                        className,
+                      )}
                     >
+                      <span
+                        className={cn(
+                          "min-w-0 flex-1 truncate",
+                          hasValue ? "text-text-primary" : "text-text-tertiary",
+                        )}
+                      >
+                        {multiple && hasValue
+                          ? `${values.length}개 선택`
+                          : selectedOption
+                            ? selectedOption.label
+                            : placeholder}
+                      </span>
                       <ChevronDownIcon
                         aria-hidden="true"
                         className={cn(
-                          "text-text-icon-default transition-transform duration-150",
+                          "shrink-0 text-text-icon-default transition-transform duration-150",
                           open && "rotate-180",
                         )}
                       />
                     </button>
-                  </div>
-                  {name !== undefined && (
-                    <input type="hidden" name={name} value={currentValue ?? ""} />
-                  )}
-                </>
-              ) : (
-                <>
-                  <button
-                    {...buttonProps}
-                    id={field.id}
-                    ref={(node) => {
-                      anchorRef(node);
-                      if (typeof ref === "function") {
-                        ref(node);
-                      } else if (ref) {
-                        ref.current = node;
-                      }
-                    }}
-                    type="button"
-                    role="combobox"
-                    aria-haspopup="listbox"
-                    aria-expanded={open}
-                    aria-controls={popupId}
-                    aria-activedescendant={
-                      open && activeIndex >= 0 ? optionId(activeIndex) : undefined
-                    }
-                    aria-label={ariaLabel}
-                    aria-describedby={
-                      [field.describedBy, describedBy].filter(Boolean).join(" ") || undefined
-                    }
-                    aria-required={required || undefined}
-                    aria-invalid={invalid || undefined}
-                    disabled={disabled}
-                    onKeyDown={handleKeyDown}
-                    onClick={handleClick}
-                    className={cn(
-                      "flex w-full cursor-pointer items-center justify-between gap-2 rounded-12 bg-bg-page px-2.5 py-2.5 text-left font-fds text-sm leading-[1.571] tracking-[0.0145em] ring-inset outline-none focus:ring-1 focus:ring-brand-primary",
-                      invalid && "ring-1 ring-brand-error focus:ring-brand-error",
-                      disabled && "cursor-not-allowed opacity-50",
-                      className,
+                    {name !== undefined && (
+                      <input type="hidden" name={name} value={currentValue ?? ""} />
                     )}
+                  </>
+                )
+              }
+            >
+              {/* 목록은 button이 아니라 팝업(listbox)의 소유다. 클릭해도 트리거의 포커스가 옮겨 가지 않게 mousedown을 막는다. */}
+              <div
+                ref={setScrollContainer}
+                style={{ maxHeight: maxMenuHeight }}
+                className="relative overflow-y-auto"
+                onMouseDown={(event) => event.preventDefault()}
+              >
+                {searchable && loading && (
+                  <div
+                    role="presentation"
+                    className="flex items-center justify-center gap-2 px-2.5 py-3 font-fds text-sm text-text-caption"
                   >
-                    <span
+                    <Spinner size={16} />
+                    불러오는 중…
+                  </div>
+                )}
+                {searchable && !loading && list.length === 0 && (
+                  <div
+                    role="presentation"
+                    className="px-2.5 py-3 text-center font-fds text-sm text-text-caption"
+                  >
+                    {emptyMessage}
+                  </div>
+                )}
+                {list.map((option, index) => {
+                  const selected = values.includes(option.value);
+                  const active = index === activeIndex;
+                  const optionDisabled = isOptionDisabled(option);
+                  return (
+                    <div
+                      key={option.value}
+                      id={optionId(index)}
+                      role="option"
+                      aria-selected={selected}
+                      aria-disabled={optionDisabled || undefined}
+                      data-index={index}
+                      onClick={() => select(index)}
+                      onMouseMove={() => !optionDisabled && !active && setActiveIndex(index)}
                       className={cn(
-                        "truncate",
-                        selectedOption ? "text-text-primary" : "text-text-tertiary",
+                        "flex cursor-pointer items-center justify-between gap-2 rounded-8 px-2.5 py-2 font-fds text-sm select-none",
+                        selected
+                          ? "bg-bg-blue-tint font-semibold text-brand-primary"
+                          : "text-text-primary",
+                        active && !selected && "bg-bg-page",
+                        optionDisabled && "cursor-not-allowed text-text-disabled",
                       )}
                     >
-                      {selectedOption ? selectedOption.label : placeholder}
-                    </span>
-                    <ChevronDownIcon
-                      aria-hidden="true"
-                      className={cn(
-                        "shrink-0 text-text-icon-default transition-transform duration-150",
-                        open && "rotate-180",
-                      )}
+                      <span className="truncate">
+                        {searchable ? highlightMatch(option.label, query) : option.label}
+                      </span>
+                      {selected && <CheckIcon aria-hidden="true" size={16} className="shrink-0" />}
+                    </div>
+                  );
+                })}
+              </div>
+            </Popover>
+            {/* 여러 개 선택: 고른 값은 필드 아래에 칩으로 쌓인다. 목록이 떠도 칩 위에 겹쳐 뜬다(Popover는 필드 기준). */}
+            {multiple && values.length > 0 && (
+              <ul aria-label="선택한 항목" className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+                {values.map((chipValue) => (
+                  <li key={chipValue} className="max-w-full">
+                    <Chip
+                      label={chipLabel(chipValue)}
+                      disabled={disabled}
+                      onRemove={() => removeValue(chipValue)}
                     />
-                  </button>
-                  {name !== undefined && (
-                    <input type="hidden" name={name} value={currentValue ?? ""} />
-                  )}
-                </>
-              )
-            }
-          >
-            {/* 목록은 button이 아니라 팝업(listbox)의 소유다. 클릭해도 트리거의 포커스가 옮겨 가지 않게 mousedown을 막는다. */}
-            <div
-              ref={setScrollContainer}
-              style={{ maxHeight: maxMenuHeight }}
-              className="relative overflow-y-auto"
-              onMouseDown={(event) => event.preventDefault()}
-            >
-              {searchable && loading && (
-                <div
-                  role="presentation"
-                  className="flex items-center justify-center gap-2 px-2.5 py-3 font-fds text-sm text-text-caption"
-                >
-                  <Spinner size={16} />
-                  불러오는 중…
-                </div>
-              )}
-              {searchable && !loading && list.length === 0 && (
-                <div
-                  role="presentation"
-                  className="px-2.5 py-3 text-center font-fds text-sm text-text-caption"
-                >
-                  {emptyMessage}
-                </div>
-              )}
-              {list.map((option, index) => {
-                const selected = index === selectedIndex;
-                const active = index === activeIndex;
-                return (
-                  <div
-                    key={option.value}
-                    id={optionId(index)}
-                    role="option"
-                    aria-selected={selected}
-                    aria-disabled={option.disabled || undefined}
-                    data-index={index}
-                    onClick={() => select(index)}
-                    onMouseMove={() => !option.disabled && !active && setActiveIndex(index)}
-                    className={cn(
-                      "flex cursor-pointer items-center justify-between gap-2 rounded-8 px-2.5 py-2 font-fds text-sm select-none",
-                      selected
-                        ? "bg-bg-blue-tint font-semibold text-brand-primary"
-                        : "text-text-primary",
-                      active && !selected && "bg-bg-page",
-                      option.disabled && "cursor-not-allowed text-text-disabled",
-                    )}
-                  >
-                    <span className="truncate">
-                      {searchable ? highlightMatch(option.label, query) : option.label}
-                    </span>
-                    {selected && <CheckIcon aria-hidden="true" size={16} className="shrink-0" />}
-                  </div>
-                );
-              })}
-            </div>
-          </Popover>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         );
       }}
     </FieldLayout>

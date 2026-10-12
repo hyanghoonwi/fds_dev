@@ -4,7 +4,7 @@ import { useArgs } from "storybook/preview-api";
 import { Textarea } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Textarea",
+  title: "Components/Form/Textarea",
   component: Textarea,
   tags: ["autodocs"],
   parameters: {
@@ -19,6 +19,8 @@ const meta = {
     description: { control: "text" },
     error: { control: "text" },
     required: { control: "boolean" },
+    minHeight: { control: "number" },
+    maxHeight: { control: "number" },
   },
   args: {
     value: "",
@@ -30,6 +32,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+// 채팅 입력창: 한 줄(42px)에서 시작해 내용에 맞춰 늘어나다가 86px에서 멈춘다 (Figma SearchBar).
+// 기본값(minHeight 86, maxHeight 240)은 폼용이라, 채팅 입력창으로 쓸 때는 두 값을 직접 준다.
 export const Default: Story = {
   render: (args) => {
     const [, updateArgs] = useArgs();
@@ -37,6 +41,8 @@ export const Default: Story = {
       <div style={{ width: 280 }}>
         <Textarea
           {...args}
+          minHeight={42}
+          maxHeight={86}
           onChange={(value) => updateArgs({ value })}
           onKeyDown={(event) => {
             if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
@@ -165,6 +171,70 @@ export const WithError: Story = {
           value={value}
           onChange={setValue}
           error={value.trim().length === 0 ? "상세 설명을 입력해 주세요." : undefined}
+        />
+      </div>
+    );
+  },
+};
+
+// 폼에서 쓰는 기본 모양: 비어 있어도 최소 높이(기본 86px, 3줄)가 있어 Input과 구분되고, 입력해도 높이가 튀지 않는다.
+export const FormDefault: Story = {
+  args: { placeholder: "내용을 입력하세요" },
+  render: function Render(args) {
+    const [value, setValue] = useState("");
+    return (
+      <div style={{ width: 320 }}>
+        <Textarea {...args} value={value} onChange={setValue} />
+      </div>
+    );
+  },
+};
+
+// 라벨 + 가로 배치 + 설명 + 글자수. 라벨은 첫 줄에 맞춰지고, 설명과 글자수는 박스 아래 왼쪽에 쌓인다.
+export const HorizontalWithLabel: Story = {
+  args: {
+    label: "상세 설명",
+    orientation: "horizontal",
+    required: true,
+    description: "방송 소개에 그대로 노출돼요.",
+    showCount: true,
+    maxLength: 200,
+    placeholder: "내용을 입력하세요",
+  },
+  render: function Render(args) {
+    const [value, setValue] = useState("");
+    return (
+      <div style={{ width: 480 }}>
+        <Textarea {...args} value={value} onChange={setValue} />
+      </div>
+    );
+  },
+};
+
+// minHeight로 박스의 최소 높이를 바꾼다. 160은 넉넉한 본문 입력, 42는 한 줄에서 시작하는 채팅 입력창 모양이다.
+// maxHeight가 minHeight보다 작으면 minHeight로 본다.
+export const MinHeight: Story = {
+  render: function Render(args) {
+    const [tall, setTall] = useState("");
+    const [chat, setChat] = useState("");
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, width: 320 }}>
+        <Textarea
+          {...args}
+          label="minHeight 160"
+          minHeight={160}
+          placeholder="넉넉한 본문 입력"
+          value={tall}
+          onChange={setTall}
+        />
+        <Textarea
+          {...args}
+          label="minHeight 42 / maxHeight 86 (채팅 입력창)"
+          minHeight={42}
+          maxHeight={86}
+          placeholder="한 줄에서 시작"
+          value={chat}
+          onChange={setChat}
         />
       </div>
     );

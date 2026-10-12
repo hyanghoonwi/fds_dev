@@ -2,14 +2,19 @@ import type { ComponentProps, MouseEvent, ReactNode, Ref } from "react";
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
+import { fieldTextClass, type FieldSize } from "../_internal/fieldSize";
 
 export type InputOrientation = FieldOrientation;
 
-export interface InputProps extends ComponentProps<"input"> {
+export interface InputProps extends Omit<ComponentProps<"input">, "size"> {
+  /** 크기. `md`는 높이 42px, `sm`은 36px(Button md와 같은 줄에 놓을 때 맞는 높이). 기본 `md` */
+  size?: FieldSize;
   /** 입력 필드 라벨. 생략하면 라벨 영역이 렌더링되지 않는다. */
   label?: ReactNode;
   /** 라벨 배치. vertical은 라벨이 위, horizontal은 라벨이 왼쪽에 놓인다. */
   orientation?: InputOrientation;
+  /** 에러 스타일만 켠다(에러 링 + `aria-invalid`). 문구는 표시하지 않는다. 문구까지 보여 주려면 `error`를 쓴다. */
+  invalid?: boolean;
   /**
    * 입력 필드 아래에 표시하는 설명(도움말). 에러가 있으면 에러 메시지가 설명을 대신해 표시된다.
    */
@@ -38,8 +43,10 @@ export interface InputProps extends ComponentProps<"input"> {
 export function Input({
   label,
   orientation = "vertical",
+  size = "md",
   description,
   error,
+  invalid: invalidProp = false,
   leftAddon,
   rightAddon,
   labelWidth = 80,
@@ -72,6 +79,7 @@ export function Input({
       label={label}
       orientation={orientation}
       labelWidth={labelWidth}
+      size={size}
       required={required}
       description={description}
       error={error}
@@ -83,8 +91,9 @@ export function Input({
           ref={fieldRef}
           onMouseDown={focusInput}
           className={cn(
-            "flex w-full items-center gap-2 rounded-12 bg-bg-page px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
-            field.invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
+            "flex w-full items-center gap-2 rounded-12 bg-bg-input px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            (field.invalid || invalidProp) &&
+              "ring-1 ring-brand-error focus-within:ring-brand-error",
             props.disabled && "cursor-not-allowed opacity-50",
           )}
         >
@@ -96,12 +105,13 @@ export function Input({
           <input
             id={field.id}
             required={required}
-            aria-invalid={field.invalid || undefined}
+            aria-invalid={field.invalid || invalidProp || undefined}
             aria-describedby={
               [field.describedBy, describedBy].filter(Boolean).join(" ") || undefined
             }
             className={cn(
-              "min-w-0 flex-1 bg-transparent py-2.5 font-fds text-sm leading-[1.571] tracking-[0.0145em] text-text-primary caret-brand-primary outline-none",
+              "min-w-0 flex-1 bg-transparent font-fds text-text-primary caret-brand-primary outline-none",
+              fieldTextClass[size],
               "placeholder:text-text-tertiary",
               "disabled:cursor-not-allowed",
               className,

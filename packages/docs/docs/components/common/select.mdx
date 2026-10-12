@@ -3,7 +3,7 @@ sidebar_position: 4
 ---
 
 import { useRef, useState } from "react";
-import { Button, Input, Select } from "@fds/core";
+import { Button, Input, SearchIcon, Select, UserIcon } from "@fds/core";
 import Preview from "@site/src/components/Preview";
 
 export const statusOptions = [
@@ -194,6 +194,89 @@ const statusOptions: SelectOption[] = [
 ```
 
 가로 배치에서도 목록은 라벨이 아니라 **선택 상자 바로 아래**에 붙습니다.
+
+## Addon
+
+`leftAddon`, `rightAddon`에 아이콘이나 짧은 텍스트를 넣으면 선택값 양옆에 붙습니다. Input의 addon과 같은 모양이고(아이콘은 20px, 색은 `text-icon-default`), 높이는 그대로 42px입니다.
+
+- `leftAddon`: 값 **왼쪽**. 어떤 항목인지 알려 주는 아이콘에 알맞습니다.
+- `rightAddon`: 값 **오른쪽, 펼침 화살표 앞**. 단위나 코드(`KRW`, `명`)를 붙입니다.
+- 선택값이 길면 말줄임(`…`)으로 줄어들고, 화살표는 항상 맨 오른쪽에 남습니다.
+
+export const managerOptions = [
+  { value: "kim", label: "김민준" },
+  { value: "lee", label: "이서연" },
+  { value: "park", label: "박지후" },
+  { value: "choi", label: "최하은" },
+];
+
+export const currencyOptions = [
+  { value: "krw", label: "원화" },
+  { value: "usd", label: "미국 달러" },
+  { value: "jpy", label: "일본 엔" },
+  { value: "eur", label: "유로" },
+];
+
+<Preview
+  style={{
+    minHeight: 300,
+    flexDirection: "column",
+    alignItems: "stretch",
+    maxWidth: 360,
+  }}
+>
+  <Select
+    label="담당자"
+    options={managerOptions}
+    placeholder="담당자 선택"
+    leftAddon={<UserIcon />}
+  />
+  <Select
+    label="결제 통화"
+    options={currencyOptions}
+    defaultValue="krw"
+    rightAddon="KRW"
+  />
+  <Select
+    label="연결 asset"
+    searchable
+    options={assetOptions}
+    placeholder="asset 검색/선택"
+    leftAddon={<SearchIcon />}
+    rightAddon="USDT"
+  />
+</Preview>
+
+```tsx
+import { SearchIcon, Select, UserIcon } from "@fds/core";
+
+<Select
+  label="담당자"
+  options={managerOptions}
+  placeholder="담당자 선택"
+  leftAddon={<UserIcon />}
+/>
+<Select
+  label="결제 통화"
+  options={currencyOptions}
+  defaultValue="krw"
+  rightAddon="KRW"
+/>
+// 검색 모드에서도 같은 모양
+<Select
+  label="연결 asset"
+  searchable
+  options={assetOptions}
+  leftAddon={<SearchIcon />}
+  rightAddon="USDT"
+/>
+```
+
+:::caution 누를 수 있는 요소는 넣을 수 없어요
+일반 모드의 트리거는 `<button>`이라서 addon은 **장식용**입니다. 그 안에 버튼이나 링크를 넣으면 버튼 안에 버튼이 들어가 잘못된 구조가 됩니다. 클릭 가능한 요소(예: 중복 확인 버튼)가 필요하면 Input의 `rightAddon`을 쓰세요.
+:::
+
+addon을 누르면 일반 모드에서는 목록이 열리고(트리거를 누른 것과 같습니다), 검색 모드에서는 입력창에 포커스가 갑니다. addon이 없으면 DOM과 레이아웃은 이전과 완전히 같습니다.
 
 ## 폼에서 쓰기
 
@@ -434,6 +517,7 @@ setLoading(false);
 };
 
 return (
+
 <div style={{ width: 320, display: "flex", flexDirection: "column", gap: 12 }}>
 <Select
         searchable
@@ -605,6 +689,8 @@ DOM 포커스는 항상 트리거(버튼 또는 입력창)에 있고, 활성 항
 | `invalid`            | `boolean`                                    | -                      | 문구 없이 에러 스타일만 켬                                                                                                |
 | `disabled`           | `boolean`                                    | -                      | 비활성 (포커스·열기 불가)                                                                                                 |
 | `maxMenuHeight`      | `number`                                     | `240`                  | 목록 최대 높이(px). 넘으면 안에서 스크롤                                                                                  |
+| `leftAddon`          | `ReactNode`                                  | -                      | 값 왼쪽에 붙는 장식용 요소(아이콘, 짧은 텍스트). 누를 수 있는 요소는 넣을 수 없음                                         |
+| `rightAddon`         | `ReactNode`                                  | -                      | 값 오른쪽, 펼침 화살표 앞에 붙는 장식용 요소(단위, 아이콘). 같은 제약                                                     |
 | `searchable`         | `boolean`                                    | -                      | 입력해서 찾는 모드. 트리거가 텍스트 입력(combobox)이 됨                                                                   |
 | `onSearch`           | `(query: string) => void`                    | -                      | 검색어가 바뀔 때 호출(디바운스). 넘기면 **직접 거르지 않고** 부모가 `options`를 갱신. 메뉴를 닫을 때 `""`로 한 번 더 호출 |
 | `searchDelay`        | `number`                                     | `250`                  | `onSearch`를 부르기까지 기다리는 시간(ms)                                                                                 |
@@ -634,4 +720,5 @@ DOM 포커스는 항상 트리거(버튼 또는 입력창)에 있고, 활성 항
 - **한글 입력**: 검색 모드에서는 조합 중인 `Enter`·방향키를 무시하므로 한글로 찾아도 안전합니다. 다만 일반 모드의 타입어헤드는 `event.key`로 글자를 읽어서, 한글 IME로 조합 중에는 이동하지 않을 수 있습니다. 한글로 찾아야 하는 긴 목록은 `searchable`을 쓰세요.
 - 검색 모드에서 메뉴가 열린 채 입력창이 포커스를 잃으면(다른 곳을 누르거나 `Tab`) 메뉴가 닫히고 검색어는 버려집니다.
 - `ref` 타입이 `HTMLButtonElement | HTMLInputElement`로 넓습니다. `HTMLButtonElement`로만 선언한 콜백 ref는 타입 에러가 날 수 있으니, 필요하면 두 타입을 모두 받도록 선언하세요.
+- `leftAddon`/`rightAddon`은 장식용입니다. 일반 모드의 트리거가 `<button>`이라 그 안에 버튼·링크를 넣을 수 없습니다.
 - 여러 개를 고르는 `MultiSelect`는 아직 없습니다. 개수가 적으면 [CheckboxGroup](./checkbox)을 쓰세요.

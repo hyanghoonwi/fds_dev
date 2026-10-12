@@ -11,7 +11,17 @@ export interface TextareaProps extends Omit<
 > {
   value: string;
   onChange: (value: string) => void;
-  /** 자동 확장 최대 높이(px). 필드 박스 전체 높이 기준이며 글자수 표시 영역은 포함하지 않는다. Figma SearchBar max-height 86 */
+  /**
+   * 필드 박스(배경·패딩을 가진 입력 영역)의 최소 높이(px). 기본 86 — 빈 상태에서도 정확히 3줄이 보인다.
+   * 박스가 내용 높이만큼만 잡히면 비어 있을 때 한 줄짜리 Input처럼 보이고 입력할 때마다 높이가 바뀌어
+   * 아래 항목이 밀리므로, 기본으로 최소 높이를 둔다. 채팅 입력창처럼 한 줄에서 시작하려면 `42`를 준다.
+   */
+  minHeight?: number;
+  /**
+   * 자동 확장 최대 높이(px). 필드 박스 전체 높이 기준이며 설명·에러·글자수는 박스 바깥이라 포함되지 않는다.
+   * 기본 240(약 10줄). `minHeight`보다 작으면 `minHeight`로 본다.
+   * 채팅 입력창(Figma SearchBar)처럼 쓰려면 `minHeight={42} maxHeight={86}`을 준다.
+   */
   maxHeight?: number;
   /**
    * 입력창 아래 왼쪽에 글자수를 `현재/최대`로 표시한다.
@@ -35,14 +45,16 @@ export interface TextareaProps extends Omit<
   containerClassName?: string;
 }
 
-// 필드 박스의 위아래 패딩 합(p-2.5 × 2). maxHeight는 박스 기준이라 textarea 높이에서 이만큼 뺀다.
+// 필드 박스의 위아래 패딩 합(p-2.5 × 2). minHeight/maxHeight는 박스 기준이라 textarea 높이에서 이만큼 뺀다.
 const FIELD_PADDING_Y = 20;
 
-// Figma Text Field(408:3685)의 입력 영역 — 채팅 입력창처럼 내용에 맞춰 높이가 늘어난다.
+// 폼용 여러 줄 입력. 박스는 `minHeight`(기본 3줄)에서 시작해 내용에 맞춰 `maxHeight`까지 늘어난다.
+// Figma Text Field(408:3685)의 채팅 입력창은 `minHeight={42} maxHeight={86}`으로 만든다.
 export function Textarea({
   value,
   onChange,
-  maxHeight = 86,
+  minHeight = 86,
+  maxHeight = 240,
   showCount = false,
   maxLength,
   label,
@@ -54,22 +66,27 @@ export function Textarea({
   id,
   containerClassName,
   className,
+  style,
   ref,
   "aria-describedby": describedBy,
   ...props
 }: TextareaProps) {
   const innerRef = useRef<HTMLTextAreaElement>(null);
   const countId = useId();
-  const textareaMaxHeight = Math.max(maxHeight - FIELD_PADDING_Y, 0);
+  // 박스 기준 값을 textarea 기준으로 바꾼다. maxHeight가 minHeight보다 작으면 minHeight로 본다.
+  const textareaMinHeight = Math.max(minHeight - FIELD_PADDING_Y, 0);
+  const textareaMaxHeight = Math.max(maxHeight - FIELD_PADDING_Y, textareaMinHeight);
 
+  // 높이 = clamp(내용 높이, 최소, 최대). textarea가 박스 안쪽을 꽉 채우므로 박스 어디를 눌러도 입력창이 눌린다.
   useLayoutEffect(() => {
     const el = innerRef.current;
     if (!el) {
       return;
     }
     el.style.height = "0px";
-    el.style.height = `${Math.min(el.scrollHeight, textareaMaxHeight)}px`;
-  }, [value, textareaMaxHeight]);
+    const next = Math.min(Math.max(el.scrollHeight, textareaMinHeight), textareaMaxHeight);
+    el.style.height = `${next}px`;
+  }, [value, textareaMinHeight, textareaMaxHeight]);
 
   // 글자수는 `maxLength`가 세는 방식(UTF-16 코드 유닛)과 같게 `value.length`로 센다.
   const count = value.length;
@@ -112,7 +129,7 @@ export function Textarea({
         <div
           onMouseDown={focusTextarea}
           className={cn(
-            "flex w-full flex-col rounded-12 bg-bg-page p-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            "flex w-full flex-col rounded-12 bg-bg-input p-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
             field.invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
             props.disabled && "cursor-not-allowed opacity-50",
           )}
@@ -143,7 +160,11 @@ export function Textarea({
               undefined
             }
             rows={1}
-            style={{ maxHeight: textareaMaxHeight }}
+            style={{
+              minHeight: textareaMinHeight,
+              maxHeight: textareaMaxHeight,
+              ...style,
+            }}
             {...props}
           />
         </div>

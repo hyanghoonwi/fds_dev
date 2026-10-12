@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Button, Input, SearchIcon, UserIcon, EyeIcon } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/Input",
+  title: "Components/Form/Input",
   component: Input,
   tags: ["autodocs"],
   parameters: {
@@ -11,6 +11,7 @@ const meta = {
   argTypes: {
     label: { control: "text" },
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
+    size: { control: "inline-radio", options: ["sm", "md"] },
     labelWidth: { control: "number" },
     leftAddon: { control: false },
     rightAddon: { control: false },
@@ -35,6 +36,20 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+// sm(36px)은 Button md와 한 줄에 놓을 때 높이가 맞는다. md(42px)가 기본
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <Input {...args} size="md" placeholder="md (기본)" />
+      <Input {...args} size="sm" placeholder="sm" />
+      <div style={{ display: "flex", gap: 8 }}>
+        <Input {...args} size="sm" placeholder="검색어" leftAddon={<SearchIcon />} />
+        <Button variant="primary">조회</Button>
+      </div>
+    </div>
+  ),
+};
 
 export const Disabled: Story = {
   args: { disabled: true },
