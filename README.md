@@ -32,3 +32,7 @@ npm run format:docs      # docs 문서/코드 예시를 Prettier 스타일로 �
 - React 19 기준: `forwardRef` 없이 `ref`를 일반 prop으로 받는다.
 - 레이아웃/변형은 prop으로 캡슐화한다.
 - 스토리는 `packages/storybook/stories/<component>/`에 두고 `@fds/core`에서 import한다.
+
+## 프로젝트 문서
+
+구조·작업 규칙·백로그는 [`project-docs/`](./project-docs/README.md)에 모아 둡니다.

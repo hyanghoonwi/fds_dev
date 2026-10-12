@@ -21,8 +21,8 @@
 
 1. ~~Select, Checkbox, Radio~~ — 완료
 2. ~~FormField~~ — 완료 (공개 `FormField`, 모든 컨트롤 공통 `FieldLayout`)
-3. Pagination, DateRangePicker — 목록과 검색의 공통 기능
-4. SideNav 접기/펼치기, FileUpload
+3. ~~Pagination, DateRangePicker~~ — 완료
+4. ~~SideNav 접기/펼치기, FileUpload~~ — 완료
 5. Combobox, MultiSelect/TagInput, `confirm` 프리셋
 6. 나머지 (RichTextEditor, SortableList, ImageCropper, MaskedInput, Toast)
 
@@ -47,33 +47,33 @@
 
 ### A-2. 목록과 검색
 
-- [ ] **Pagination** — 약 7곳
+- [x] **Pagination** — 약 7곳 (완료: `totalCount`/`page`/`pageSize`, `pageSizeOptions`로 "N개씩 보기", 크기 변경 시 1페이지로)
   - 이전/다음/번호/말줄임(`…`), 페이지 크기 변경("20개씩 보기")
   - 노드: `1045-174777` `1045-173953` `1045-175019` `1045-178155` `1045-174553`
-- [ ] **DateRangePicker** (날짜 범위 + 일시 범위) — 약 22곳
-  - 시작 ≤ 종료 검증(서로의 min/max 연동), 종료일을 비우는 "미정"
+- [x] **DateRangePicker** (날짜 범위 + 일시 범위) — 약 22곳 (완료: 날짜 범위만. 시작/종료 min·max 연동, `allowUndecidedEnd`, `presets`, `relativeDateRange`. **일시(시각 포함) 범위는 미구현** — DateTimePicker에 시각 단위 min/max가 없음)
+  - 시작 ≤ 종료 보장(종료일 달력은 시작일 이전을 막고, 시작일을 종료일 뒤로 고르면 종료일을 비움), 종료일을 비우는 "미정"
   - 프리셋: 오늘 ~ +14일, 기본 최근 7일
   - 노드: `1045-178926` `1045-174777` `1045-169441` `1045-170233` `1045-178155` `1507-66`
 
 ### A-3. 레이아웃 동작
 
-- [ ] **SideNav 동작** — 거의 모든 화면(80+)
+- [x] **SideNav 동작** — 거의 모든 화면(80+) (완료: `items` 트리, 접기/펼치기, 그룹 펼침, `activeKey`, `href`/`onNavigate`)
   - 메뉴 접기/펼치기("‹ 메뉴 접기"), 하위 메뉴 펼침, 현재 경로 활성 표시
   - 노드: 모든 화면 (예: `1045-178155` `1045-175743` `1045-172751`)
 
 ### A-4. 입력과 업로드
 
-- [ ] **FileUpload / ImageUploader** — 약 17곳
+- [x] **FileUpload / ImageUploader** — 약 17곳 (완료: 드래그 앤 드롭, accept/maxSize/maxFiles 검증, 이미지 미리보기, 단일 교체·실패 시 기존 유지. 서버에 이미 있는 이미지(URL)를 초기값으로 보여 주는 기능은 없음)
   - 드래그 앤 드롭 + 클릭 업로드, 형식(JPG/PNG/WebP)과 용량(10MB) 검증
   - 미리보기, 교체, 업로드 실패 시 기존 이미지 유지
   - 노드: `1045-178668` `1045-181870` `1045-170425` `1349-1038` `1045-179732` `1045-170583` `1045-180644`
 - [ ] **ImageCropper** — 1~2곳
   - 크롭 영역 이동, 확대/축소, 초기화 (마커 썸네일 "대표 이미지에서 크롭")
   - 노드: `1045-181356` `1045-180644`
-- [x] **Combobox** (검색 후 선택) — 약 12곳 (완료: `Select searchable`로 대체)
+- [x] **Combobox** (검색 후 선택) — 약 12곳 (완료: `Select search`로 대체)
   - asset, 가게, 회원, 장소를 검색해서 고르기(서버 조회), "유효한 ID만" 같은 검증과 연결
   - 노드: `1045-181870` `1045-179276` `1355-777` `1045-169734` `1356-137` `1507-66`
-- [ ] **MultiSelect / TagInput** — 약 7곳
+- [x] **MultiSelect** — 약 7곳 (완료: `Select`의 `multiple`. 칩 표시(필드 아래)·× 삭제, `maxSelected`, `search`·서버 검색 결합, 폼 `name`. **TagInput(직접 입력해 태그 만들기)은 미구현** — 해시태그 입력용)
   - 여러 값 선택, 값을 칩으로 보여 주고 추가/제거(`BTC · USDT`, 블록체인 복수 선택, 해시태그)
   - 노드: `1507-10` `1045-176694` `1045-179276` `1045-181091` `1045-180644`
 - [ ] **MaskedInput** — 1곳
@@ -124,13 +124,13 @@ Badge 의미색(tone), Button 텍스트형·작은 크기, 컨트롤 compact 밀
 
 ## D. 열린 결정
 
-- [x] **검색 가능한 Select**: `Select`의 `searchable` prop(+ `onSearch`, `loading`)으로 결정·구현 완료 → 별도 `Combobox`는 만들지 않음
-- [ ] **여러 개 선택**(`MultiSelect/TagInput`): 별도 컴포넌트로 둘지, `Select`의 `multiple`로 넣을지
+- [x] **검색 가능한 Select**: `Select`의 `search` prop(`true` 또는 `{ onSearch, loading, ... }`)으로 결정·구현 완료 → 별도 `Combobox`는 만들지 않음
+- [x] **여러 개 선택**(`MultiSelect`): `Select`의 `multiple`로 결정·구현 완료. `TagInput`은 별도 컴포넌트로 남김
 
 - [ ] `DateTimePicker` 스토리 `WithOverlayModal`의 스토리 전용 헬퍼 `PickerModalBody` — 이름만 `…StoryWrapper`로 바꿀지, 공개 `DateTimePanel`을 만들지
 - [ ] Textarea `description`을 넣을지 (글자수와 같은 줄에 둘 때의 배치)
 - [ ] `NewMessagePreview`, `Thumbnail`을 VodList처럼 도메인 컴포넌트로 보고 정리할지
-- [ ] `Popover` 화면 가장자리 충돌 처리 (가로 배치 + 좁은 화면에서 팝업이 몇 px 잘림)
+- [x] `Popover` 화면 가장자리 충돌 처리 — 포털 + fixed, 위/아래 뒤집기, 좌우 보정으로 해결(ARCHITECTURE 3.7)
 - [ ] `DateTimePicker`의 시각 단위 `min`/`max` 지원 여부 (지금은 날짜만)
 
 ---

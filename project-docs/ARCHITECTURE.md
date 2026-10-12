@@ -27,7 +27,7 @@ FDS/
 │  ├─ storybook/   @fds/storybook — 개발용 샌드박스 (core 소스를 직접 참조)
 │  └─ docs/        @fds/docs — Docusaurus 문서 사이트 (core의 dist를 사용)
 ├─ scripts/        docs 코드 예시 포맷터
-├─ ARCHITECTURE.md 이 문서
+├─ project-docs/   프로젝트 문서 (ARCHITECTURE.md 이 문서, COMPONENT_BACKLOG.md 등)
 └─ .prettierrc
 ```
 
@@ -44,10 +44,12 @@ Storybook은 "개발자용 샌드박스", docs는 "보기 좋은 문서"로 역�
 ```
 packages/core/src/
 ├─ components/<name>/<Name>.tsx   컴포넌트 (폴더는 kebab-case)
+├─ components/date-time/          날짜·시간 컴포넌트 묶음 (3장). 값 헬퍼는 values.ts
 ├─ components/icon/               아이콘 247개 (대부분 자동 생성) + iconGroups.ts
 ├─ components/_internal/          밖으로 export하지 않는 내부 컴포넌트
 ├─ styles/                        디자인 토큰 (colors / typography / shape / base)
 ├─ utils/cn.ts                    클래스 병합 (tailwind-merge 확장 포함)
+├─ utils/useControllableState.ts  제어/비제어 겸용 값 훅 (내부용)
 └─ index.ts                       공개 API
 ```
 
@@ -200,22 +202,48 @@ description 또는 error (11px, text-caption-2)   ← error가 있으면 descrip
 
 `Calendar`와 `TimePanel`은 항목을 누를 때마다 `onChange`를 호출합니다(확정 개념 없음). "확인"으로 확정할지는 래퍼가 정합니다. 그래서 DateTimePicker가 두 패널의 임시값을 모아서 한 번에 확정할 수 있습니다.
 
-### 3.6 재구성 진행 상황
+### 3.6 폴더와 내부 부품
 
-- 완료: `Popover`(공개 원시 요소), `Calendar`(패널, `onSelect` 추가), `TimePanel`(패널), `Input.fieldRef`, `DatePicker`/`TimePicker`를 원시 요소 위의 래퍼로 재작성, `formatDateValue`/`parseDateValue`.
-- 내부 헬퍼: `_internal/PickerTriggerInput`은 "읽기 전용 Input + 아이콘 버튼"만 감싼 내부용이며 팝업 로직이 없습니다. 래퍼 3개가 같은 트리거 코드를 복사하지 않게 둔 것입니다. 옛 `_internal/PickerField`는 삭제했습니다.
-- 완료(2단계): `DateTimePicker`. 입력창에는 `2026-10-20 09:30`(사람이 읽는 형태)로 보여 주고, 값은 `"2026-10-20T09:30"`입니다. `name`을 주면 **보이는 입력창이 아니라 숨은 input**에 붙어 폼에는 `T` 형식이 제출됩니다. 날짜와 시간을 둘 다 골라야 "확인"이 켜집니다. 헬퍼 `parseDateTimeValue`/`formatDateTimeValue`를 export합니다.
-- `min`/`max`는 날짜(`YYYY-MM-DD`)만 지원합니다. 시각 단위 제한은 아직 없습니다.
-- `TimePicker.onChange`의 타입을 `string | null`에서 `string`으로 바꿨습니다(null을 낸 적이 없었음). `DatePicker`가 닫을 때 쓰던 `data-date` 클릭 감지는 없애고 `Calendar.onSelect`와 Popover의 `close()`로 바꿨습니다.
+날짜·시간 컴포넌트는 `components/date-time/` 한 폴더에 모여 있습니다. `Popover`는 `Select`도 쓰는 범용 오버레이라 따로 둡니다.
 
-### 3.7 Popover의 제약
+```
+components/date-time/
+  Calendar.tsx  TimePanel.tsx                         패널
+  DatePicker.tsx  TimePicker.tsx  DateTimePicker.tsx  필드(래퍼)
+  DateRangePicker.tsx                                 DatePicker 둘 + 연동
+  values.ts        값 파싱/포맷 전부 (날짜·시간·날짜시간·범위)
+  dateUtils.ts     달력 계산 (내부용)
+  _internal/
+    PickerTriggerInput.tsx   읽기 전용 Input + 아이콘 버튼
+    PickerField.tsx          Popover + PickerTriggerInput 한 벌 (열림 상태, aria, 닫을 때 포커스 복귀)
+    PickerConfirmFooter.tsx  "확인" 줄 (TimePicker, DateTimePicker)
+```
 
-- `role` prop(`"dialog" | "listbox" | "menu"`, 기본 `"dialog"`)으로 팝업의 ARIA 역할을 바꿀 수 있습니다. `Select`는 `"listbox"`를 씁니다.
+- 필드 3개(`DatePicker`/`TimePicker`/`DateTimePicker`)가 같던 코드(열림 상태, `id`로 입력창을 찾아 포커스 복귀, "확인" 줄, 제어/비제어 분기)를 `PickerField`, `PickerConfirmFooter`, `useControllableState`로 모았습니다. 이제 필드는 "팝업 안에 무엇을 둘지"와 "draft를 어떻게 확정할지"만 가집니다.
+- 값 헬퍼는 `values.ts` 하나입니다(`parse/format/normalize` × 날짜·시간·날짜시간, `DateRangeValue`, `relativeDateRange`). 시간 정규식이 두 곳에 있던 것도 하나로 합쳤습니다. 공개 import 이름은 그대로입니다(`@fds/core`).
+- 완료한 것: `Popover`(공개 원시 요소), `Calendar`/`TimePanel`(패널), `Input.fieldRef`, 필드 4개(`DateRangePicker` 포함), `formatDateValue`/`parseDateValue`.
+- `DateTimePicker`는 입력창에 `2026-10-20 09:30`(사람이 읽는 형태)로 보여 주고, 값은 `"2026-10-20T09:30"`입니다. `name`을 주면 **보이는 입력창이 아니라 숨은 input**에 붙어 폼에는 `T` 형식이 제출됩니다. 날짜와 시간을 둘 다 골라야 "확인"이 켜집니다.
+- `min`/`max`는 날짜(`YYYY-MM-DD`)만 지원합니다. 시각 단위 제한은 아직 없습니다(그래서 일시 범위 필드도 없음).
+- `TimePicker.onChange`의 타입은 `string`입니다(null을 낸 적이 없음).
 
-- 화면 가장자리 충돌 처리가 없습니다. 가로 배치(`orientation="horizontal"`)에서 뷰포트가 좁으면(예: 700px에서 443px 팝업) 팝업이 오른쪽으로 몇 px 잘릴 수 있습니다. `DateTimePicker`는 `placement`를 노출하지 않습니다.
-- `body` 포털을 쓰지 않고 컨테이너 안에 그리므로, `overflow: hidden`인 조상 안에서는 팝업이 잘릴 수 있습니다.
-- 팝오버 안에서 Esc는 포커스가 팝오버 컨테이너 안에 있을 때만 처리됩니다. Modal 안에서 쓰면 Esc 1회는 팝오버만, 2회째에 모달이 닫힙니다.
+### 3.6.1 Storybook 구성
+
+사이드바는 `Components/<카테고리>/<컴포넌트>`이고 폴더(`stories/<카테고리>/<컴포넌트>/`)도 같게 맞췄습니다. 순서는 `.storybook/preview.tsx`의 `storySort`가 정합니다(새 컴포넌트를 만들면 여기에도 추가).
+
+`Form`(입력 컨트롤) · `Date & Time`(`Overview` 먼저) · `Actions` · `Navigation` · `Overlay` · `Display` · `Layout` · `Broadcast`(도메인 전용), 그 밖에 `Foundations`, `Hooks`.
+
+### 3.7 Popover의 동작과 제약
+
+- 팝업은 **포털 + `position: fixed`** 로 그립니다. `overflow: hidden`인 조상(모달, 스크롤 표)에 잘리지 않습니다.
+- **테마**: 팝업은 `document.body`가 아니라 기준 요소에서 가장 가까운 `[data-theme]` 조상 안에 그립니다. 다크 모드 토큰이 `[data-theme="dark"]` 안에서만 바뀌기 때문입니다. `[data-theme]`가 없거나 `<html>`에 걸려 있으면 `body`입니다. (`Modal`/`OverlayProvider`는 아직 포털을 쓰지 않고 DOM 안에 그립니다.)
+- **위치**: 기준 요소의 화면 좌표로 계산합니다. 아래가 모자라고 위가 더 넓으면 **위로 뒤집고**, 좌우는 화면 안(여백 8px)으로 밉니다. 스크롤(캡처), 리사이즈, 팝업/기준 요소의 크기 변화 때마다 다시 계산합니다.
+- **z-index**: 팝업은 `z-[1100]`으로 `Modal`(`z-[1000]`) 위에 뜹니다.
+- **포커스/키보드**: 팝업은 DOM 끝에 있어 Tab 순서로 이어지지 않습니다. 팝업 안에서 Tab을 누르면 팝업을 닫고 기준 요소로 포커스를 돌려줍니다(브라우저는 옮겨진 포커스 기준으로 다음 칸으로 갑니다). Esc는 팝업만 닫고 바깥 `Modal`로 전파되지 않습니다. 이벤트는 React 트리를 따라 전파되므로 포털이어도 팝업의 키 입력은 `Popover`가 받습니다.
+- **바깥 클릭**: 컨테이너와 팝업을 모두 "안쪽"으로 봅니다.
+- **`visibility: hidden`을 쓰지 않는 이유**: 위치를 계산하기 전 첫 프레임에 안의 `Calendar`/`TimePanel`이 `autoFocus`로 포커스를 받아야 하는데 숨겨진 요소는 포커스할 수 없습니다. 대신 `opacity: 0`으로 두며, 위치 계산은 레이아웃 effect라 페인트 전에 끝나므로 깜빡임은 없습니다.
+- `role` prop(`"dialog" | "listbox" | "menu"`, 기본 `"dialog"`)으로 ARIA 역할을, `matchAnchorWidth`로 최소 너비를 기준 요소 너비에 맞출지(Select) 정합니다.
 - 기준 요소를 등록하지 않으면 컨테이너 전체가 기준이고, `Input`에는 `fieldRef`에 `anchorRef`를 넘기면 입력 박스가 기준이 됩니다.
+- 남은 한계: 세로로 뒤집어도 팝업이 화면보다 크면 잘립니다(최대 높이 제한 없음). 기준 요소나 조상에 `transform`/`filter`가 있어 `fixed`의 기준이 뷰포트가 아니게 되는 구조는 지원하지 않습니다. `DateTimePicker`는 `placement`를 노출하지 않습니다.
 
 ---
 
