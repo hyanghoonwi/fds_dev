@@ -5,7 +5,7 @@ import { MoonIcon } from "@fds/core";
 import { PaperPlaneIcon } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/IconButton",
+  title: "Components/Actions/IconButton",
   component: IconButton,
   tags: ["autodocs"],
   parameters: {
@@ -18,7 +18,7 @@ const meta = {
     },
     variant: {
       control: "select",
-      options: ["line", "primary", "tint", "ad"],
+      options: ["line", "primary", "tint", "ghost", "ad"],
     },
     disabled: { control: "boolean" },
   },
@@ -38,6 +38,10 @@ export const Line: Story = {
 
 export const Primary: Story = {
   args: { variant: "primary", size: "md", "aria-label": "전송", children: <PaperPlaneIcon /> },
+};
+
+export const Ghost: Story = {
+  args: { variant: "ghost" },
 };
 
 export const Ad: Story = {

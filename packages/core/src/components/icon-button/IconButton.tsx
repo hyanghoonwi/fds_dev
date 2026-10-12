@@ -14,6 +14,9 @@ const iconButtonVariants = cva(
         line: "border-line-2 bg-bg-elevated text-text-icon-default hover:border-line-1 hover:bg-bg-blue-tint hover:text-brand-primary active:border-line-1 active:bg-bg-blue-tint active:text-brand-primary",
         primary:
           "border-transparent bg-brand-primary text-text-inverse hover:bg-foundation-blue-400 active:bg-foundation-blue-400",
+        /** 배경·테두리 없이 아이콘만 표시. 툴바, 닫기 버튼 등 */
+        ghost:
+          "border-transparent bg-transparent text-text-icon-default hover:text-brand-primary active:text-brand-primary",
         tint: "border-bg-blue-tint bg-bg-blue-tint text-brand-primary",
         /** 광고 상태 표시. "Ad" 마크가 내장되어 있어 children이 필요 없다 */
         ad: "border-line-2 bg-bg-surface",
