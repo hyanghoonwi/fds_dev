@@ -6,7 +6,7 @@ import { TimePanel } from "@fds/core";
 // 화면에 바로 놓거나 Popover, Modal 안에 넣어 쓴다. 시/분을 고를 때마다 onChange가 바로 호출된다.
 // 값은 value로만 제어하므로 아래 스토리처럼 useState로 받아서 다시 넘긴다.
 const meta = {
-  title: "Components/Common/TimePanel",
+  title: "Components/Date & Time/TimePanel",
   component: TimePanel,
   tags: ["autodocs"],
   parameters: {

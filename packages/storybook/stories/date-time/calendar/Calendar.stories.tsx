@@ -5,7 +5,7 @@ import { Calendar, formatDateValue } from "@fds/core";
 // Calendar는 날짜를 고르는 "패널"이다. 테두리·그림자·열고 닫는 동작이 없어서
 // 화면에 바로 놓거나, DatePicker 팝업이나 Modal 안에 넣어 쓴다. 값은 `YYYY-MM-DD` 문자열이다.
 const meta = {
-  title: "Components/Common/Calendar",
+  title: "Components/Date & Time/Calendar",
   component: Calendar,
   tags: ["autodocs"],
   parameters: {

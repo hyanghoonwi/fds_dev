@@ -1,10 +1,9 @@
-import { useId, useState } from "react";
-import { PickerTriggerInput } from "../_internal/PickerTriggerInput";
-import type { PickerInputProps } from "../_internal/PickerTriggerInput";
-import { Calendar } from "../calendar/Calendar";
-import { formatDateValue, parseDateValue } from "../calendar/dateValue";
+import { useControllableState } from "../../utils/useControllableState";
+import { PickerField } from "./_internal/PickerField";
+import type { PickerInputProps } from "./_internal/PickerTriggerInput";
+import { Calendar } from "./Calendar";
 import { CalendarIcon } from "../icon/CalendarIcon";
-import { Popover } from "../popover/Popover";
+import { normalizeDateValue } from "./values";
 
 export interface DatePickerProps extends PickerInputProps {
   /** 선택된 날짜 `YYYY-MM-DD` (제어 모드). `null`은 "선택 안 함". */
@@ -17,6 +16,8 @@ export interface DatePickerProps extends PickerInputProps {
   min?: string;
   /** 선택할 수 있는 가장 늦은 날짜 `YYYY-MM-DD` (포함) */
   max?: string;
+  /** 선택된 날짜가 없을 때 달력이 처음 보여 줄 달 `YYYY-MM`. 기본은 이번 달 */
+  initialMonth?: string;
   /** `true`를 반환한 날짜는 선택할 수 없다 (예: 주말, 휴무일). 로컬 자정의 `Date`가 넘어온다. */
   isDateDisabled?: (date: Date) => boolean;
 }
@@ -31,62 +32,40 @@ export function DatePicker({
   min,
   max,
   isDateDisabled,
+  initialMonth,
   placeholder = "날짜 선택",
-  id,
   ...inputProps
 }: DatePickerProps) {
-  const generatedId = useId();
-  const inputId = id ?? generatedId;
-  const [open, setOpen] = useState(false);
-  const [innerValue, setInnerValue] = useState<string | null>(defaultValue);
-
+  const [raw, setValue] = useControllableState<string | null>(
+    value,
+    defaultValue,
+    (next) => next && onChange?.(next),
+  );
   // 형식이 잘못된 값은 선택 안 함으로 보고, 입력창에는 정규화된 문자열만 표시한다
-  const raw = value !== undefined ? value : innerValue;
-  const parsed = raw ? parseDateValue(raw) : null;
-  const selected = parsed ? formatDateValue(parsed) : null;
-
-  const handleChange = (next: string) => {
-    if (value === undefined) {
-      setInnerValue(next);
-    }
-    onChange?.(next);
-  };
+  const selected = normalizeDateValue(raw);
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      label="날짜 선택"
-      trigger={({ open: isOpen, toggle, anchorRef, popupId }) => (
-        <PickerTriggerInput
-          {...inputProps}
-          id={inputId}
-          placeholder={placeholder}
-          displayValue={selected ?? ""}
-          icon={<CalendarIcon />}
-          triggerLabel="달력 열기"
-          open={isOpen}
-          toggle={toggle}
-          anchorRef={anchorRef}
-          popupId={popupId}
-        />
-      )}
+    <PickerField
+      {...inputProps}
+      placeholder={placeholder}
+      displayValue={selected ?? ""}
+      icon={<CalendarIcon />}
+      triggerLabel="달력 열기"
+      popupLabel="날짜 선택"
     >
       {({ close }) => (
         <Calendar
           autoFocus
           value={selected}
-          onChange={handleChange}
+          onChange={setValue}
           // 이미 선택된 날짜를 다시 눌러도 팝업을 닫고 입력창으로 포커스를 돌려준다
-          onSelect={() => {
-            close();
-            document.getElementById(inputId)?.focus();
-          }}
+          onSelect={close}
           min={min}
           max={max}
           isDateDisabled={isDateDisabled}
+          initialMonth={initialMonth}
         />
       )}
-    </Popover>
+    </PickerField>
   );
 }

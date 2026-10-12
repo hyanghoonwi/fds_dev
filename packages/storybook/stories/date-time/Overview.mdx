@@ -1,0 +1,52 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Components/Date & Time/Overview" />
+
+# Date & Time
+
+날짜·시간 컴포넌트는 **세 층**으로 나뉩니다. 대부분은 1층(필드)만 쓰면 됩니다.
+
+| 층          | 컴포넌트                                                     | 언제 쓰나                                                           |
+| ----------- | ------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 1. 필드     | `DatePicker` `DateRangePicker` `TimePicker` `DateTimePicker` | 폼에서 입력창처럼 쓴다. 라벨·에러·`name`·키보드 접근성이 들어 있다. |
+| 2. 패널     | `Calendar` `TimePanel`                                       | 입력창 없이 달력/시간 목록만 필요할 때(모달 안, 대시보드 안 등).    |
+| 3. 오버레이 | `Popover` (Overlay 카테고리)                                 | 입력창 아래에 뜨는 팝업이 필요한데 기성 필드로는 안 될 때.          |
+
+## 어떻게 이어지나
+
+```
+DatePicker      = Input + Popover + Calendar
+TimePicker      = Input + Popover + TimePanel      + "확인"
+DateTimePicker  = Input + Popover + Calendar + TimePanel + "확인"
+DateRangePicker = DatePicker 둘 + 시작일/종료일 보정 + "종료일 미정" + 프리셋
+```
+
+`Popover`는 날짜를 모르는 범용 오버레이이고(`Select`도 씁니다), `Calendar`/`TimePanel`은 팝업을 모르는 패널입니다. 필드는 이 둘을 얇게 이어 붙인 것입니다.
+
+## 무엇을 고르나
+
+- 날짜 하나 → `DatePicker`
+- 시작~종료 → `DateRangePicker` (종료일이 시작일보다 이른 범위는 만들어지지 않음)
+- 시각만 → `TimePicker`
+- 날짜 + 시각 → `DateTimePicker`
+- 다른 트리거(버튼, 칩)로 열고 싶다 → `Popover` + `Calendar` 직접 조합 ([Popover](?path=/docs/components-overlay-popover--docs) 스토리 참고)
+- 모달 안에 달력을 바로 놓고 싶다 → `Calendar` 단독
+
+## 값 형태
+
+값은 모두 **문자열, 로컬 시간 기준, 시간대 정보 없음**입니다(`<input type="date">`와 같은 형태).
+
+| 컴포넌트        | 값                              | 예                                           |
+| --------------- | ------------------------------- | -------------------------------------------- |
+| DatePicker      | `"YYYY-MM-DD"`                  | `"2026-10-15"`                               |
+| TimePicker      | `"HH:mm"` (24시간)              | `"09:30"`                                    |
+| DateTimePicker  | `"YYYY-MM-DDTHH:mm"`            | `"2026-10-15T09:30"`                         |
+| DateRangePicker | `{ start, end, endUndecided? }` | `{ start: "2026-10-01", end: "2026-10-14" }` |
+
+`Date`가 필요하면 `parseDateValue` / `formatDateValue`를 씁니다. `toISOString()`은 UTC로 바뀌어 한국에서 하루가 밀리므로 쓰지 않습니다.
+
+## 확정 방식
+
+- `DatePicker`: 날짜를 누르면 바로 확정되고 팝업이 닫힙니다.
+- `TimePicker`, `DateTimePicker`: 팝업 안에서 고르는 값은 임시값이고 **"확인"을 눌러야** `onChange`가 호출됩니다. Esc·바깥 클릭은 임시값을 버립니다.
+- `Calendar`, `TimePanel`: 항목을 누를 때마다 바로 `onChange`가 호출됩니다(확정 개념 없음).

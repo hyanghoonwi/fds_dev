@@ -55,7 +55,7 @@ function PickerModalBody({
 // 값은 `YYYY-MM-DDTHH:mm` 문자열(로컬 시간, 시간대 없음)이고, 입력창에는 `2026-10-15 09:30`으로 보인다.
 // 날짜와 시간을 둘 다 고르고 "확인"을 눌러야 값이 확정된다.
 const meta = {
-  title: "Components/Common/DateTimePicker",
+  title: "Components/Date & Time/DateTimePicker",
   component: DateTimePicker,
   tags: ["autodocs"],
   parameters: {
@@ -331,10 +331,12 @@ export const WithOverlayModal: Story = {
         <Modal
           open={isOpen}
           onClose={() => close()}
-          header="날짜와 시간 선택"
           style={{ width: "min(560px, calc(100vw - 32px))" }}
         >
-          <PickerModalBody initial={value} onConfirm={close} />
+          <Modal.Header>날짜와 시간 선택</Modal.Header>
+          <Modal.Body>
+            <PickerModalBody initial={value} onConfirm={close} />
+          </Modal.Body>
         </Modal>
       ));
       if (picked) {

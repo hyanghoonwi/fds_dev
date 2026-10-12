@@ -3,7 +3,7 @@ import { fn } from "storybook/test";
 import { TimePicker } from "@fds/core";
 
 const meta = {
-  title: "Components/Common/TimePicker",
+  title: "Components/Date & Time/TimePicker",
   component: TimePicker,
   tags: ["autodocs"],
   parameters: {

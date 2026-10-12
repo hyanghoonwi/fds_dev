@@ -19,7 +19,7 @@ import {
 // DatePicker = 읽기 전용 입력창 + 달력 아이콘 버튼 + 아래에 뜨는 팝업(Calendar)의 조합이다.
 // 값은 `YYYY-MM-DD` 문자열이며, 입력창에도 그 문자열이 그대로 들어간다.
 const meta = {
-  title: "Components/Common/DatePicker",
+  title: "Components/Date & Time/DatePicker",
   component: DatePicker,
   tags: ["autodocs"],
   parameters: {
@@ -33,6 +33,7 @@ const meta = {
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
     error: { control: "text" },
     required: { control: "boolean" },
+    size: { control: "inline-radio", options: ["sm", "md"] },
     disabled: { control: "boolean" },
     placeholder: { control: "text" },
     value: { control: false },
@@ -54,6 +55,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
+
+// sm(36px) / md(42px, 기본). TimePicker·DateTimePicker·DateRangePicker도 같은 size를 받는다
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <DatePicker {...args} size="md" placeholder="md (기본)" />
+      <DatePicker {...args} size="sm" placeholder="sm" />
+    </div>
+  ),
+};
 
 // defaultValue로 초기 날짜를 넣는다 (비제어)
 export const WithValue: Story = {
@@ -349,8 +360,11 @@ export const WithOverlayModal: Story = {
 
     const pickDate = async () => {
       const picked = await overlay.openAsync<string>(({ isOpen, close }) => (
-        <Modal open={isOpen} onClose={() => close()} header="날짜 선택" style={{ width: 320 }}>
-          <Calendar autoFocus value={date} onChange={(next) => close(next)} />
+        <Modal open={isOpen} onClose={() => close()} style={{ width: 320 }}>
+          <Modal.Header>날짜 선택</Modal.Header>
+          <Modal.Body>
+            <Calendar autoFocus value={date} onChange={(next) => close(next)} />
+          </Modal.Body>
         </Modal>
       ));
       if (picked) {

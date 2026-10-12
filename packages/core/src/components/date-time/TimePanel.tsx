@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { KeyboardEvent, Ref } from "react";
 import { cn } from "../../utils/cn";
+import { formatTimeValue, parseTimeValue } from "./values";
 
 export interface TimePanelProps {
   /** 선택된 시간 (24시간제 "HH:mm"). 형식이 잘못된 문자열은 선택 안 함으로 본다. */
@@ -18,20 +19,6 @@ export interface TimePanelProps {
   ref?: Ref<HTMLDivElement>;
 }
 
-interface Time {
-  hour: number;
-  minute: number;
-}
-
-const TIME_PATTERN = /^([01]\d|2[0-3]):([0-5]\d)$/;
-
-function parseTime(value: string | null | undefined): Time | null {
-  const match = value ? TIME_PATTERN.exec(value) : null;
-  return match ? { hour: Number(match[1]), minute: Number(match[2]) } : null;
-}
-
-const pad = (n: number) => String(n).padStart(2, "0");
-
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 // 시간을 고르는 "패널"이다. 확인 버튼·팝업·열고 닫는 동작이 없어서 화면에 바로 놓거나,
@@ -45,7 +32,7 @@ export function TimePanel({
   ref,
 }: TimePanelProps) {
   const itemRefs = useRef<[(HTMLButtonElement | null)[], (HTMLButtonElement | null)[]]>([[], []]);
-  const current = parseTime(value);
+  const current = parseTimeValue(value);
 
   const step = Math.max(1, Math.floor(minuteStep) || 1);
   const minutes = Array.from({ length: Math.ceil(60 / step) }, (_, i) => i * step);
@@ -103,7 +90,7 @@ export function TimePanel({
   const select = (col: 0 | 1, item: number) => {
     const hour = col === 0 ? item : (current?.hour ?? 0);
     const minute = col === 1 ? item : (current?.minute ?? 0);
-    onChange?.(`${pad(hour)}:${pad(minute)}`);
+    onChange?.(formatTimeValue(hour, minute));
   };
 
   return (
@@ -143,7 +130,7 @@ export function TimePanel({
                       : "text-text-primary hover:bg-bg-page",
                   )}
                 >
-                  {pad(item)}
+                  {String(item).padStart(2, "0")}
                 </button>
               );
             })}
