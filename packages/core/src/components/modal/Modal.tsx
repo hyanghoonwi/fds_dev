@@ -6,12 +6,8 @@ export interface ModalProps extends Omit<ComponentProps<"div">, "children" | "ti
   /** 열림 여부. false면 아무것도 렌더링하지 않는다. 트리거 버튼이 상태를 들고 있는 경우 이 prop으로 제어한다. */
   open?: boolean;
   onClose: () => void;
-  /** 본문 콘텐츠. 항상 body 영역 레이아웃(세로 gap)으로 감싸서 렌더링한다. */
+  /** `Modal.Header` / `Modal.Body` / `Modal.Actions`를 필요한 것만 골라 조합한다. */
   children: ReactNode;
-  /** 제목 영역. 생략하면 헤더 자체가 렌더링되지 않는다(제목 없는 알림형 모달, Figma 40:479). */
-  header?: ReactNode;
-  /** 하단 액션 버튼 줄. 버튼 1개(전체 폭)든 2개(균등 분할)든 같은 규칙으로 채운다. 생략하면 렌더링되지 않는다. */
-  actions?: ReactNode;
   /** 뒤 배경 딤 처리. 화면 중앙 확인창류는 true(기본), 트리거 버튼 아래 뜨는 설정 메뉴류는 false. */
   dimmed?: boolean;
   /** 패널 위치. 없으면 화면 정중앙. 트리거 버튼 기준으로 띄우려면 top/left/right/bottom을 넘긴다. */
@@ -23,12 +19,10 @@ export interface ModalProps extends Omit<ComponentProps<"div">, "children" | "ti
 // 현재 열려 있는 모달들(열린 순서). Esc를 맨 위 모달에만 전달하는 데 쓴다.
 const openModals: symbol[] = [];
 
-export function Modal({
+function ModalRoot({
   open = true,
   onClose,
   children,
-  header,
-  actions,
   dimmed = true,
   position,
   className,
@@ -94,14 +88,33 @@ export function Modal({
         style={{ ...position, ...style }}
         {...props}
       >
-        {header && (
-          <div className="px-5 pb-3.5">
-            <p className="m-0 text-lg font-semibold text-text-primary">{header}</p>
-          </div>
-        )}
-        <div className="flex flex-col gap-5 px-5 pt-2 pb-6">{children}</div>
-        {actions && <div className="flex items-center gap-2 px-5 [&>*]:flex-1">{actions}</div>}
+        {children}
       </div>
     </div>
   );
 }
+
+/** 제목 영역. 생략하면 제목 없는 알림형 모달이 된다(Figma 40:479). */
+function ModalHeader({ className, ...props }: ComponentProps<"h2">) {
+  return (
+    <div className="px-5 pb-3.5">
+      <h2 className={cn("m-0 text-lg font-semibold text-text-primary", className)} {...props} />
+    </div>
+  );
+}
+
+/** 본문 영역. 자식들을 세로 gap으로 쌓는다. */
+function ModalBody({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("flex flex-col gap-5 px-5 pt-2 pb-6", className)} {...props} />;
+}
+
+/** 하단 액션 버튼 줄. 버튼 1개는 전체 폭, 2개는 균등 분할로 채운다. */
+function ModalActions({ className, ...props }: ComponentProps<"div">) {
+  return <div className={cn("flex items-center gap-2 px-5 [&>*]:flex-1", className)} {...props} />;
+}
+
+export const Modal = Object.assign(ModalRoot, {
+  Header: ModalHeader,
+  Body: ModalBody,
+  Actions: ModalActions,
+});

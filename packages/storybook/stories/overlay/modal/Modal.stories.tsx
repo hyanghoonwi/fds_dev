@@ -4,8 +4,8 @@ import { useArgs } from "storybook/preview-api";
 import { Button, Modal, type ModalProps } from "@fds/core";
 
 // 트리거 버튼을 누르면 열리는 모달. 열림 상태는 story args(open)로 관리하고,
-// 액션 버튼은 close 핸들러를 받아 스토리별로 구성한다.
-const withTrigger = (renderActions?: (close: () => void) => ReactNode) =>
+// 모달 내용은 close 핸들러를 받아 스토리별로 조합한다.
+const withTrigger = (renderContent: (close: () => void) => ReactNode) =>
   function Render(args: ModalProps) {
     const [{ open }, updateArgs] = useArgs();
     const close = () => updateArgs({ open: false });
@@ -14,13 +14,15 @@ const withTrigger = (renderActions?: (close: () => void) => ReactNode) =>
         <Button variant="primary" onClick={() => updateArgs({ open: true })}>
           모달 열기
         </Button>
-        <Modal {...args} open={open} onClose={close} actions={renderActions?.(close)} />
+        <Modal {...args} open={open} onClose={close}>
+          {renderContent(close)}
+        </Modal>
       </>
     );
   };
 
 const meta = {
-  title: "Components/Common/Modal",
+  title: "Components/Overlay/Modal",
   component: Modal,
   tags: ["autodocs"],
   parameters: {
@@ -55,22 +57,15 @@ const meta = {
   ],
   argTypes: {
     open: { control: "boolean" },
-    header: { control: "text" },
     dimmed: { control: "boolean" },
     position: { control: "object" },
     onClose: { control: false },
     children: { control: false },
-    actions: { control: false },
   },
   args: {
     open: false,
     onClose: () => {},
-    header: "채팅 차단",
-    children: (
-      <p style={{ margin: 0, fontSize: 14 }}>
-        이 사용자를 차단하시겠어요? 차단하면 더 이상 메시지가 보이지 않아요.
-      </p>
-    ),
+    children: null,
     style: { width: 320 },
   },
 } satisfies Meta<typeof Modal>;
@@ -82,35 +77,52 @@ type Story = StoryObj<typeof meta>;
 export const Confirm: Story = {
   render: withTrigger((close) => (
     <>
-      <Button variant="line" onClick={close}>
-        취소
-      </Button>
-      <Button variant="danger" onClick={close}>
-        차단
-      </Button>
+      <Modal.Header>채팅 차단</Modal.Header>
+      <Modal.Body>
+        <p style={{ margin: 0, fontSize: 14 }}>
+          이 사용자를 차단하시겠어요? 차단하면 더 이상 메시지가 보이지 않아요.
+        </p>
+      </Modal.Body>
+      <Modal.Actions>
+        <Button variant="line" onClick={close}>
+          취소
+        </Button>
+        <Button variant="danger" onClick={close}>
+          차단
+        </Button>
+      </Modal.Actions>
     </>
   )),
 };
 
-// 제목이 없는 알림형, 버튼 1개 (Figma 40:479)
+// 제목이 없는 알림형, 버튼 1개 (Figma 40:479): Modal.Header를 생략한다
 export const Alert: Story = {
-  args: {
-    header: undefined,
-    children: <p style={{ margin: 0, fontSize: 14, textAlign: "center" }}>연결이 끊어졌어요.</p>,
-  },
   render: withTrigger((close) => (
-    <Button variant="primary" onClick={close}>
-      확인
-    </Button>
+    <>
+      <Modal.Body>
+        <p style={{ margin: 0, fontSize: 14, textAlign: "center" }}>연결이 끊어졌어요.</p>
+      </Modal.Body>
+      <Modal.Actions>
+        <Button variant="primary" onClick={close}>
+          확인
+        </Button>
+      </Modal.Actions>
+    </>
   )),
 };
 
-// 트리거 버튼 아래에 띄우는 설정 메뉴류: 딤 처리 없이 position으로 위치 지정
+// 트리거 버튼 아래에 띄우는 설정 메뉴류: 딤 처리 없이 position으로 위치 지정, 액션 없음
 export const Anchored: Story = {
   args: {
     dimmed: false,
     position: { top: 56, left: "50%", transform: "translateX(-50%)" },
-    header: "설정",
   },
-  render: withTrigger(),
+  render: withTrigger(() => (
+    <>
+      <Modal.Header>설정</Modal.Header>
+      <Modal.Body>
+        <p style={{ margin: 0, fontSize: 14 }}>알림, 개인정보 등을 설정해요.</p>
+      </Modal.Body>
+    </>
+  )),
 };

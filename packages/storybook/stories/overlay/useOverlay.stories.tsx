@@ -33,18 +33,16 @@ export const Open: Story = {
         variant="primary"
         onClick={() =>
           overlay.open(({ isOpen, close }) => (
-            <Modal
-              open={isOpen}
-              onClose={close}
-              header="공지"
-              style={{ width: 320 }}
-              actions={
+            <Modal open={isOpen} onClose={close} style={{ width: 320 }}>
+              <Modal.Header>공지</Modal.Header>
+              <Modal.Body>
+                <p style={{ margin: 0, fontSize: 14 }}>함수 안에서 연 모달이에요.</p>
+              </Modal.Body>
+              <Modal.Actions>
                 <Button variant="primary" onClick={() => close()}>
                   확인
                 </Button>
-              }
-            >
-              <p style={{ margin: 0, fontSize: 14 }}>함수 안에서 연 모달이에요.</p>
+              </Modal.Actions>
             </Modal>
           ))
         }
@@ -61,39 +59,33 @@ export const Confirm: Story = {
     const overlay = useOverlay();
     const handleDelete = async () => {
       const ok = await overlay.openAsync<boolean>(({ isOpen, close }) => (
-        <Modal
-          open={isOpen}
-          onClose={() => close(false)}
-          header="채팅 차단"
-          style={{ width: 320 }}
-          actions={
-            <>
-              <Button variant="line" onClick={() => close(false)}>
-                취소
-              </Button>
-              <Button variant="danger" onClick={() => close(true)}>
-                차단
-              </Button>
-            </>
-          }
-        >
-          <p style={{ margin: 0, fontSize: 14 }}>이 사용자를 차단하시겠어요?</p>
+        <Modal open={isOpen} onClose={() => close(false)} style={{ width: 320 }}>
+          <Modal.Header>채팅 차단</Modal.Header>
+          <Modal.Body>
+            <p style={{ margin: 0, fontSize: 14 }}>이 사용자를 차단하시겠어요?</p>
+          </Modal.Body>
+          <Modal.Actions>
+            <Button variant="line" onClick={() => close(false)}>
+              취소
+            </Button>
+            <Button variant="danger" onClick={() => close(true)}>
+              차단
+            </Button>
+          </Modal.Actions>
         </Modal>
       ));
       await overlay.openAsync(({ isOpen, close }) => (
-        <Modal
-          open={isOpen}
-          onClose={close}
-          style={{ width: 320 }}
-          actions={
+        <Modal open={isOpen} onClose={close} style={{ width: 320 }}>
+          <Modal.Body>
+            <p style={{ margin: 0, fontSize: 14, textAlign: "center" }}>
+              {ok ? "차단했어요." : "취소했어요."}
+            </p>
+          </Modal.Body>
+          <Modal.Actions>
             <Button variant="primary" onClick={() => close()}>
               확인
             </Button>
-          }
-        >
-          <p style={{ margin: 0, fontSize: 14, textAlign: "center" }}>
-            {ok ? "차단했어요." : "취소했어요."}
-          </p>
+          </Modal.Actions>
         </Modal>
       ));
     };
@@ -111,23 +103,19 @@ export const Stacked: Story = {
     const overlay = useOverlay();
     const openLayer = (depth: number) => {
       overlay.open(({ isOpen, close }) => (
-        <Modal
-          open={isOpen}
-          onClose={close}
-          header={`${depth}번째 모달`}
-          style={{ width: 320 }}
-          actions={
-            <>
-              <Button variant="line" onClick={() => overlay.closeAll()}>
-                모두 닫기
-              </Button>
-              <Button variant="primary" onClick={() => openLayer(depth + 1)}>
-                하나 더
-              </Button>
-            </>
-          }
-        >
-          <p style={{ margin: 0, fontSize: 14 }}>아래에 쌓인 모달은 닫기 전까지 유지돼요.</p>
+        <Modal open={isOpen} onClose={close} style={{ width: 320 }}>
+          <Modal.Header>{`${depth}번째 모달`}</Modal.Header>
+          <Modal.Body>
+            <p style={{ margin: 0, fontSize: 14 }}>아래에 쌓인 모달은 닫기 전까지 유지돼요.</p>
+          </Modal.Body>
+          <Modal.Actions>
+            <Button variant="line" onClick={() => overlay.closeAll()}>
+              모두 닫기
+            </Button>
+            <Button variant="primary" onClick={() => openLayer(depth + 1)}>
+              하나 더
+            </Button>
+          </Modal.Actions>
         </Modal>
       ));
     };
@@ -150,18 +138,16 @@ export const ReopenWhileClosing: Story = {
         variant="primary"
         onClick={() => {
           const render: Parameters<typeof overlay.open>[0] = ({ isOpen, close }) => (
-            <Modal
-              open={isOpen}
-              onClose={close}
-              header="다시 열린 모달"
-              style={{ width: 320 }}
-              actions={
+            <Modal open={isOpen} onClose={close} style={{ width: 320 }}>
+              <Modal.Header>다시 열린 모달</Modal.Header>
+              <Modal.Body>
+                <p style={{ margin: 0, fontSize: 14 }}>닫는 중에 다시 열어도 남아 있어요.</p>
+              </Modal.Body>
+              <Modal.Actions>
                 <Button variant="primary" onClick={() => close()}>
                   확인
                 </Button>
-              }
-            >
-              <p style={{ margin: 0, fontSize: 14 }}>닫는 중에 다시 열어도 남아 있어요.</p>
+              </Modal.Actions>
             </Modal>
           );
           overlay.open(render, { overlayId: "reopen", exitDelay: 400 });
@@ -186,23 +172,19 @@ export const DuplicateOverlayId: Story = {
           variant="primary"
           onClick={async () => {
             const render: Parameters<typeof overlay.openAsync<string>>[0] = ({ isOpen, close }) => (
-              <Modal
-                open={isOpen}
-                onClose={() => close("취소")}
-                header="같은 id로 두 번 연 모달"
-                style={{ width: 320 }}
-                actions={
-                  <>
-                    <Button variant="line" onClick={() => close("취소")}>
-                      취소
-                    </Button>
-                    <Button variant="primary" onClick={() => close("확인")}>
-                      확인
-                    </Button>
-                  </>
-                }
-              >
-                <p style={{ margin: 0, fontSize: 14 }}>모달은 하나만 떠요.</p>
+              <Modal open={isOpen} onClose={() => close("취소")} style={{ width: 320 }}>
+                <Modal.Header>같은 id로 두 번 연 모달</Modal.Header>
+                <Modal.Body>
+                  <p style={{ margin: 0, fontSize: 14 }}>모달은 하나만 떠요.</p>
+                </Modal.Body>
+                <Modal.Actions>
+                  <Button variant="line" onClick={() => close("취소")}>
+                    취소
+                  </Button>
+                  <Button variant="primary" onClick={() => close("확인")}>
+                    확인
+                  </Button>
+                </Modal.Actions>
               </Modal>
             );
             const [first, second] = await Promise.all([

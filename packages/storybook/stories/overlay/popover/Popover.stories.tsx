@@ -1,6 +1,15 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Button, CalendarIcon, Calendar, Input, Modal, Popover } from "@fds/core";
+import {
+  Button,
+  CalendarIcon,
+  Calendar,
+  DatePicker,
+  Input,
+  Modal,
+  Popover,
+  Select,
+} from "@fds/core";
 
 // Popover = 기준 요소(anchor) 가까이에 뜨는 범용 오버레이다. 날짜·시간은 모른다.
 //
@@ -10,7 +19,7 @@ import { Button, CalendarIcon, Calendar, Input, Modal, Popover } from "@fds/core
 //   3) 팝업 내용(children)에 Calendar를 넣고, 날짜를 고르면 값을 저장한 뒤 `close()`를 부른다.
 // DatePicker / TimePicker는 이 조합을 미리 해 둔 편의 컴포넌트일 뿐이다.
 const meta = {
-  title: "Components/Common/Popover",
+  title: "Components/Overlay/Popover",
   component: Popover,
   tags: ["autodocs"],
   parameters: {
@@ -24,6 +33,7 @@ const meta = {
       options: ["bottom-start", "bottom-end", "top-start", "top-end"],
     },
     offset: { control: "number" },
+    matchAnchorWidth: { control: "boolean" },
     open: { control: false },
     trigger: { control: false },
     children: { control: false },
@@ -87,39 +97,37 @@ export const WithButtonTrigger: Story = {
       </div>
     ),
   ],
-  render: function Render() {
-    return (
-      <Popover
-        label="더보기 메뉴"
-        containerClassName="w-fit"
-        trigger={({ open, toggle, anchorRef }) => (
-          <Button
-            ref={anchorRef}
-            variant="line"
-            onClick={toggle}
-            aria-haspopup="dialog"
-            aria-expanded={open}
-          >
-            더보기
+  render: () => (
+    <Popover
+      label="더보기 메뉴"
+      containerClassName="w-fit"
+      trigger={({ open, toggle, anchorRef }) => (
+        <Button
+          ref={anchorRef}
+          variant="line"
+          onClick={toggle}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+        >
+          더보기
+        </Button>
+      )}
+    >
+      {({ close }) => (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, width: 160 }}>
+          <Button variant="line" onClick={close}>
+            방송 공유
           </Button>
-        )}
-      >
-        {({ close }) => (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, width: 160 }}>
-            <Button variant="line" onClick={close}>
-              방송 공유
-            </Button>
-            <Button variant="line" onClick={close}>
-              링크 복사
-            </Button>
-            <Button variant="danger" onClick={close}>
-              신고하기
-            </Button>
-          </div>
-        )}
-      </Popover>
-    );
-  },
+          <Button variant="line" onClick={close}>
+            링크 복사
+          </Button>
+          <Button variant="danger" onClick={close}>
+            신고하기
+          </Button>
+        </div>
+      )}
+    </Popover>
+  ),
 };
 
 // 네 가지 placement. 기준 요소(버튼)의 왼쪽/오른쪽 가장자리에 맞춰 아래 또는 위에 뜬다.
@@ -210,30 +218,80 @@ export const InsideModal: Story = {
         <Button variant="primary" onClick={() => setModalOpen(true)}>
           모달 열기
         </Button>
-        <Modal
-          open={modalOpen}
-          onClose={() => setModalOpen(false)}
-          header="방송 예약"
-          style={{ width: 360 }}
-        >
-          <Popover
-            label="날짜 선택"
-            trigger={({ open, toggle, anchorRef }) => (
-              <Input
-                readOnly
-                label="시작일"
-                placeholder="날짜 선택"
-                fieldRef={anchorRef}
-                onClick={toggle}
-                aria-expanded={open}
-                rightAddon={<CalendarIcon />}
-              />
-            )}
-          >
-            <span style={{ fontSize: 13 }}>Esc를 누르면 이 팝오버만 닫혀요.</span>
-          </Popover>
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} style={{ width: 360 }}>
+          <Modal.Header>방송 예약</Modal.Header>
+          <Modal.Body>
+            <Popover
+              label="날짜 선택"
+              trigger={({ open, toggle, anchorRef }) => (
+                <Input
+                  readOnly
+                  label="시작일"
+                  placeholder="날짜 선택"
+                  fieldRef={anchorRef}
+                  onClick={toggle}
+                  aria-expanded={open}
+                  rightAddon={<CalendarIcon />}
+                />
+              )}
+            >
+              <span style={{ fontSize: 13 }}>Esc를 누르면 이 팝오버만 닫혀요.</span>
+            </Popover>
+          </Modal.Body>
         </Modal>
       </>
     );
   },
+};
+
+// 팝업은 포털(position: fixed)에 그려지므로 `overflow: hidden`인 조상에 잘리지 않는다.
+// 아래 상자는 overflow: hidden에 높이가 작지만 달력과 목록이 그대로 보인다.
+export const InsideClippedContainer: Story = {
+  args: { label: "잘림 확인", trigger: null, children: null },
+  parameters: { docs: { story: { inline: false, iframeHeight: 520 } } },
+  render: () => (
+    <div
+      style={{
+        width: 320,
+        height: 120,
+        overflow: "hidden",
+        border: "1px dashed #999",
+        padding: 12,
+        display: "flex",
+        flexDirection: "column",
+        gap: 8,
+      }}
+    >
+      <DatePicker label="시작일" />
+      <Select
+        label="상태"
+        options={[
+          { value: "a", label: "접수대기" },
+          { value: "b", label: "처리중" },
+          { value: "c", label: "완료" },
+        ]}
+      />
+    </div>
+  ),
+};
+
+// 화면 아래쪽에서 열면 공간이 모자라 위로 뒤집히고, 오른쪽 끝에서는 화면 안으로 밀린다.
+export const NearViewportEdge: Story = {
+  args: { label: "가장자리", trigger: null, children: null },
+  parameters: { layout: "fullscreen", docs: { story: { inline: false, iframeHeight: 520 } } },
+  render: () => (
+    <div
+      style={{
+        height: "100vh",
+        display: "flex",
+        alignItems: "flex-end",
+        justifyContent: "flex-end",
+        padding: 16,
+      }}
+    >
+      <div style={{ width: 220 }}>
+        <DatePicker label="시작일" />
+      </div>
+    </div>
+  ),
 };
