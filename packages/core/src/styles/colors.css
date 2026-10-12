@@ -38,6 +38,15 @@
   --fds-segment-active-bg: #ffffff;
   --fds-chat-card-bg: #ffffff;
   --fds-switch-track-off: #c0c3c7;
+
+  /* Status — Badge 등 상태 표시용. 텍스트색은 각 tint 배경 위에서 WCAG 4.5:1 이상 */
+  --fds-brand-success: #027a48;
+  --fds-brand-warning: #b54708;
+  --fds-brand-purple: #6938ef;
+  --fds-bg-success-tint: #ecfdf3;
+  --fds-bg-warning-tint: #fffaeb;
+  --fds-bg-error-tint: #fef3f2;
+  --fds-bg-purple-tint: #f4f3ff;
 }
 
 [data-theme="dark"] {
@@ -73,6 +82,15 @@
   --fds-segment-active-bg: #262a31;
   --fds-chat-card-bg: #262a31;
   --fds-switch-track-off: #242b35;
+
+  /* Status */
+  --fds-brand-success: #47cd89;
+  --fds-brand-warning: #fdb022;
+  --fds-brand-purple: #a48afb;
+  --fds-bg-success-tint: #10291c;
+  --fds-bg-warning-tint: #35260a;
+  --fds-bg-error-tint: #3a1d1b;
+  --fds-bg-purple-tint: #251d43;
 }
 
 @theme inline {
@@ -106,6 +124,15 @@
   --color-segment-active-bg: var(--fds-segment-active-bg);
   --color-chat-card-bg: var(--fds-chat-card-bg);
   --color-switch-track-off: var(--fds-switch-track-off);
+
+  /* Status */
+  --color-brand-success: var(--fds-brand-success);
+  --color-brand-warning: var(--fds-brand-warning);
+  --color-brand-purple: var(--fds-brand-purple);
+  --color-bg-success-tint: var(--fds-bg-success-tint);
+  --color-bg-warning-tint: var(--fds-bg-warning-tint);
+  --color-bg-error-tint: var(--fds-bg-error-tint);
+  --color-bg-purple-tint: var(--fds-bg-purple-tint);
 
   /* Foundation (원시값, 모드 무관) */
   --color-foundation-blue-50: #eef4ff;

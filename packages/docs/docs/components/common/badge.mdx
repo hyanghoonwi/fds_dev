@@ -7,7 +7,7 @@ import Preview from "@site/src/components/Preview";
 
 # Badge
 
-짧은 상태나 개수를 표시하는 작은 라벨입니다.
+짧은 상태나 개수를 표시하는 작은 라벨입니다. 상태를 색으로 구분해야 할 때는 `variant`를 씁니다.
 
 ## Usage
 
@@ -23,12 +23,64 @@ import Preview from "@site/src/components/Preview";
 <Badge>공지</Badge>
 ```
 
+## Variants
+
+`variant`는 6가지입니다. 기본값은 `neutral`이라 `variant`를 생략하면 기존과 똑같이 보입니다.
+
+<Preview>
+  <Badge variant="neutral">접수대기</Badge>
+  <Badge variant="info">검토중</Badge>
+  <Badge variant="success">정상</Badge>
+  <Badge variant="warning">확정 필요</Badge>
+  <Badge variant="danger">반려</Badge>
+  <Badge variant="purple">검증</Badge>
+</Preview>
+
+```tsx
+<Badge variant="neutral">접수대기</Badge>
+<Badge variant="info">검토중</Badge>
+<Badge variant="success">정상</Badge>
+<Badge variant="warning">확정 필요</Badge>
+<Badge variant="danger">반려</Badge>
+<Badge variant="purple">검증</Badge>
+```
+
+색은 모두 시맨틱 토큰(`bg-bg-success-tint`, `text-brand-success` 등)이라, 다크 모드(`data-theme="dark"`)에서는 별도 설정 없이 값만 바뀝니다. 토큰 목록은 [Colors](../../foundations/colors)에서 볼 수 있습니다.
+
+## 상태 어휘 매핑 가이드
+
+같은 의미에는 같은 variant를 쓰면 화면마다 색이 달라지지 않습니다.
+
+| variant   | 의미             | 예시                               |
+| --------- | ---------------- | ---------------------------------- |
+| `neutral` | 대기, 중립       | 접수대기, 미노출, 숨김, MAINT.     |
+| `info`    | 진행, 안내       | 검토중, 처리중                     |
+| `success` | 정상, 완료, 승인 | NORMAL, 처리완료, 승인, 노출, 공개 |
+| `warning` | 주의, 지연       | DELAY, 확인중, 확정 필요           |
+| `danger`  | 오류, 거절, 반려 | ERROR, 반려, 이용정지              |
+| `purple`  | 특별, 검증       | VALID, 검증                        |
+
+<Preview style={{ flexDirection: "column", alignItems: "flex-start" }}>
+  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+    <Badge variant="neutral">접수대기</Badge>
+    <Badge variant="info">검토중</Badge>
+    <Badge variant="success">처리완료</Badge>
+    <Badge variant="danger">반려</Badge>
+  </div>
+  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+    <Badge variant="success">NORMAL</Badge>
+    <Badge variant="warning">DELAY</Badge>
+    <Badge variant="danger">ERROR</Badge>
+  </div>
+</Preview>
+
 ## Props
 
-| Prop        | 타입                   | 기본값 | 설명                                  |
-| ----------- | ---------------------- | ------ | ------------------------------------- |
-| `children`  | `ReactNode`            | -      | **필수.** 라벨 내용                   |
-| `className` | `string`               | -      | 추가 클래스 (`tailwind-merge`로 병합) |
-| `ref`       | `Ref<HTMLSpanElement>` | -      | React 19 `ref` prop                   |
+| Prop        | 타입                                                                    | 기본값      | 설명                                  |
+| ----------- | ----------------------------------------------------------------------- | ----------- | ------------------------------------- |
+| `children`  | `ReactNode`                                                             | -           | **필수.** 라벨 내용                   |
+| `variant`   | `"neutral" \| "info" \| "success" \| "warning" \| "danger" \| "purple"` | `"neutral"` | 색상. 의미별 권장은 위 표 참고        |
+| `className` | `string`                                                                | -           | 추가 클래스 (`tailwind-merge`로 병합) |
+| `ref`       | `Ref<HTMLSpanElement>`                                                  | -           | React 19 `ref` prop                   |
 
-나머지 `<span>` 속성은 그대로 전달됩니다. variant나 size는 없고 단일 스타일입니다.
+나머지 `<span>` 속성은 그대로 전달됩니다. 크기 옵션은 없고 한 가지 크기(11px)입니다.
