@@ -1,7 +1,12 @@
 import { useId } from "react";
 import type { ReactNode } from "react";
 import { cn } from "../../utils/cn";
-import type { FieldSize } from "./fieldSize";
+import {
+  fieldHelpClass,
+  fieldLabelClass,
+  fieldLabelOffsetClass,
+  type FieldSize,
+} from "./fieldSize";
 
 export type FieldOrientation = "vertical" | "horizontal";
 
@@ -14,7 +19,7 @@ export type FieldLabelMode = "for" | "group";
 
 /**
  * 가로 배치에서 라벨의 세로 위치를 어디에 맞출지.
- * - `field`: 입력 박스(md 42px, sm 36px)의 첫 줄(Input, Textarea, Select)
+ * - `field`: 입력 박스(sm 36 · md 42 · lg 48 · xl 56px)의 첫 줄(Input, Textarea, Select)
  * - `first-row`: 첫 번째 옵션 줄(CheckboxGroup, RadioGroup)
  */
 export type FieldLabelAlign = "field" | "first-row";
@@ -90,10 +95,10 @@ export function FieldLayout({
   const labelProps = {
     style: horizontal ? { width: labelWidth } : undefined,
     className: cn(
-      "font-fds text-label-1-normal text-text-secondary",
-      // 가로 배치: 라벨 줄(20px)의 중심을 입력 박스(md 42px, sm 36px) 첫 줄의 중심에 맞춘다. 묶음은 첫 옵션 줄(20px)과 위쪽을 맞춘다.
-      horizontal &&
-        cn("shrink-0", labelAlign === "field" && (size === "sm" ? "pt-2" : "pt-[11px]")),
+      "font-fds text-text-secondary",
+      fieldLabelClass[size],
+      // 가로 배치: 라벨 줄(20px)의 중심을 입력 박스 첫 줄의 중심에 맞춘다. 묶음은 첫 옵션 줄(20px)과 위쪽을 맞춘다.
+      horizontal && cn("shrink-0", labelAlign === "field" && fieldLabelOffsetClass[size]),
     ),
   };
   const labelContent = (
@@ -128,13 +133,17 @@ export function FieldLayout({
   });
 
   const errorElement = hasError && (
-    <p id={errorId} role="alert" className="m-0 font-fds text-caption-2 text-brand-error">
+    <p
+      id={errorId}
+      role="alert"
+      className={cn("m-0 font-fds text-brand-error", fieldHelpClass[size])}
+    >
       {error}
     </p>
   );
 
   const descriptionElement = showDescription && (
-    <p id={descriptionId} className="m-0 font-fds text-caption-2 text-text-caption">
+    <p id={descriptionId} className={cn("m-0 font-fds text-text-caption", fieldHelpClass[size])}>
       {description}
     </p>
   );

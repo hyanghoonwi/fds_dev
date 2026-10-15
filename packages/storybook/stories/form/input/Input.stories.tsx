@@ -11,7 +11,7 @@ const meta = {
   argTypes: {
     label: { control: "text" },
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
-    size: { control: "inline-radio", options: ["sm", "md"] },
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     labelWidth: { control: "number" },
     leftAddon: { control: false },
     rightAddon: { control: false },
@@ -37,12 +37,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// sm(36px)은 Button md와 한 줄에 놓을 때 높이가 맞는다. md(42px)가 기본
+// 박스 높이: sm 36 · md 42(기본) · lg 48 · xl 56px. sm은 Button md(36px)와 한 줄에 놓을 때 높이가 맞는다
 export const Sizes: Story = {
   render: (args) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <Input {...args} size="md" placeholder="md (기본)" />
-      <Input {...args} size="sm" placeholder="sm" />
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Input key={size} {...args} size={size} placeholder={size} leftAddon={<SearchIcon />} />
+      ))}
       <div style={{ display: "flex", gap: 8 }}>
         <Input {...args} size="sm" placeholder="검색어" leftAddon={<SearchIcon />} />
         <Button variant="primary">조회</Button>

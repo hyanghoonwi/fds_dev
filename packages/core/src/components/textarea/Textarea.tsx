@@ -4,15 +4,18 @@ import type { ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
+import { fieldHelpClass, type FieldSize } from "../_internal/fieldSize";
 
 export interface TextareaProps extends Omit<
   React.ComponentProps<"textarea">,
-  "value" | "onChange"
+  "value" | "onChange" | "size"
 > {
+  /** 크기. 글자와 박스 패딩이 `Input`과 같은 단계로 바뀐다(`sm` · `md` · `lg` · `xl`). 기본 `md` */
+  size?: FieldSize;
   value: string;
   onChange: (value: string) => void;
   /**
-   * 필드 박스(배경·패딩을 가진 입력 영역)의 최소 높이(px). 기본 86 — 빈 상태에서도 정확히 3줄이 보인다.
+   * 필드 박스(배경·패딩을 가진 입력 영역)의 최소 높이(px). 기본은 빈 상태에서도 정확히 3줄이 보이는 높이(`md` 기준 86).
    * 박스가 내용 높이만큼만 잡히면 비어 있을 때 한 줄짜리 Input처럼 보이고 입력할 때마다 높이가 바뀌어
    * 아래 항목이 밀리므로, 기본으로 최소 높이를 둔다. 채팅 입력창처럼 한 줄에서 시작하려면 `42`를 준다.
    */
@@ -45,15 +48,45 @@ export interface TextareaProps extends Omit<
   containerClassName?: string;
 }
 
-// 필드 박스의 위아래 패딩 합(p-2.5 × 2). minHeight/maxHeight는 박스 기준이라 textarea 높이에서 이만큼 뺀다.
-const FIELD_PADDING_Y = 20;
+// 크기별 박스 패딩, 글자, 위아래 패딩 합(`paddingY`), 3줄이 보이는 기본 최소 높이.
+// minHeight/maxHeight는 박스 기준이라 textarea 높이에서 paddingY만큼 뺀다.
+const textareaSizes: Record<
+  FieldSize,
+  { box: string; text: string; paddingY: number; minHeight: number }
+> = {
+  sm: {
+    box: "px-2.5 py-[9px]",
+    text: "text-[13px] leading-[1.385] tracking-[0.0194em]",
+    paddingY: 18,
+    minHeight: 72,
+  },
+  md: {
+    box: "p-2.5",
+    text: "text-sm leading-[1.571] tracking-[0.0145em]",
+    paddingY: 20,
+    minHeight: 86,
+  },
+  lg: {
+    box: "px-3 py-3",
+    text: "text-base leading-normal tracking-[0.0057em]",
+    paddingY: 24,
+    minHeight: 96,
+  },
+  xl: {
+    box: "px-4 py-[15px]",
+    text: "text-[18px] leading-[1.445] tracking-[-0.0002em]",
+    paddingY: 30,
+    minHeight: 108,
+  },
+};
 
 // 폼용 여러 줄 입력. 박스는 `minHeight`(기본 3줄)에서 시작해 내용에 맞춰 `maxHeight`까지 늘어난다.
 // Figma Text Field(408:3685)의 채팅 입력창은 `minHeight={42} maxHeight={86}`으로 만든다.
 export function Textarea({
   value,
   onChange,
-  minHeight = 86,
+  size = "md",
+  minHeight: minHeightProp,
   maxHeight = 240,
   showCount = false,
   maxLength,
@@ -71,11 +104,13 @@ export function Textarea({
   "aria-describedby": describedBy,
   ...props
 }: TextareaProps) {
+  const sizeStyle = textareaSizes[size];
+  const minHeight = minHeightProp ?? sizeStyle.minHeight;
   const innerRef = useRef<HTMLTextAreaElement>(null);
   const countId = useId();
   // 박스 기준 값을 textarea 기준으로 바꾼다. maxHeight가 minHeight보다 작으면 minHeight로 본다.
-  const textareaMinHeight = Math.max(minHeight - FIELD_PADDING_Y, 0);
-  const textareaMaxHeight = Math.max(maxHeight - FIELD_PADDING_Y, textareaMinHeight);
+  const textareaMinHeight = Math.max(minHeight - sizeStyle.paddingY, 0);
+  const textareaMaxHeight = Math.max(maxHeight - sizeStyle.paddingY, textareaMinHeight);
 
   // 높이 = clamp(내용 높이, 최소, 최대). textarea가 박스 안쪽을 꽉 채우므로 박스 어디를 눌러도 입력창이 눌린다.
   useLayoutEffect(() => {
@@ -104,7 +139,8 @@ export function Textarea({
     <span
       id={countId}
       className={cn(
-        "self-start font-fds text-caption-2 tabular-nums",
+        "self-start font-fds tabular-nums",
+        fieldHelpClass[size],
         overLimit ? "text-brand-error" : "text-text-caption",
       )}
     >
@@ -118,6 +154,7 @@ export function Textarea({
       label={label}
       orientation={orientation}
       labelWidth={labelWidth}
+      size={size}
       required={required}
       description={description}
       error={error}
@@ -129,7 +166,8 @@ export function Textarea({
         <div
           onMouseDown={focusTextarea}
           className={cn(
-            "flex w-full flex-col rounded-12 bg-bg-input p-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            "flex w-full flex-col rounded-12 bg-bg-input ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            sizeStyle.box,
             field.invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
             props.disabled && "cursor-not-allowed opacity-50",
           )}
@@ -146,7 +184,8 @@ export function Textarea({
             id={field.id}
             required={required}
             className={cn(
-              "box-border w-full resize-none overflow-auto bg-transparent font-fds text-sm leading-[1.571] tracking-[0.0145em] text-text-primary caret-brand-primary outline-none",
+              "box-border w-full resize-none overflow-auto bg-transparent font-fds text-text-primary caret-brand-primary outline-none",
+              sizeStyle.text,
               "placeholder:text-text-tertiary",
               "disabled:cursor-not-allowed",
               className,

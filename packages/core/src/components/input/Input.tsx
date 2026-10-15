@@ -2,12 +2,17 @@ import type { ComponentProps, MouseEvent, ReactNode, Ref } from "react";
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
-import { fieldTextClass, type FieldSize } from "../_internal/fieldSize";
+import {
+  fieldIconClass,
+  fieldPaddingXClass,
+  fieldTextClass,
+  type FieldSize,
+} from "../_internal/fieldSize";
 
 export type InputOrientation = FieldOrientation;
 
 export interface InputProps extends Omit<ComponentProps<"input">, "size"> {
-  /** 크기. `md`는 높이 42px, `sm`은 36px(Button md와 같은 줄에 놓을 때 맞는 높이). 기본 `md` */
+  /** 크기. 박스 높이는 `sm` 36 · `md` 42 · `lg` 48 · `xl` 56px. 기본 `md` */
   size?: FieldSize;
   /** 입력 필드 라벨. 생략하면 라벨 영역이 렌더링되지 않는다. */
   label?: ReactNode;
@@ -91,14 +96,20 @@ export function Input({
           ref={fieldRef}
           onMouseDown={focusInput}
           className={cn(
-            "flex w-full items-center gap-2 rounded-12 bg-bg-input px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            "flex w-full items-center gap-2 rounded-12 bg-bg-input ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+            fieldPaddingXClass[size],
             (field.invalid || invalidProp) &&
               "ring-1 ring-brand-error focus-within:ring-brand-error",
             props.disabled && "cursor-not-allowed opacity-50",
           )}
         >
           {leftAddon && (
-            <span className="flex shrink-0 items-center font-fds text-sm text-text-icon-default [&>svg]:size-5">
+            <span
+              className={cn(
+                "flex shrink-0 items-center font-fds text-sm text-text-icon-default",
+                fieldIconClass[size],
+              )}
+            >
               {leftAddon}
             </span>
           )}
@@ -119,7 +130,12 @@ export function Input({
             {...props}
           />
           {rightAddon && (
-            <span className="flex shrink-0 items-center font-fds text-sm text-text-tertiary [&>svg]:size-5 [&>svg]:text-text-icon-default">
+            <span
+              className={cn(
+                "flex shrink-0 items-center font-fds text-sm text-text-tertiary [&>svg]:text-text-icon-default",
+                fieldIconClass[size],
+              )}
+            >
               {rightAddon}
             </span>
           )}

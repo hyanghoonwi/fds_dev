@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useArgs } from "storybook/preview-api";
 import { Switch } from "@fds/core";
+import { useState } from "react";
 
 const meta = {
   title: "Components/Form/Switch",
@@ -10,6 +11,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     onChange: { control: false },
   },
   args: {
@@ -35,4 +37,18 @@ export const Checked: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true },
+};
+
+// 트랙: sm 40×24 · md 50×30(기본) · lg 60×36 · xl 70×42px
+export const Sizes: Story = {
+  render: function Render(args) {
+    const [checked, setChecked] = useState(true);
+    return (
+      <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+        {(["sm", "md", "lg", "xl"] as const).map((size) => (
+          <Switch key={size} {...args} size={size} checked={checked} onChange={setChecked} />
+        ))}
+      </div>
+    );
+  },
 };

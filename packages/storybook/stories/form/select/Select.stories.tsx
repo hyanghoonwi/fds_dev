@@ -150,7 +150,7 @@ const meta = {
     docs: { story: { height: "300px" } },
   },
   argTypes: {
-    size: { control: "inline-radio", options: ["sm", "md"] },
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     disabled: { control: "boolean" },
     invalid: { control: "boolean" },
     label: { control: "text" },
@@ -185,13 +185,14 @@ type MultipleStory = StoryObj<MultipleSelectProps>;
 
 export const Default: Story = {};
 
-// sm(36px) / md(42px, 기본). 검색형도 같은 크기를 따른다
+// sm 36 · md 42(기본) · lg 48 · xl 56px. 검색형도 같은 크기를 따른다
 export const Sizes: Story = {
   render: (args) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <Select {...args} size="md" placeholder="md (기본)" />
-      <Select {...args} size="sm" placeholder="sm" />
-      <Select {...args} size="sm" search placeholder="sm · 검색형" />
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Select key={size} {...args} size={size} placeholder={size} />
+      ))}
+      <Select {...args} size="lg" search placeholder="lg · 검색형" />
     </div>
   ),
 };

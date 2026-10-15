@@ -11,7 +11,12 @@ import type {
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
-import { fieldTextClass, type FieldSize } from "../_internal/fieldSize";
+import {
+  fieldOptionTextClass,
+  fieldPaddingXClass,
+  fieldTextClass,
+  type FieldSize,
+} from "../_internal/fieldSize";
 import { CheckIcon } from "../icon/CheckIcon";
 import { Chip } from "../chip/Chip";
 import { ChevronDownIcon } from "../icon/ChevronDownIcon";
@@ -50,7 +55,7 @@ interface SelectBaseProps extends Omit<
   "value" | "defaultValue" | "onChange" | "children" | "role" | "type" | "name" | "required" | "ref"
 > {
   options: SelectOption[];
-  /** 크기. `md`는 높이 42px, `sm`은 36px. 기본 `md` */
+  /** 크기. 박스 높이는 `sm` 36 · `md` 42 · `lg` 48 · `xl` 56px. 기본 `md` */
   size?: FieldSize;
   /**
    * 트리거에 연결되는 ref. 기본은 `<button>`이고, `search`를 켜면 텍스트 `<input>`이다.
@@ -126,7 +131,7 @@ export type SelectProps = SelectBaseProps & (SelectSingleProps | SelectMultipleP
 // 타입어헤드 입력이 이어지는 것으로 보는 간격(ms)
 const TYPEAHEAD_RESET_MS = 600;
 
-// 트리거는 Input의 필드 박스와 같은 모양(bg-page, radius 12, 높이 md 42px · sm 36px)이다.
+// 트리거는 Input의 필드 박스와 같은 모양(bg-page, radius 12, 높이 sm 36 · md 42 · lg 48 · xl 56px)이다.
 export function Select({
   options,
   multiple = false,
@@ -598,7 +603,8 @@ export function Select({
                     <div
                       ref={anchorRef}
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-12 bg-bg-input px-2.5 ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+                        "flex w-full items-center gap-2 rounded-12 bg-bg-input ring-inset focus-within:ring-1 focus-within:ring-brand-primary",
+                        fieldPaddingXClass[size],
                         invalid && "ring-1 ring-brand-error focus-within:ring-brand-error",
                         disabled && "cursor-not-allowed opacity-50",
                         className,
@@ -708,7 +714,8 @@ export function Select({
                       onKeyDown={handleKeyDown}
                       onClick={handleClick}
                       className={cn(
-                        "flex w-full cursor-pointer items-center justify-between gap-2 rounded-12 bg-bg-input px-2.5 text-left font-fds ring-inset outline-none focus:ring-1 focus:ring-brand-primary",
+                        "flex w-full cursor-pointer items-center justify-between gap-2 rounded-12 bg-bg-input text-left font-fds ring-inset outline-none focus:ring-1 focus:ring-brand-primary",
+                        fieldPaddingXClass[size],
                         fieldTextClass[size],
                         invalid && "ring-1 ring-brand-error focus:ring-brand-error",
                         disabled && "cursor-not-allowed opacity-50",
@@ -752,7 +759,10 @@ export function Select({
                 {searchable && loading && (
                   <div
                     role="presentation"
-                    className="flex items-center justify-center gap-2 px-2.5 py-3 font-fds text-sm text-text-caption"
+                    className={cn(
+                      "flex items-center justify-center gap-2 px-2.5 py-3 font-fds text-text-caption",
+                      fieldOptionTextClass[size],
+                    )}
                   >
                     <Spinner size={16} />
                     불러오는 중…
@@ -761,7 +771,10 @@ export function Select({
                 {searchable && !loading && list.length === 0 && (
                   <div
                     role="presentation"
-                    className="px-2.5 py-3 text-center font-fds text-sm text-text-caption"
+                    className={cn(
+                      "px-2.5 py-3 text-center font-fds text-text-caption",
+                      fieldOptionTextClass[size],
+                    )}
                   >
                     {emptyMessage}
                   </div>
@@ -781,7 +794,8 @@ export function Select({
                       onClick={() => select(index)}
                       onMouseMove={() => !optionDisabled && !active && setActiveIndex(index)}
                       className={cn(
-                        "flex cursor-pointer items-center justify-between gap-2 rounded-8 px-2.5 py-2 font-fds text-sm select-none",
+                        "flex cursor-pointer items-center justify-between gap-2 rounded-8 px-2.5 py-2 font-fds select-none",
+                        fieldOptionTextClass[size],
                         selected
                           ? "bg-bg-blue-tint font-semibold text-brand-primary"
                           : "text-text-primary",

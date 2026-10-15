@@ -33,7 +33,7 @@ const meta = {
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
     error: { control: "text" },
     required: { control: "boolean" },
-    size: { control: "inline-radio", options: ["sm", "md"] },
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     disabled: { control: "boolean" },
     placeholder: { control: "text" },
     value: { control: false },
@@ -56,12 +56,13 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {};
 
-// sm(36px) / md(42px, 기본). TimePicker·DateTimePicker·DateRangePicker도 같은 size를 받는다
+// sm 36 · md 42(기본) · lg 48 · xl 56px. TimePicker·DateTimePicker·DateRangePicker도 같은 size를 받는다
 export const Sizes: Story = {
   render: (args) => (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <DatePicker {...args} size="md" placeholder="md (기본)" />
-      <DatePicker {...args} size="sm" placeholder="sm" />
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <DatePicker key={size} {...args} size={size} placeholder={size} />
+      ))}
     </div>
   ),
 };

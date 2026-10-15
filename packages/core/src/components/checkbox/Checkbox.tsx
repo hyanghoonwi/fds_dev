@@ -3,13 +3,16 @@ import type { ChangeEvent, ComponentProps, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
+import { choiceSizeClass, type ComponentSize } from "../_internal/fieldSize";
 import { CheckIcon } from "../icon/CheckIcon";
 import { MinusIcon } from "../icon/MinusIcon";
 
 export interface CheckboxProps extends Omit<
   ComponentProps<"input">,
-  "type" | "checked" | "defaultChecked" | "onChange" | "className" | "children"
+  "type" | "checked" | "defaultChecked" | "onChange" | "className" | "children" | "size"
 > {
+  /** 크기. 박스 한 변은 `sm` 16 · `md` 20 · `lg` 24 · `xl` 28px. 기본 `md` */
+  size?: ComponentSize;
   /** 체크 여부 (제어 모드) */
   checked?: boolean;
   /** 초기 체크 여부 (비제어 모드) */
@@ -46,6 +49,7 @@ export function Checkbox({
   defaultChecked,
   onChange,
   indeterminate = false,
+  size = "md",
   label,
   description,
   error,
@@ -110,7 +114,8 @@ export function Checkbox({
         <span
           aria-hidden="true"
           className={cn(
-            "relative inline-flex size-5 shrink-0 items-center justify-center rounded-6 border bg-bg-surface text-white transition-colors",
+            "relative inline-flex shrink-0 items-center justify-center rounded-6 border bg-bg-surface text-white transition-colors",
+            choiceSizeClass[size].box,
             invalid ? "border-brand-error" : "border-border-strong",
             // 체크 / 부분 선택: 파란 배경. 아이콘은 :checked / :indeterminate에 따라 하나만 보인다.
             "peer-checked:border-brand-primary peer-checked:bg-brand-primary",
@@ -121,14 +126,19 @@ export function Checkbox({
             "peer-focus-visible:ring-2 peer-focus-visible:ring-brand-primary/40 peer-focus-visible:ring-offset-1 peer-focus-visible:ring-offset-bg-surface",
           )}
         >
-          <CheckIcon size={18} className="fds-check hidden" />
-          <MinusIcon size={10} className="fds-minus hidden" />
+          <CheckIcon size={choiceSizeClass[size].check} className="fds-check hidden" />
+          <MinusIcon size={choiceSizeClass[size].minus} className="fds-minus hidden" />
         </span>
         {(label || showDescription) && (
           <span className="flex min-w-0 flex-col">
-            {label && <span className="text-sm leading-5 text-text-primary">{label}</span>}
+            {label && (
+              <span className={cn("text-text-primary", choiceSizeClass[size].label)}>{label}</span>
+            )}
             {showDescription && (
-              <span id={descriptionId} className="text-caption-2 text-text-caption">
+              <span
+                id={descriptionId}
+                className={cn("text-text-caption", choiceSizeClass[size].help)}
+              >
                 {description}
               </span>
             )}
@@ -136,7 +146,15 @@ export function Checkbox({
         )}
       </label>
       {hasError && (
-        <p id={errorId} role="alert" className="m-0 pl-7 font-fds text-caption-2 text-brand-error">
+        <p
+          id={errorId}
+          role="alert"
+          className={cn(
+            "m-0 font-fds text-brand-error",
+            choiceSizeClass[size].help,
+            choiceSizeClass[size].indent,
+          )}
+        >
           {error}
         </p>
       )}
@@ -166,6 +184,8 @@ export interface CheckboxGroupProps extends Omit<
    * `options`에 없는 값은 포함되지 않는다.
    */
   onChange?: (value: string[]) => void;
+  /** 모든 체크박스의 크기. 기본 `md` */
+  size?: ComponentSize;
   /** 옵션들의 배치 방향. `horizontal`은 한 줄로 늘어놓고 넘치면 줄바꿈한다. */
   direction?: "vertical" | "horizontal";
   /** 묶음의 제목. 생략하면 제목 영역이 렌더링되지 않는다. 묶음에 `aria-labelledby`로 연결된다. */
@@ -198,6 +218,7 @@ export function CheckboxGroup({
   value,
   defaultValue = [],
   onChange,
+  size,
   direction = "vertical",
   label,
   orientation,
@@ -239,6 +260,7 @@ export function CheckboxGroup({
       required={required}
       description={description}
       error={error}
+      size={size}
       id={id}
       labelMode="group"
       labelAlign="first-row"
@@ -262,6 +284,7 @@ export function CheckboxGroup({
             <Checkbox
               key={option.value}
               name={name}
+              size={size}
               value={option.value}
               label={option.label}
               description={option.description}

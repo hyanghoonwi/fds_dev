@@ -3,6 +3,7 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { FieldLayout } from "../_internal/FieldLayout";
 import type { FieldOrientation } from "../_internal/FieldLayout";
+import { choiceSizeClass, type ComponentSize } from "../_internal/fieldSize";
 
 export interface RadioOption {
   /** 선택값. 폼에는 이 값이 제출된다. */
@@ -24,6 +25,8 @@ export interface RadioGroupProps extends Omit<
 > {
   /** 선택지 목록 */
   options: RadioOption[];
+  /** 크기. 원 지름은 `sm` 16 · `md` 20 · `lg` 24 · `xl` 28px. 기본 `md` */
+  size?: ComponentSize;
   /** 선택된 값 (제어 모드). `null`은 "선택 안 함"이다. */
   value?: string | null;
   /** 처음 선택될 값 (비제어 모드) */
@@ -64,6 +67,7 @@ export function RadioGroup({
   value,
   defaultValue = null,
   onChange,
+  size = "md",
   name,
   direction = "vertical",
   label,
@@ -102,6 +106,7 @@ export function RadioGroup({
       required={required}
       description={description}
       error={error}
+      size={size}
       id={id}
       labelMode="group"
       labelAlign="first-row"
@@ -158,7 +163,8 @@ export function RadioGroup({
                   <span
                     aria-hidden="true"
                     className={cn(
-                      "flex size-5 shrink-0 items-center justify-center rounded-full border bg-bg-surface transition-colors",
+                      "flex shrink-0 items-center justify-center rounded-full border bg-bg-surface transition-colors",
+                      choiceSizeClass[size].box,
                       "peer-focus-visible:ring-2 peer-focus-visible:ring-brand-primary peer-focus-visible:ring-offset-1",
                       invalid
                         ? "border-brand-error peer-checked:border-brand-error"
@@ -169,19 +175,20 @@ export function RadioGroup({
                   >
                     <span
                       className={cn(
-                        "size-2.5 scale-0 rounded-full transition-transform",
+                        "scale-0 rounded-full transition-transform",
+                        choiceSizeClass[size].dot,
                         invalid ? "bg-brand-error" : "bg-brand-primary",
                       )}
                     />
                   </span>
                   <span className="flex flex-col gap-0.5">
-                    <span className="font-fds text-sm leading-5 text-text-primary">
+                    <span className={cn("font-fds text-text-primary", choiceSizeClass[size].label)}>
                       {option.label}
                     </span>
                     {option.description && (
                       <span
                         id={descriptionId}
-                        className="font-fds text-caption-2 text-text-caption"
+                        className={cn("font-fds text-text-caption", choiceSizeClass[size].help)}
                       >
                         {option.description}
                       </span>

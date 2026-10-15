@@ -11,6 +11,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     onChange: { control: false },
     showCount: { control: "boolean" },
     maxLength: { control: "number" },
@@ -236,6 +237,27 @@ export const MinHeight: Story = {
           value={chat}
           onChange={setChat}
         />
+      </div>
+    );
+  },
+};
+
+// 기본 높이는 빈 상태에서 3줄이 보이는 높이다: sm 72 · md 86(기본) · lg 96 · xl 108px
+export const Sizes: Story = {
+  render: function Render(args) {
+    const [value, setValue] = useState("");
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {(["sm", "md", "lg", "xl"] as const).map((size) => (
+          <Textarea
+            key={size}
+            {...args}
+            size={size}
+            placeholder={size}
+            value={value}
+            onChange={setValue}
+          />
+        ))}
       </div>
     );
   },

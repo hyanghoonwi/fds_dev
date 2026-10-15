@@ -12,6 +12,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     direction: { control: "inline-radio", options: ["vertical", "horizontal"] },
     orientation: { control: "inline-radio", options: ["vertical", "horizontal"] },
     label: { control: "text" },
@@ -334,4 +335,25 @@ export const WithError: Story = {
       />
     );
   },
+};
+
+// 원 지름: sm 16 · md 20(기본) · lg 24 · xl 28px
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", gap: 32 }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <RadioGroup
+          key={size}
+          {...args}
+          size={size}
+          name={`size-${size}`}
+          options={[
+            { value: "a", label: `${size} · 첫째` },
+            { value: "b", label: `${size} · 둘째` },
+          ]}
+          defaultValue="a"
+        />
+      ))}
+    </div>
+  ),
 };

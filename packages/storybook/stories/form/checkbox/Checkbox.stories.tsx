@@ -10,6 +10,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     checked: { control: "boolean" },
     indeterminate: { control: "boolean" },
     disabled: { control: "boolean" },
@@ -353,4 +354,15 @@ export const SingleWithError: Story = {
       />
     );
   },
+};
+
+// 박스: sm 16 · md 20(기본) · lg 24 · xl 28px
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Checkbox key={size} {...args} size={size} label={size} defaultChecked />
+      ))}
+    </div>
+  ),
 };
