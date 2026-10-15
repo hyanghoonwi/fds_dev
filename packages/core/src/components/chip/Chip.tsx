@@ -1,8 +1,22 @@
 import type { ComponentProps, ReactNode } from "react";
 import { cn } from "../../utils/cn";
 import { CloseIcon } from "../icon/CloseIcon";
+import type { ComponentSize } from "../_internal/fieldSize";
+
+// 크기별 글자·패딩. `remove`는 삭제 버튼이 있을 때의 좌우 패딩, `icon`은 × 아이콘 크기(px)
+const chipSizes: Record<
+  ComponentSize,
+  { box: string; remove: string; plain: string; icon: number }
+> = {
+  sm: { box: "py-0 text-caption-2", remove: "pr-1 pl-1.5", plain: "px-1.5", icon: 8 },
+  md: { box: "py-0.5 text-caption-1", remove: "pr-1.5 pl-2", plain: "px-2", icon: 10 },
+  lg: { box: "py-1 text-[13px] leading-[1.385]", remove: "pr-2 pl-2.5", plain: "px-2.5", icon: 12 },
+  xl: { box: "py-1.5 text-sm leading-[1.429]", remove: "pr-2.5 pl-3", plain: "px-3", icon: 14 },
+};
 
 export interface ChipProps extends Omit<ComponentProps<"span">, "children"> {
+  /** 크기. 기본 `md` */
+  size?: ComponentSize;
   /** 칩에 보이는 문구 */
   label: ReactNode;
   /**
@@ -22,6 +36,7 @@ export interface ChipProps extends Omit<ComponentProps<"span">, "children"> {
  */
 export function Chip({
   label,
+  size = "md",
   onRemove,
   removeLabel,
   disabled,
@@ -36,8 +51,9 @@ export function Chip({
     <span
       ref={ref}
       className={cn(
-        "inline-flex max-w-full items-center gap-1 rounded-8 border border-line-2 bg-bg-surface py-0.5 font-fds text-caption-1 text-text-primary",
-        onRemove ? "pr-1.5 pl-2" : "px-2",
+        "inline-flex max-w-full items-center gap-1 rounded-8 border border-line-2 bg-bg-surface font-fds text-text-primary",
+        chipSizes[size].box,
+        onRemove ? chipSizes[size].remove : chipSizes[size].plain,
         disabled && "opacity-50",
         className,
       )}
@@ -52,7 +68,7 @@ export function Chip({
           onClick={onRemove}
           className="flex shrink-0 cursor-pointer items-center rounded-full text-text-icon-default hover:text-text-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-primary disabled:cursor-not-allowed"
         >
-          <CloseIcon aria-hidden="true" size={10} />
+          <CloseIcon aria-hidden="true" size={chipSizes[size].icon} />
         </button>
       )}
     </span>

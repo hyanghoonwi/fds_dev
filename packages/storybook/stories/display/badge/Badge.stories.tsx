@@ -9,6 +9,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     variant: {
       control: "select",
       options: ["neutral", "info", "success", "warning", "danger", "purple"],
@@ -104,5 +105,16 @@ export const StatusVocabulary: Story = {
         ))}
       </tbody>
     </table>
+  ),
+};
+
+// sm · md(기본) · lg · xl
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Badge key={size} {...args} size={size} />
+      ))}
+    </div>
   ),
 };

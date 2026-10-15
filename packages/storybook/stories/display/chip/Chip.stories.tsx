@@ -9,6 +9,7 @@ const meta = {
   tags: ["autodocs"],
   parameters: { layout: "centered" },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     label: { control: "text" },
     disabled: { control: "boolean" },
     removeLabel: { control: "text" },
@@ -67,4 +68,15 @@ export const List: Story = {
       </ul>
     );
   },
+};
+
+// sm · md(기본) · lg · xl
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Chip key={size} {...args} size={size} onRemove={() => {}} />
+      ))}
+    </div>
+  ),
 };
