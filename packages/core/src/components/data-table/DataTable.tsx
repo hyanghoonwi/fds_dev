@@ -120,6 +120,7 @@ export function DataTable<T extends object>({
   onSelectedIdsChange,
   onRowClick,
   pagination,
+  size = "md",
   loading = false,
   emptyMessage = "데이터가 없어요.",
   ...tableProps
@@ -184,12 +185,13 @@ export function DataTable<T extends object>({
 
   return (
     <div className="flex flex-col gap-4">
-      <Table aria-busy={loading || undefined} {...tableProps}>
+      <Table size={size} aria-busy={loading || undefined} {...tableProps}>
         <Table.Header>
           <Table.Row>
             {selectable && (
               <Table.Head className="w-12">
                 <Checkbox
+                  size={size}
                   aria-label="현재 목록 전체 선택"
                   checked={allSelected}
                   indeterminate={selectedVisibleCount > 0 && !allSelected}
@@ -235,6 +237,7 @@ export function DataTable<T extends object>({
                   {selectable && (
                     <Table.Cell onClick={(event) => event.stopPropagation()}>
                       <Checkbox
+                        size={size}
                         aria-label="행 선택"
                         checked={selected}
                         onChange={(checked) => toggleRow(id, checked)}
@@ -261,6 +264,7 @@ export function DataTable<T extends object>({
           totalCount={totalCount}
           page={currentPage}
           onPageChange={setPage}
+          size={size}
           pageSize={pageSize}
           onPageSizeChange={setPageSize}
         />

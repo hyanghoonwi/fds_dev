@@ -43,6 +43,7 @@ const meta = {
     layout: "padded",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     striped: { control: "boolean" },
     selectable: { control: "boolean" },
     loading: { control: "boolean" },
@@ -229,6 +230,17 @@ export const RowClick: Story = {
       </div>
     );
   },
+};
+
+// 행 밀도: 열 제목/셀 높이가 sm 36/40 · md 44/48(기본) · lg 48/56 · xl 56/64px. 선택 체크박스와 페이지네이션도 같은 크기를 따른다
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <DataTable key={size} {...args} size={size} selectable data={members.slice(0, 3)} />
+      ))}
+    </div>
+  ),
 };
 
 // 클라이언트 페이징: data 전체를 넘기면 pageSize씩 잘라 보여 준다

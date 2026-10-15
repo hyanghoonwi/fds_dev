@@ -4,6 +4,7 @@ import { cn } from "../../utils/cn";
 import { ChevronDownIcon } from "../icon/ChevronDownIcon";
 import { ChevronUpIcon } from "../icon/ChevronUpIcon";
 import { SortIcon } from "../icon/SortIcon";
+import type { ComponentSize } from "../_internal/fieldSize";
 
 type Align = "left" | "center" | "right";
 
@@ -19,19 +20,30 @@ const alignClass: Record<Align, string> = {
   right: "text-right",
 };
 
+// 크기별 행 밀도. 열 제목/셀의 높이·좌우 패딩을 표 단위로 정한다(sm: 36/40px · md: 44/48px · lg: 48/56px · xl: 56/64px).
+const tableSizes: Record<ComponentSize, string> = {
+  sm: "text-[13px] [&_th]:h-9 [&_th]:px-3 [&_td]:h-10 [&_td]:px-3",
+  md: "text-sm [&_th]:h-11 [&_th]:px-4 [&_td]:h-12 [&_td]:px-4",
+  lg: "text-base [&_th]:h-12 [&_th]:px-4 [&_th]:text-[13px] [&_td]:h-14 [&_td]:px-4",
+  xl: "text-base [&_th]:h-14 [&_th]:px-5 [&_th]:text-sm [&_td]:h-16 [&_td]:px-5",
+};
+
 export interface TableProps extends ComponentProps<"table"> {
+  /** 행 밀도. 열 제목/셀의 높이와 글자 크기가 바뀐다. 기본 `md` */
+  size?: ComponentSize;
   /** 짝수 행에 옅은 배경을 깔아 가로로 읽기 쉽게 한다(지브라). 선택된 행은 선택 색이 우선한다. */
   striped?: boolean;
 }
 
 // 좁은 화면에서 표가 페이지를 밀어내지 않도록 가로 스크롤 상자로 감싼다. className/ref 등은 <table>에 전달된다.
-function TableRoot({ striped, className, ...props }: TableProps) {
+function TableRoot({ striped, size = "md", className, ...props }: TableProps) {
   return (
     <div className="w-full overflow-x-auto rounded-12 border border-line-2 bg-bg-surface">
       <table
         data-striped={striped || undefined}
         className={cn(
-          "w-full border-collapse font-fds text-sm text-text-primary",
+          "w-full border-collapse font-fds text-text-primary",
+          tableSizes[size],
           "data-[striped]:[&_tbody>tr:nth-child(even):not([data-selected])]:bg-bg-page/50",
           className,
         )}
@@ -132,7 +144,7 @@ function TableHead({
       scope={scope}
       aria-sort={onSort ? ariaSort[sort] : undefined}
       className={cn(
-        "h-11 border-b border-line-2 px-4 text-xs font-medium whitespace-nowrap text-text-tertiary",
+        "border-b border-line-2 text-xs font-medium whitespace-nowrap text-text-tertiary",
         alignClass[align],
         className,
       )}
@@ -173,10 +185,7 @@ export interface TableCellProps extends ComponentProps<"td"> {
 /** 데이터 셀(`<td>`) */
 function TableCell({ align = "left", className, ...props }: TableCellProps) {
   return (
-    <td
-      className={cn("h-12 border-b border-border-line px-4", alignClass[align], className)}
-      {...props}
-    />
+    <td className={cn("border-b border-border-line", alignClass[align], className)} {...props} />
   );
 }
 
@@ -191,7 +200,7 @@ function TableEmpty({ colSpan, className, ...props }: TableEmptyProps) {
     <tr>
       <td
         colSpan={colSpan}
-        className={cn("h-40 px-4 text-center text-sm text-text-tertiary", className)}
+        className={cn("h-40! px-4! text-center text-sm text-text-tertiary", className)}
         {...props}
       />
     </tr>
