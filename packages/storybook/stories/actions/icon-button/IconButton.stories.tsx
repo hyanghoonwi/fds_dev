@@ -14,7 +14,7 @@ const meta = {
   argTypes: {
     size: {
       control: "select",
-      options: ["sm", "md"],
+      options: ["sm", "md", "lg", "xl"],
     },
     variant: {
       control: "select",
@@ -37,7 +37,7 @@ export const Line: Story = {
 };
 
 export const Primary: Story = {
-  args: { variant: "primary", size: "md", "aria-label": "전송", children: <PaperPlaneIcon /> },
+  args: { variant: "primary", size: "lg", "aria-label": "전송", children: <PaperPlaneIcon /> },
 };
 
 export const Ghost: Story = {
@@ -45,7 +45,7 @@ export const Ghost: Story = {
 };
 
 export const Ad: Story = {
-  args: { variant: "ad", size: "sm", "aria-label": "광고", children: null },
+  args: { variant: "ad", size: "md", "aria-label": "광고", children: null },
 };
 
 export const Tint: Story = {
@@ -58,4 +58,15 @@ export const Small: Story = {
 
 export const Disabled: Story = {
   args: { disabled: true },
+};
+
+// 지름: sm 32 · md 36(기본) · lg 40 · xl 48px
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <IconButton key={size} {...args} size={size} />
+      ))}
+    </div>
+  ),
 };

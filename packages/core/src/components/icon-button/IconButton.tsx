@@ -6,9 +6,12 @@ const iconButtonVariants = cva(
   "inline-flex shrink-0 items-center justify-center rounded-full border cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 [&_svg]:pointer-events-none",
   {
     variants: {
+      // 지름: sm 32 · md 36 · lg 40 · xl 48px
       size: {
-        sm: "size-9",
-        md: "size-10",
+        sm: "size-8",
+        md: "size-9",
+        lg: "size-10",
+        xl: "size-12",
       },
       variant: {
         line: "border-line-2 bg-bg-elevated text-text-icon-default hover:border-line-1 hover:bg-bg-blue-tint hover:text-brand-primary active:border-line-1 active:bg-bg-blue-tint active:text-brand-primary",
@@ -23,7 +26,7 @@ const iconButtonVariants = cva(
       },
     },
     defaultVariants: {
-      size: "sm",
+      size: "md",
       variant: "line",
     },
   },

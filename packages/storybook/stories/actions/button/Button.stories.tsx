@@ -14,7 +14,7 @@ const meta = {
       control: "select",
       options: ["line", "primary", "tint", "danger"],
     },
-    size: { control: "inline-radio", options: ["sm", "md"] },
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     disabled: { control: "boolean" },
     icon: { control: false },
   },
@@ -47,14 +47,19 @@ export const Disabled: Story = {
   args: { variant: "line", disabled: true },
 };
 
-// sm(28px) / md(36px, 기본)
+// sm(28px) / md(36px, 기본) / lg(44px) / xl(52px)
 export const Sizes: Story = {
   render: (args) => (
-    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-      <Button {...args} size="sm" variant="primary" />
-      <Button {...args} size="md" variant="primary" />
-      <Button {...args} size="sm" variant="line" />
-      <Button {...args} size="md" variant="line" />
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {(["primary", "line"] as const).map((variant) => (
+        <div key={variant} style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {(["sm", "md", "lg", "xl"] as const).map((size) => (
+            <Button key={size} {...args} size={size} variant={variant}>
+              {size}
+            </Button>
+          ))}
+        </div>
+      ))}
     </div>
   ),
 };
