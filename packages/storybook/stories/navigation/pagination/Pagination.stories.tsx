@@ -9,6 +9,7 @@ const meta = {
   tags: ["autodocs"],
   parameters: { layout: "padded", docs: { story: { height: "160px" } } },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     totalCount: { control: "number" },
     page: { control: false },
     defaultPageSize: { control: "number" },
@@ -74,4 +75,15 @@ export const ControlledList: Story = {
       </div>
     );
   },
+};
+
+// 번호 버튼: sm 28 · md 32(기본) · lg 36 · xl 40px. 페이지 크기 선택도 같은 크기를 따른다
+export const Sizes: Story = {
+  render: (args) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {(["sm", "md", "lg", "xl"] as const).map((size) => (
+        <Pagination key={size} {...args} size={size} showTotal pageSizeOptions={[10, 20, 50]} />
+      ))}
+    </div>
+  ),
 };

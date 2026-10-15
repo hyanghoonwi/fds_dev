@@ -1,5 +1,14 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "../../utils/cn";
+import type { ComponentSize } from "../_internal/fieldSize";
+
+// 항목 최소 높이(sm 28 · md 32 · lg 40 · xl 48px)와 글자 크기
+const segmentedSizes: Record<ComponentSize, string> = {
+  sm: "min-h-7 text-[13px] font-medium",
+  md: "min-h-8 text-body-medium-15",
+  lg: "min-h-10 text-base font-medium",
+  xl: "min-h-12 text-lg font-medium",
+};
 
 export interface SegmentedControlItem {
   value: string;
@@ -15,6 +24,8 @@ export interface SegmentedControlProps extends Omit<
   "onChange" | "onClick" | "children"
 > {
   items: SegmentedControlItem[];
+  /** 크기. 기본 `md` */
+  size?: ComponentSize;
   value: string;
   onChange: (value: string) => void;
   /** 이미 활성인 탭을 다시 눌러도 호출된다 (onChange는 값 변경과 무관하게 항상 같이 호출됨) */
@@ -23,6 +34,7 @@ export interface SegmentedControlProps extends Omit<
 
 export function SegmentedControl({
   items,
+  size = "md",
   value,
   onChange,
   onClick,
@@ -95,7 +107,8 @@ export function SegmentedControl({
             }}
             type="button"
             className={cn(
-              "relative z-10 flex min-h-8 min-w-px flex-1 flex-col items-center justify-center gap-0.5 rounded-10 px-2 py-[5px] font-fds text-body-medium-15 transition-colors duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]",
+              "relative z-10 flex min-w-px flex-1 flex-col items-center justify-center gap-0.5 rounded-10 px-2 py-[5px] font-fds transition-colors duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]",
+              segmentedSizes[size],
               isActive
                 ? "text-text-primary"
                 : "text-text-tertiary hover:bg-border-light active:bg-border-light",

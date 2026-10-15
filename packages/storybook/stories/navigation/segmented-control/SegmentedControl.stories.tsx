@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
 import { useArgs } from "storybook/preview-api";
 import { SegmentedControl } from "@fds/core";
 
@@ -10,6 +11,7 @@ const meta = {
     layout: "centered",
   },
   argTypes: {
+    size: { control: "inline-radio", options: ["sm", "md", "lg", "xl"] },
     onChange: { control: false },
   },
   args: {
@@ -46,4 +48,18 @@ export const WithDots: Story = {
     value: "notice",
   },
   render: Default.render,
+};
+
+// 항목 최소 높이: sm 28 · md 32(기본) · lg 40 · xl 48px
+export const Sizes: Story = {
+  render: function Render(args) {
+    const [value, setValue] = useState("chat");
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, width: 320 }}>
+        {(["sm", "md", "lg", "xl"] as const).map((size) => (
+          <SegmentedControl key={size} {...args} size={size} value={value} onChange={setValue} />
+        ))}
+      </div>
+    );
+  },
 };

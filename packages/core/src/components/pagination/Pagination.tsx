@@ -5,6 +5,7 @@ import { ChevronLeftIcon } from "../icon/ChevronLeftIcon";
 import { ChevronRightIcon } from "../icon/ChevronRightIcon";
 import { MoreHorizontalIcon } from "../icon/MoreHorizontalIcon";
 import { Select } from "../select/Select";
+import type { ComponentSize } from "../_internal/fieldSize";
 
 export interface PaginationProps extends Omit<ComponentProps<"nav">, "onChange" | "children"> {
   /** 전체 항목 수. 전체 페이지 수는 `ceil(totalCount / pageSize)`로 계산한다(항목이 없어도 1페이지). */
@@ -28,6 +29,8 @@ export interface PaginationProps extends Omit<ComponentProps<"nav">, "onChange" 
   pageSizeOptions?: number[];
   /** 현재 페이지 양옆에 보여 줄 번호 개수. 기본 1 (`… 4 [5] 6 …`) */
   siblingCount?: number;
+  /** 크기. 번호 버튼 한 변은 `sm` 28 · `md` 32 · `lg` 36 · `xl` 40px이고, 페이지 크기 선택(Select)도 같은 크기를 따른다. 기본 `md` */
+  size?: ComponentSize;
   /** 왼쪽에 "총 N건"을 보여 줄지 */
   showTotal?: boolean;
 }
@@ -65,8 +68,16 @@ function buildPageItems(page: number, pageCount: number, siblingCount: number): 
 const clampPage = (page: number, pageCount: number) =>
   Math.min(Math.max(Math.trunc(page) || 1, 1), pageCount);
 
+// 번호 버튼의 한 변·글자 크기와 아이콘 크기(px)
+const paginationSizes: Record<ComponentSize, { box: string; text: string; icon: number }> = {
+  sm: { box: "size-7", text: "text-xs", icon: 16 },
+  md: { box: "size-8", text: "text-sm", icon: 18 },
+  lg: { box: "size-9", text: "text-sm", icon: 20 },
+  xl: { box: "size-10", text: "text-base", icon: 22 },
+};
+
 const buttonClass =
-  "flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-8 border border-transparent text-sm text-text-secondary hover:bg-bg-blue-tint hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-primary disabled:cursor-not-allowed disabled:text-text-disabled disabled:hover:bg-transparent";
+  "flex shrink-0 cursor-pointer items-center justify-center rounded-8 border border-transparent text-text-secondary hover:bg-bg-blue-tint hover:text-brand-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-primary disabled:cursor-not-allowed disabled:text-text-disabled disabled:hover:bg-transparent";
 
 /**
  * 목록 아래의 페이지 이동. 데이터를 자르지는 않는다 — 앱이 `page`/`pageSize`로 목록을 가져온다.
@@ -83,6 +94,7 @@ export function Pagination({
   pageSizeOptions,
   siblingCount = 1,
   showTotal = false,
+  size = "md",
   className,
   "aria-label": ariaLabel = "페이지 이동",
   ref,
@@ -121,6 +133,7 @@ export function Pagination({
     onPageSizeChange?.(next);
   };
 
+  const { box, text, icon } = paginationSizes[size];
   const items = buildPageItems(page, pageCount, Math.max(siblingCount, 0));
   // 현재 크기가 선택지에 없어도(예: 기본 20인데 [10, 50]) 선택 상태가 비지 않게 포함한다
   const sizeOptions = pageSizeOptions
@@ -129,7 +142,7 @@ export function Pagination({
 
   return (
     <div className={cn("flex w-full items-center justify-between gap-4 font-fds", className)}>
-      <div className="min-w-0 flex-1 text-sm text-text-tertiary">
+      <div className={cn("min-w-0 flex-1 text-text-tertiary", text)}>
         {showTotal && <span>총 {totalCount.toLocaleString("ko-KR")}건</span>}
       </div>
       <nav ref={ref} aria-label={ariaLabel} className="flex items-center gap-1" {...props}>
@@ -138,9 +151,9 @@ export function Pagination({
           aria-label="이전 페이지"
           disabled={page <= 1}
           onClick={() => goTo(page - 1)}
-          className={buttonClass}
+          className={cn(buttonClass, box, text)}
         >
-          <ChevronLeftIcon size={18} />
+          <ChevronLeftIcon size={icon} />
         </button>
         {items.map((item) =>
           typeof item === "number" ? (
@@ -152,6 +165,8 @@ export function Pagination({
               onClick={() => goTo(item)}
               className={cn(
                 buttonClass,
+                box,
+                text,
                 item === page &&
                   "border-brand-primary bg-bg-blue-tint font-semibold text-brand-primary",
               )}
@@ -162,9 +177,9 @@ export function Pagination({
             <span
               key={item}
               aria-hidden="true"
-              className="flex size-8 shrink-0 items-center justify-center text-sm text-text-muted"
+              className={cn("flex shrink-0 items-center justify-center text-text-muted", box, text)}
             >
-              <MoreHorizontalIcon size={16} />
+              <MoreHorizontalIcon size={icon - 2} />
             </span>
           ),
         )}
@@ -173,14 +188,15 @@ export function Pagination({
           aria-label="다음 페이지"
           disabled={page >= pageCount}
           onClick={() => goTo(page + 1)}
-          className={buttonClass}
+          className={cn(buttonClass, box, text)}
         >
-          <ChevronRightIcon size={18} />
+          <ChevronRightIcon size={icon} />
         </button>
       </nav>
       <div className="flex min-w-0 flex-1 justify-end">
         {sizeOptions && (
           <Select
+            size={size}
             aria-label="페이지당 항목 수"
             containerClassName="w-32"
             options={sizeOptions.map((size) => ({
